@@ -1,4 +1,6 @@
-
+"""
+Connection class and subclasses
+"""
 import numpy as np
 
 class Connection(object):

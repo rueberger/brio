@@ -1,5 +1,5 @@
 """
-Connection class and subclasses
+This module holds the connection class
 """
 import numpy as np
 

@@ -1,5 +1,5 @@
 """
-Network class
+This module holds the Network class
 """
 import numpy as np
 

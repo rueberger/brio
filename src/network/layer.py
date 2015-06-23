@@ -1,4 +1,9 @@
-
+"""
+This module holds the Layer class and its various subclasses:
+Layer: Base class for layers. Defines interface and share methods
+PerceptronLayer: Layer subclass with a perceptron activation function
+BoltzmannMachineLayer: Layer subclass with a Boltzmann Machine activation function
+"""
 from misc.utils import overrides
 import numpy as np
 
@@ -6,8 +11,9 @@ import numpy as np
 
 class Layer(object):
     """
-    Base class for a network layer
-    Holds the state, binary only for now
+    Base class for network layers.
+    Defines the interface for layers and implements some common functionality
+    To use, inheriting classes must override the activation and update methods
     """
 
     def __init__(self, n_dims):
@@ -20,22 +26,49 @@ class Layer(object):
         self.outputs = []
 
     def activation(self, energy):
+        """ The activation function determines the nonlinearity of units in this layer
+        Must be implemented by inheriting classes
+        Sets the state of a unit for a given input energy
+
+        :param energy: the input energy to a unit.
+           Generally the weighted outputs of units in the previous layer
+        :returns: the updated state of the unit in {-1, 1}
+        :rtype: int
+
         """
-        Inheriting classes must specify the activation function for this layer
-        EG a sigmoid
-        returns the update state: 1 or -1
+
+        raise NotImplementedError
+
+    def update(self, idx):
+        """ Update the unit at idx by summing the weighted contributions of its input units
+        and running the activation function
+
+        :param idx: idx of the unit to update. in range(self.n_dims)
+        :returns: None
+        :rtype: None
+
         """
         raise NotImplementedError
 
     def add_input(self, input_connection):
-        """
-        add input_connection to the list of connections feeding into this layer
+        """ add input_connection to the list of connections feeding into this layer
+        This method is called when Connections are initialized
+
+        :param input_connection: Connection object
+        :returns: None
+        :rtype: None
+
         """
         self.inputs.append(input_connection)
 
     def add_output(self, output_connection):
-        """
-        add output_connection to the list of connections feeding out of this layer
+        """ add output_connection to the list of connections feeding out of this layer
+        This method is called when Connections are initialized
+
+        :param output_connection: Connection object
+        :returns: None
+        :rtype: None
+
         """
         self.outputs.append(output_connection)
 
@@ -58,16 +91,10 @@ class Layer(object):
         for output_layer in self.outputs:
             energy += output_layer.energy_shadow(idx)
 
-    def update(self, idx):
-        """
-        update the state at idx
-        """
-        raise NotImplementedError
-
 
 class BoltzmannMachineLayer(Layer):
     """
-    Implements the Boltzman Machine actiation function
+    Implements the Boltzman Machine activation function
     """
 
     @overrides(Layer)

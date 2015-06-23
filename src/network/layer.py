@@ -8,6 +8,7 @@ from misc.utils import overrides
 import numpy as np
 
 # to do: add a synchronous layer (eg for rbms)
+#  - Give layers types so that connections are configured automatically
 
 class Layer(object):
     """

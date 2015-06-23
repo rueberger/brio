@@ -1,6 +1,6 @@
 """
 This module holds the Layer class and its various subclasses:
-Layer: Base class for layers. Defines interface and share methods
+Layer: Base class for layers. Defines interface and shared methods
 PerceptronLayer: Layer subclass with a perceptron activation function
 BoltzmannMachineLayer: Layer subclass with a Boltzmann Machine activation function
 """

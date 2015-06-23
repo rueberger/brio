@@ -16,15 +16,17 @@ class Layer(object):
     Defines the interface for layers and implements some common functionality
     To use, inheriting classes must override the activation and update methods
     """
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, n_dims):
         self.n_dims = n_dims
         self.state = np.ones(n_dims)
         # to do allow for specification of init method
-        # implement mean histories
         self.bias = np.random.randn(n_dims)
         self.inputs = []
         self.outputs = []
+        self.history = []
+        self.max_history_length = 500
 
     def activation(self, energy):
         """ The activation function determines the nonlinearity of units in this layer
@@ -91,6 +93,44 @@ class Layer(object):
         energy = 0
         for output_layer in self.outputs:
             energy += output_layer.energy_shadow(idx)
+
+    def set_parentage(self, network):
+        """ adds an attribute pointing to the parent network and sets up the
+        weighting used for computing firing rates
+
+        :param network: Network object. The parent network
+        :returns: None
+        :rtype: None
+        """
+        self.parent_network = network
+        time_constant = 1./ network.presentations
+        normalizing_constant = (np.sqrt(np.pi) /  (2 * time_constant))
+        self.avg_weighting = normalizing_constant * np.exp(
+            - time_constant * np.arange(2 * self.max_history_length))
+
+
+
+    def update_history(self):
+        """ appends the current state to the history
+        additionally truncates the history if it grows too long
+
+        :returns: None
+        :rtype: None
+        """
+        self.history.insert(0, self.state)
+        if len(self.history) > 2 * self.max_history_length:
+            self.history = self.history[:self.max_history_length]
+
+    def firing_rates(self):
+        """ returns the mean firing rate for the units in this layer
+          weighted by a decaying exponential.
+        The time constant is set as the inverse of the number of presentations
+          for each stimulus for the parent network.
+
+        :returns: weighted firing rates
+        :rtype: float array
+        """
+        return np.sum(self.history * self.avg_weighting[:len(self.history)], axis=0)
 
 
 class BoltzmannMachineLayer(Layer):

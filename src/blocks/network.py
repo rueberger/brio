@@ -14,8 +14,10 @@ class Network(object):
         """ Initalize Network object. Only layers are specified upon initalization
         Connections should already be instantiated
 
-        :param layers: list of Layer objects. InputLayer must be the first element, output layer must be last
-        :param presentations: the number of times to run the network for each stimulus. For async networks
+        :param layers: list of Layer objects. InputLayer must be the
+           first element, output layer must be last
+        :param presentations: the number of times to run the
+           network for each stimulus. For async networks
         """
         self.layers = layers
         self.__check_layers()
@@ -50,6 +52,28 @@ class Network(object):
         return unit_dict
 
 
+    def __update_layer_histories(self):
+        """ calls the update history method in each layer
+        intended to be called once during each network update
+          after all units have been updated
+
+        :returns: None
+        :rtype: None
+        """
+        for layer in self.layers:
+            layer.update_history()
+
+
+    def __set_parentage(self):
+        """ sets self as the parent network of all layers
+
+        :returns: None
+        :rtype: None
+        """
+        for layer in self.layers:
+            layer.set_parentage(self)
+
+
     def update_network(self, stimulus):
         """ Present stimulus to the network and update the state
 
@@ -60,3 +84,6 @@ class Network(object):
         for _ in xrange(self.presentations):
             for idx in self.node_idx:
                 self.idx_to_layer[idx].update(idx)
+        self.__update_layer_histories()
+
+    # burn in method

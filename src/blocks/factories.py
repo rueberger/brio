@@ -53,5 +53,5 @@ def einet_factory(layer_sizes):
     connection.Connection(layers[0], layers[1])
     connection.Connection(layers[1], layers[2], constraint='excitatory')
     connection.Connection(layers[2], layers[2], constraint='inhibitory')
-    connection.Connection(layers[2], layers[1], constraint='ihhibitory')
+    connection.Connection(layers[2], layers[1], constraint='inhibitory')
     return network.Network(layers)

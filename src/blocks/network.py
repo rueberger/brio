@@ -51,6 +51,17 @@ class Network(object):
             start_idx = len(unit_dict)
         return unit_dict
 
+    def __find_connections(self):
+        """ Finds all the connections in the network by searching through the
+          input and output lists in each layer
+
+        :returns: None
+        :rtype: None
+        """
+        self.connections = set()
+        for layer in self.layers:
+            for connection in layer.inputs + layer.outputs:
+                self.connections.add(connection)
 
     def __update_layer_histories(self):
         """ calls the update history method in each layer
@@ -85,5 +96,16 @@ class Network(object):
             for idx in self.node_idx:
                 self.idx_to_layer[idx].update(idx)
         self.__update_layer_histories()
+
+    def training_iteration():
+        """ calls the training method of each connection
+
+        :returns: None
+        :rtype: None
+        """
+        for connection in self.connections:
+            connection.train()
+        # complete mE
+
 
     # burn in method

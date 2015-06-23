@@ -1,5 +1,6 @@
 """
-This module holds the connection class
+This module holds the connection class and its subclasses:
+Connection: Base class for connections. Defines interface and shared methods
 """
 import numpy as np
 
@@ -23,8 +24,16 @@ class Connection(object):
                 'inhibitory': -1
             }[constraint]
 
+    def train(self):
+        """ One training iteration for this layer
 
-    # input energy and output energy methods needed
+        :returns: None
+        :rtype: None
+
+        """
+        # complete me
+        raise NotImplementedError
+
 
     def feedforward_energy(self, idx):
         """

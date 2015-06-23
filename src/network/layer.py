@@ -2,6 +2,8 @@
 from misc.utils import overrides
 import numpy as np
 
+# to do: add a synchronous layer (eg for rbms)
+
 class Layer(object):
     """
     Base class for a network layer
@@ -101,3 +103,16 @@ class PerceptronLayer(Layer):
     def update(self, idx):
         energy = self.bias[idx] + self.input_energy(idx)
         self.state[idx] = self.activation(energy)
+
+class InputLayer(Layer):
+    """
+    Input layer. Lacks update methods
+    """
+
+    def set_state(self, state):
+        """
+        set state as the current state of the layer
+        state must be an array of shape (ndims, )
+        """
+        assert state.shape == self.state.shape
+        self.state = state.copy()

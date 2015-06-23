@@ -16,7 +16,7 @@ class Connection(object):
         self.output_layer.add_input(self)
         self.input_layer.add_output(self)
         if constraint is not None:
-            self.constraint_multiplier = {
+            self.weight_multiplier = {
                 'excitatory': 1,
                 'inhibitory': -1
             }[constraint]
@@ -28,7 +28,7 @@ class Connection(object):
         """
         Returns the output into the unit at idx of the output layer
         """
-        return self.weights[:, idx] * self.input_layer.state
+        return np.sum(self.weight_multiplier * self.weights[:, idx] * self.input_layer.state)
 
     # to do: better name needed
     def energy_shadow(self, input_idx):
@@ -37,11 +37,11 @@ class Connection(object):
           at input_idx
         for use in calculating energy difference for boltzmann machines
         """
-        return self.weights[input_idx, :] * self.output_layer.state
+        return np.sum(self.weight_multiplier * self.weights[input_idx, :] * self.output_layer.state)
 
     def __impose_constraint(self):
         """
         Constrain the weights according to the constraint multiplier
         """
-        out_of_bounds_idx = (self.weights * self.constraint_multiplier < 0)
+        out_of_bounds_idx = (self.weights < 0)
         self.weights[out_of_bounds_idx] = 0

@@ -4,7 +4,7 @@ Layer: Base class for layers. Defines interface and share methods
 PerceptronLayer: Layer subclass with a perceptron activation function
 BoltzmannMachineLayer: Layer subclass with a Boltzmann Machine activation function
 """
-from src.misc.utils import overrides
+from misc.utils import overrides
 import numpy as np
 
 # to do: add a synchronous layer (eg for rbms)

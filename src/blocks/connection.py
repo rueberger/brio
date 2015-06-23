@@ -14,7 +14,7 @@ class Connection(object):
         self.input_layer = input_layer
         self.output_layer = output_layer
         # allow for specification of input method
-        self.weights = np.random.randn(input_layer.ndims, output_layer.ndims)
+        self.weights = np.random.randn(input_layer.n_dims, output_layer.n_dims)
         self.output_layer.add_input(self)
         self.input_layer.add_output(self)
         if constraint is not None:

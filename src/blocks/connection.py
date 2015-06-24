@@ -2,6 +2,7 @@
 This module holds the connection class and its subclasses:
 Connection: Base class for connections. Defines interface and shared methods
 """
+from misc.utils import overrides
 import numpy as np
 
 class Connection(object):
@@ -55,6 +56,17 @@ class Connection(object):
         """
         return np.sum(self.weight_multiplier * self.weights[input_idx, :] * self.output_layer.state)
 
+    def unpack_network_params(self, network):
+        """ unpacks parameters from parent network
+        For now only unpacks the learning rate
+
+        :param network: Network object. The parent network
+        :returns: None
+        :rtype: None
+        """
+
+        self.learning_rate = network.params.weight_learning_rate * self.learning_rate_multiplier
+
     def __impose_constraint(self):
         """
         Constrain the weights according to the constraint multiplier
@@ -62,7 +74,52 @@ class Connection(object):
         out_of_bounds_idx = (self.weights < 0)
         self.weights[out_of_bounds_idx] = 0
 
+
 class OjaConnection(object):
     """
-    A layer that implements Oja's rule as the training
+    Connection class that uses Oja's rule to iteratively update the weights
     """
+
+    # pylint: disable=too-few-public-methods
+
+    @overrides(Connection)
+    def __weight_rule(self):
+        pre_syn_state = self.input_layer.history[-1]
+        post_syn_state = self.output_layer.history[-1]
+        delta = np.outer(pre_syn_state, post_syn_state) - (post_syn_state ** 2) * self.weights
+        self.weights += self.learning_rate * delta
+
+class FoldiakConnection(object):
+    """
+    Connection class that uses Foldiak's rule to iteratively update the weights
+    """
+
+    # pylint: disable=too-few-public-methods
+
+    @overrides(Connection)
+    def __weight_rule(self):
+        pre_syn_state = self.input_layer.history[-1]
+        post_syn_state = self.output_layer.history[-1]
+        pre_syn_avg_rates = self.input_layer.firing_rates()
+        post_syn_avg_rates = self.output_layer.firing_rates()
+        delta = (np.outer(pre_syn_state, post_syn_state) -
+                 np.outer(pre_syn_avg_rates, post_syn_avg_rates))
+        self.weights += self.learning_rate * delta
+
+class CMConnection(object):
+    """
+    Connection class that uses the Correlation Measuring rule to iteratively update the weights
+    """
+
+
+    # pylint: disable=too-few-public-methods
+
+    @overrides(Connection)
+    def __weight_rule(self):
+        pre_syn_state = self.input_layer.history[-1]
+        post_syn_state = self.output_layer.history[-1]
+        pre_syn_avg_rates = self.input_layer.firing_rates()
+        post_syn_avg_rates = self.output_layer.firing_rates()
+        delta = (np.outer(pre_syn_state, post_syn_state) -
+                 np.outer(pre_syn_avg_rates, post_syn_avg_rates)) * (1 + self.weights)
+        self.weights += self.learning_rate * delta

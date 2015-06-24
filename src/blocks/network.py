@@ -108,7 +108,7 @@ class Network(object):
         for connection in self.connections:
             connection.update_weights()
         for layer in self.layers:
-            layer.update_biases()
+            layer.apply_bias_rule()
 
 
     # burn in method

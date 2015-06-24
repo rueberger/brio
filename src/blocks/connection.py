@@ -11,7 +11,6 @@ class Connection(object):
     """
 
     def __init__(self, input_layer, output_layer):
-        # to do: add excitatory flag
         self.input_layer = input_layer
         self.output_layer = output_layer
         # allow for specification of input method
@@ -20,7 +19,7 @@ class Connection(object):
         self.input_layer.add_output(self)
         self.weight_multiplier = self.input_layer.ltype.weight_multiplier
 
-    def __update_rule(self):
+    def __weight_rule(self):
         """ Local update rule for the weights in this connection
         Must be implemented by inheriting class
 
@@ -28,13 +27,14 @@ class Connection(object):
         """
         raise NotImplementedError
 
-    def update_weights(self):
+    def apply_weight_rule(self):
         """ Updates the weights in this connection according to
           the update rule (which must be specified by inheriting classes)
+        Constrains the weights to be non-negative if the input layer is inhibitory or excitatory
 
         :returns: None
         """
-        self.__update_rule()
+        self.__weight_rule()
         if self.input_layer.ltype.constrain_weights:
             self.__impose_constraint()
 

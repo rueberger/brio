@@ -10,7 +10,6 @@ import numpy as np
 
 
 # to do: add a synchronous layer (eg for rbms)
-#  - Give layers types so that connections are configured automatically
 
 @unique
 class LayerType(Enum):
@@ -23,8 +22,8 @@ class LayerType(Enum):
       the types of layers to not interfere with Layer subclasses, sidestepping the need to use
       factories for Layer subclasses or modify __metaclass__
     """
-
     # pylint: disable=too-few-public-methods
+
     unconstrained = (1, 1, False)
     excitatory = (1, 1, True)
     inhibitory = (2, -1, True)
@@ -39,7 +38,7 @@ class Layer(object):
     """
     Base class for network layers.
     Defines the interface for layers and implements some common functionality
-    To use, inheriting classes must override the activation and update methods
+    To use, inheriting classes must override the activation and update_state methods
     """
     # pylint: disable=too-many-instance-attributes
 
@@ -70,7 +69,7 @@ class Layer(object):
 
         raise NotImplementedError
 
-    def update(self, idx):
+    def update_state(self, idx):
         """ Update the unit at idx by summing the weighted contributions of its input units
         and running the activation function
         Must be implemented by inheriting class
@@ -82,7 +81,7 @@ class Layer(object):
         """
         raise NotImplementedError
 
-    def update_biases(self):
+    def apply_bias_rule(self):
         """ Update the unit biases for this layer
         By default uses the homeostatic threshold rule from
           Foldiak 1990
@@ -90,7 +89,7 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        # fill me in
+
 
 
     def add_input(self, input_connection):
@@ -214,7 +213,7 @@ class PerceptronLayer(Layer):
 
 class InputLayer(Layer):
     """
-    Input layer. Lacks update methods
+    Input layer. Lacks update_state methods
     """
 
     def set_state(self, state):

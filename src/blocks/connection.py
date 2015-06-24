@@ -10,7 +10,8 @@ class Connection(object):
     holds network weights
     """
 
-    def __init__(self, input_layer, output_layer):
+    def __init__(self, input_layer, output_layer,
+                 learning_rate_multiplier=1):
         self.input_layer = input_layer
         self.output_layer = output_layer
         # allow for specification of input method
@@ -18,6 +19,7 @@ class Connection(object):
         self.output_layer.add_input(self)
         self.input_layer.add_output(self)
         self.weight_multiplier = self.input_layer.ltype.weight_multiplier
+        self.learning_rate_multiplier = learning_rate_multiplier
 
     def __weight_rule(self):
         """ Local update rule for the weights in this connection

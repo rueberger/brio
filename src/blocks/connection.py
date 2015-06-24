@@ -13,13 +13,12 @@ class Connection(object):
 
     def __init__(self, input_layer, output_layer,
                  learning_rate_multiplier=1):
-        self.input_layer = input_layer
-        self.output_layer = output_layer
-        # allow for specification of input method
+        self.presynaptic_layer = input_layer
+        self.postsynaptic_layer = output_layer
         self.weights = np.random.randn(input_layer.n_dims, output_layer.n_dims)
-        self.output_layer.add_input(self)
-        self.input_layer.add_output(self)
-        self.weight_multiplier = self.input_layer.ltype.weight_multiplier
+        self.postsynaptic_layer.add_input(self)
+        self.presynaptic_layer.add_output(self)
+        self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.learning_rate_multiplier = learning_rate_multiplier
 
     def __weight_rule(self):
@@ -38,14 +37,14 @@ class Connection(object):
         :returns: None
         """
         self.__weight_rule()
-        if self.input_layer.ltype.constrain_weights:
+        if self.presynaptic_layer.ltype.constrain_weights:
             self.__impose_constraint()
 
     def feedforward_energy(self, idx):
         """
         Returns the output into the unit at idx of the output layer
         """
-        return np.sum(self.weight_multiplier * self.weights[:, idx] * self.input_layer.state)
+        return np.sum(self.weight_multiplier * self.weights[:, idx] * self.presynaptic_layer.state)
 
     # to do: better name needed: use pre and post synaptic
     def energy_shadow(self, input_idx):
@@ -54,7 +53,7 @@ class Connection(object):
           at input_idx
         for use in calculating energy difference for boltzmann machines
         """
-        return np.sum(self.weight_multiplier * self.weights[input_idx, :] * self.output_layer.state)
+        return np.sum(self.weight_multiplier * self.weights[input_idx, :] * self.postsynaptic_layer.state)
 
     def unpack_network_params(self, network):
         """ unpacks parameters from parent network

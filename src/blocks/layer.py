@@ -5,10 +5,35 @@ PerceptronLayer: Layer subclass with a perceptron activation function
 BoltzmannMachineLayer: Layer subclass with a Boltzmann Machine activation function
 """
 from misc.utils import overrides
+from enum import Enum, unique
 import numpy as np
+
 
 # to do: add a synchronous layer (eg for rbms)
 #  - Give layers types so that connections are configured automatically
+
+@unique
+class LayerType(Enum):
+    """
+    This Enumerated class defines the basic types of layers
+    The purpose of using an Enum object instead of simply passing the type as a string
+      when intializing Layer is that Enum objects come with data attached and
+      are more robust (to mispelling).
+    This class reduces overall module complexity by allowing high level distinctions between
+      the types of layers to not interfere with Layer subclasses, sidestepping the need to use
+      factories for Layer subclasses or modify __metaclass__
+    """
+
+    # pylint: disable=too-few-public-methods
+    unconstrained = (1, 1, False)
+    excitatory = (1, 1, True)
+    inhibitory = (2, -1, True)
+
+    def __init__(self, firing_rate_multiplier, weight_multiplier, constrain_weights):
+        self.firing_rate_multiplier = firing_rate_multiplier
+        self.weight_multiplier = weight_multiplier
+        self.constrain_weights = constrain_weights
+
 
 class Layer(object):
     """
@@ -18,7 +43,7 @@ class Layer(object):
     """
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, n_dims):
+    def __init__(self, n_dims, ltype=LayerType.unconstrained, baseline_firing_rate=0.02):
         self.n_dims = n_dims
         self.state = np.ones(n_dims)
         # to do allow for specification of init method
@@ -27,6 +52,9 @@ class Layer(object):
         self.outputs = []
         self.history = []
         self.max_history_length = 500
+        self.ltype = ltype
+        self.target_firing_rate = ltype.firing_rate_multiplier * baseline_firing_rate
+
 
     def activation(self, energy):
         """ The activation function determines the nonlinearity of units in this layer
@@ -45,6 +73,7 @@ class Layer(object):
     def update(self, idx):
         """ Update the unit at idx by summing the weighted contributions of its input units
         and running the activation function
+        Must be implemented by inheriting class
 
         :param idx: idx of the unit to update. in range(self.n_dims)
         :returns: None
@@ -52,6 +81,17 @@ class Layer(object):
 
         """
         raise NotImplementedError
+
+    def update_biases(self):
+        """ Update the unit biases for this layer
+        By default uses the homeostatic threshold rule from
+          Foldiak 1990
+
+        :returns: None
+        :rtype: None
+        """
+        # fill me in
+
 
     def add_input(self, input_connection):
         """ add input_connection to the list of connections feeding into this layer

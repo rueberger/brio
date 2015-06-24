@@ -64,7 +64,8 @@ class Layer(object):
         :rtype: None
         """
         # to do add a non windowed mean to see how this does
-        self.biases += self.
+        delta = self.firing_rates() - self.target_firing_rate
+        self.bias += self.learning_rate * delta
 
 
     def add_input(self, input_connection):
@@ -124,7 +125,7 @@ class Layer(object):
         self.target_firing_rate = (self.ltype.firing_rate_multiplier *
                                    network.params.baseline_firing_rate)
         self.max_history_length = network.params.layer_history_length
-
+        self.learning_rate = network.params.bias_learning_rate
 
 
 

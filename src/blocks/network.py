@@ -2,6 +2,7 @@
 This module holds the Network class
 """
 import numpy as np
+from blocks.aux import NetworkParams
 
 class Network(object):
     """
@@ -10,7 +11,7 @@ class Network(object):
       that make up a network in addition to methods for running the network
     """
 
-    def __init__(self, layers, presentations=5):
+    def __init__(self, layers, params=NetworkParams()):
         """ Initalize Network object. Only layers are specified upon initalization
         Connections should already be instantiated
 
@@ -20,8 +21,8 @@ class Network(object):
            network for each stimulus. For async networks
         """
         self.layers = layers
+        self.params = params
         self.__check_layers()
-        self.presentations = presentations
         self.node_idx = np.arange(np.sum([l.n_dims for l in layers]))
         self.idx_to_layer = self.__build_layer_dict()
 
@@ -82,7 +83,7 @@ class Network(object):
         :rtype: None
         """
         for layer in self.layers:
-            layer.set_parentage(self)
+            layer.import_params_from_network(self)
 
 
     def update_network(self, stimulus):
@@ -92,7 +93,7 @@ class Network(object):
         """
         np.random.shuffle(self.node_idx)
         self.input_layer.set_state(stimulus)
-        for _ in xrange(self.presentations):
+        for _ in xrange(self.params.presentations):
             for idx in self.node_idx:
                 self.idx_to_layer[idx].update(idx)
         self.__update_layer_histories()

@@ -4,34 +4,12 @@ Layer: Base class for layers. Defines interface and shared methods
 PerceptronLayer: Layer subclass with a perceptron activation function
 BoltzmannMachineLayer: Layer subclass with a Boltzmann Machine activation function
 """
+
 from misc.utils import overrides
-from enum import Enum, unique
+from blocks.aux import LayerType
 import numpy as np
 
-
 # to do: add a synchronous layer (eg for rbms)
-
-@unique
-class LayerType(Enum):
-    """
-    This Enumerated class defines the basic types of layers
-    The purpose of using an Enum object instead of simply passing the type as a string
-      when intializing Layer is that Enum objects come with data attached and
-      are more robust (to mispelling).
-    This class reduces overall module complexity by allowing high level distinctions between
-      the types of layers to not interfere with Layer subclasses, sidestepping the need to use
-      factories for Layer subclasses or modify __metaclass__
-    """
-    # pylint: disable=too-few-public-methods
-
-    unconstrained = (1, 1, False)
-    excitatory = (1, 1, True)
-    inhibitory = (2, -1, True)
-
-    def __init__(self, firing_rate_multiplier, weight_multiplier, constrain_weights):
-        self.firing_rate_multiplier = firing_rate_multiplier
-        self.weight_multiplier = weight_multiplier
-        self.constrain_weights = constrain_weights
 
 
 class Layer(object):
@@ -42,7 +20,7 @@ class Layer(object):
     """
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, n_dims, ltype=LayerType.unconstrained, baseline_firing_rate=0.02):
+    def __init__(self, n_dims, ltype=LayerType.unconstrained):
         self.n_dims = n_dims
         self.state = np.ones(n_dims)
         # to do allow for specification of init method
@@ -50,9 +28,7 @@ class Layer(object):
         self.inputs = []
         self.outputs = []
         self.history = []
-        self.max_history_length = 500
         self.ltype = ltype
-        self.target_firing_rate = ltype.firing_rate_multiplier * baseline_firing_rate
 
 
     def activation(self, energy):
@@ -64,7 +40,6 @@ class Layer(object):
            Generally the weighted outputs of units in the previous layer
         :returns: the updated state of the unit in {-1, 1}
         :rtype: int
-
         """
 
         raise NotImplementedError
@@ -89,7 +64,7 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-
+        # fill me in
 
 
     def add_input(self, input_connection):
@@ -133,19 +108,23 @@ class Layer(object):
         for output_layer in self.outputs:
             energy += output_layer.energy_shadow(idx)
 
-    def set_parentage(self, network):
+    def import_params_from_network(self, network):
         """ adds an attribute pointing to the parent network and sets up the
         weighting used for computing firing rates
+        Also sets the target firing rate and the max history length
 
         :param network: Network object. The parent network
         :returns: None
         :rtype: None
         """
-        self.parent_network = network
         time_constant = 1./ network.presentations
         normalizing_constant = (np.sqrt(np.pi) /  (2 * time_constant))
         self.avg_weighting = normalizing_constant * np.exp(
             - time_constant * np.arange(2 * self.max_history_length))
+        self.target_firing_rate = (self.ltype.firing_rate_multiplier *
+                                   network.params.baseline_firing_rate)
+        self.max_history_length = network.params.layer_history_length
+
 
 
 

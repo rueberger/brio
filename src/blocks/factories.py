@@ -2,7 +2,7 @@
 Factories for networks
 """
 from blocks import layer, connection, network
-from blocks.layer import LayerType
+from blocks.aux import LayerType
 
 
 def rbm_factory(layer_sizes):

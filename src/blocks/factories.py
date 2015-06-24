@@ -1,8 +1,8 @@
 """
 Factories for networks
 """
-
 from blocks import layer, connection, network
+from blocks.layer import LayerType
 
 
 def rbm_factory(layer_sizes):
@@ -47,11 +47,11 @@ def einet_factory(layer_sizes):
     """
     layers = [
         layer.InputLayer(layer_sizes[0]),
-        layer.BoltzmannMachineLayer(layer_sizes[1]),
-        layer.BoltzmannMachineLayer(layer_sizes[2])
+        layer.BoltzmannMachineLayer(layer_sizes[1], LayerType.excitatory),
+        layer.BoltzmannMachineLayer(layer_sizes[2], LayerType.inhibitory)
     ]
     connection.Connection(layers[0], layers[1])
-    connection.Connection(layers[1], layers[2], constraint='excitatory')
-    connection.Connection(layers[2], layers[2], constraint='inhibitory')
-    connection.Connection(layers[2], layers[1], constraint='inhibitory')
+    connection.Connection(layers[1], layers[2])
+    connection.Connection(layers[2], layers[2])
+    connection.Connection(layers[2], layers[1])
     return network.Network(layers)

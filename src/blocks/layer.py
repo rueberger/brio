@@ -11,7 +11,6 @@ import numpy as np
 
 # to do: add a synchronous layer (eg for rbms)
 
-
 class Layer(object):
     """
     Base class for network layers.
@@ -64,7 +63,8 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        # fill me in
+        # to do add a non windowed mean to see how this does
+        self.biases += self.
 
 
     def add_input(self, input_connection):
@@ -108,7 +108,7 @@ class Layer(object):
         for output_layer in self.outputs:
             energy += output_layer.energy_shadow(idx)
 
-    def import_params_from_network(self, network):
+    def unpack_network_params(self, network):
         """ adds an attribute pointing to the parent network and sets up the
         weighting used for computing firing rates
         Also sets the target firing rate and the max history length

@@ -83,7 +83,7 @@ class Network(object):
         :rtype: None
         """
         for layer in self.layers:
-            layer.import_params_from_network(self)
+            layer.unpack_network_params(self)
 
 
     def update_network(self, stimulus):

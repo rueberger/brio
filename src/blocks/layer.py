@@ -40,7 +40,6 @@ class Layer(object):
         :returns: the updated state of the unit in {-1, 1}
         :rtype: int
         """
-
         raise NotImplementedError
 
     def update_state(self, idx):
@@ -159,8 +158,14 @@ class BoltzmannMachineLayer(Layer):
 
     @overrides(Layer)
     def activation(self, energy):
-        # might want an extra factor of two here to account
-        # for the energy difference
+        """ The Boltzmann Machine activation function
+        Returns the state of the unit selected stochastically from a sigmoid
+
+        :param energy: actually energy difference in this case between unit up and down
+        :returns: the updated state of the unit in {-1, 1}
+        :rtype: int
+        """
+
         p_on = 1. / (1 + np.exp(-energy))
         if np.random.random() < p_on:
             return 1
@@ -169,6 +174,14 @@ class BoltzmannMachineLayer(Layer):
 
     @overrides(Layer)
     def update(self, idx):
+        """ Updates the state of the unit at idx according to the Boltzmann Machine scheme
+        Calculates the global energy difference between the unit at idx being up and down
+        Sets the unit stochastically according the Boltzmann Machine activation function
+
+        :param idx: idx of the unit to update. in range(self.n_dims)
+        :returns: None
+        :rtype: None
+        """
         e_diff = self.bias[idx]
         e_diff += self.input_energy(idx)
         e_diff += self.output_energy(idx)
@@ -181,6 +194,14 @@ class PerceptronLayer(Layer):
 
     @overrides(Layer)
     def activation(self, energy):
+        """ Perceptron activation rule
+        A simple hard threshold
+
+        :param energy: feedforward contributions
+        :returns: the updated state of the unit in {-1, 1}
+        :rtype: int
+        """
+
         if energy > 0:
             return 1
         else:
@@ -188,6 +209,14 @@ class PerceptronLayer(Layer):
 
     @overrides(Layer)
     def update(self, idx):
+        """ Updates the state of the unit at idx according to the Perceptron scheme
+        Computes the feedforward contributions to the unit at idx and uses the hard threshold
+          in the activation function to compute the update
+
+        :param idx: idx of the unit to update. in range(self.n_dims)
+        :returns: None
+        :rtype: None
+        """
         energy = self.bias[idx] + self.input_energy(idx)
         self.state[idx] = self.activation(energy)
 

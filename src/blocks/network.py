@@ -97,15 +97,18 @@ class Network(object):
                 self.idx_to_layer[idx].update(idx)
         self.__update_layer_histories()
 
-    def training_iteration():
-        """ calls the training method of each connection
+    def training_iteration(self):
+        """ Calls the training method in each layer and connection
+        Connection training method updates weights
+        layer training method update biases
 
         :returns: None
         :rtype: None
         """
         for connection in self.connections:
-            connection.train()
-        # complete mE
+            connection.update_weights()
+        for layer in self.layers:
+            layer.update_biases()
 
 
     # burn in method

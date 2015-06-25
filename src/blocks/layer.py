@@ -173,7 +173,7 @@ class BoltzmannMachineLayer(Layer):
             return -1
 
     @overrides(Layer)
-    def update(self, idx):
+    def update_state(self, idx):
         """ Updates the state of the unit at idx according to the Boltzmann Machine scheme
         Calculates the global energy difference between the unit at idx being up and down
         Sets the unit stochastically according the Boltzmann Machine activation function
@@ -208,7 +208,7 @@ class PerceptronLayer(Layer):
             return -1
 
     @overrides(Layer)
-    def update(self, idx):
+    def update_state(self, idx):
         """ Updates the state of the unit at idx according to the Perceptron scheme
         Computes the feedforward contributions to the unit at idx and uses the hard threshold
           in the activation function to compute the update

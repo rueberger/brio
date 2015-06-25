@@ -76,6 +76,7 @@ class Layer(object):
         :rtype: None
 
         """
+        assert self.input_connection not in self.inputs
         self.inputs.append(input_connection)
 
     def add_output(self, output_connection):
@@ -87,6 +88,7 @@ class Layer(object):
         :rtype: None
 
         """
+        assert self.output_connection not in self.outputs
         self.outputs.append(output_connection)
 
     def input_energy(self, idx):

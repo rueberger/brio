@@ -45,6 +45,7 @@ def einet_factory(layer_sizes):
     :returns: the constructed EI-net
     :rtype: Network
     """
+    assert len(layer_sizes) == 3
     layers = [
         layer.InputLayer(layer_sizes[0]),
         layer.BoltzmannMachineLayer(layer_sizes[1], LayerType.excitatory),

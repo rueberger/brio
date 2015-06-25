@@ -4,12 +4,23 @@ import numpy as np
 
 # external code from stackoverflow: http://stackoverflow.com/questions/1167617/in-python-how-do-i-indicate-im-overriding-a-method
 def overrides(interface_class):
-    """
-    override decorator. need to specify the super class, unfortunately
-    """
+    """ provides an override decorator for python
+    simply checks if the decorated method is in interface_class
+      and complains if it isnt
 
+    :param interface_class: the class containing the method being overwritten
+    """
     def overrider(method):
-        assert  method.__name__ in dir(interface_class)
+        """
+        Helper function
+        """
+
+        if method.__name__.startswith('__'):
+            # handles private methods
+            priv_name = "_{}{}".format(interface_class.__name__, method.__name__)
+            assert priv_name in dir(interface_class)
+        else:
+            assert method.__name__ in dir(interface_class)
         return method
     return overrider
 

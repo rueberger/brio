@@ -3,10 +3,12 @@ unit test for blocks.layer
 """
 import numpy as np
 import unittest
-from blocks.layer import Layer, BoltzmanMachineLayer, PerceptronLayer, InputLayer
+from blocks.layer import Layer, BoltzmannMachineLayer, PerceptronLayer, InputLayer
 
 N_SEED = 1337
 N_DIMS = 10
+
+# pylint: disable=missing-docstring
 
 class TestLayer(unittest.TestCase):
 
@@ -19,13 +21,21 @@ class TestLayer(unittest.TestCase):
         self.test_layer.state = 5 * np.ones(N_DIMS)
         self.test_layer.update_history()
         self.test_layer.state = np.ones(N_DIMS)
-
+        self.test_layer.update_history()
+        self.assertEqual(self.test_layer.history[-1], np.ones(N_DIMS))
+        self.test_layer.state = 2 * np.ones(N_DIMS)
+        for _ in xrange(5):
+            self.test_layer.update_history()
+        self.test_layer.state = 6 * np.ones(N_DIMS)
+        for _ in xrange(5):
+            self.test_layer.update_history()
+        self.assertEqual(self.test_layer.history[-1], 6 * np.ones(N_DIMS))
 
 class TestBoltzmannMachineLayer(unittest.TestCase):
 
     def setUp(self):
         np.random.seed(N_SEED)
-        self.test_layer = BoltzmanMachineLayer(N_DIMS)
+        self.test_layer = BoltzmannMachineLayer(N_DIMS)
 
     def test_activation(self):
         # test a particular value

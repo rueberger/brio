@@ -32,5 +32,19 @@ class TestConnection(unittest.TestCase):
         connection = Connection(InputLayer(), PerceptronLayer(), 'excitatory')
 #Makesureitdoesn'traiseanyexceptions.
 
+    def test___init__(self):
+        # connection = Connection(input_layer, output_layer, learning_rate_multiplier)
+        assert False # TODO: implement your test here
+
+    def test_apply_weight_rule(self):
+        # connection = Connection(input_layer, output_layer, learning_rate_multiplier)
+        # self.assertEqual(expected, connection.apply_weight_rule())
+        assert False # TODO: implement your test here
+
+    def test_unpack_network_params(self):
+        # connection = Connection(input_layer, output_layer, learning_rate_multiplier)
+        # self.assertEqual(expected, connection.unpack_network_params(network))
+        assert False # TODO: implement your test here
+
 if __name__ == '__main__':
     unittest.main()

@@ -19,12 +19,12 @@ class TestConnection(unittest.TestCase):
         # Make sure it doesn't raise any exceptions.
 
     def test_energy_shadow(self):
-        # connection = Connection(input_layer, output_layer, constraint)
+        # connection = Connection(input_layer, output_layer, learning_rate_multiplier)
         # self.assertEqual(expected, connection.energy_shadow(input_idx))
         assert False # TODO: implement your test here
 
     def test_feedforward_energy(self):
-        # connection = Connection(input_layer, output_layer, constraint)
+        # connection = Connection(input_layer, output_layer, learning_rate_multiplier)
         # self.assertEqual(expected, connection.feedforward_energy(idx))
         assert False # TODO: implement your test here
 

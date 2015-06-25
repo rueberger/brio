@@ -26,6 +26,18 @@ class Network(object):
         self.node_idx = np.arange(np.sum([l.n_dims for l in layers]))
         self.idx_to_layer = self.__build_layer_dict()
 
+    def run_network(self, stimulus):
+        """ Presents the stimulus to the network
+        Updates the state and performs a training iteration
+        This is the method to call from external code
+
+        :param stimulus: array of shape (input_layer.ndims, )
+        :returns: None
+        :rtype: None
+        """
+        self.update_network(stimulus)
+        self.training_iteration()
+
 
     def __check_layers(self):
         """ Checks that the input layer is the first element of layers

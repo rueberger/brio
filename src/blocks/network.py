@@ -60,7 +60,7 @@ class Network(object):
         start_idx = 0
         for layer in self.layers[1:]:
             for idx in xrange(layer.n_dims):
-                unit_dict[idx + start_idx] = layer
+                unit_dict[idx + start_idx] = (layer, idx)
             start_idx = len(unit_dict)
         return unit_dict
 
@@ -87,7 +87,6 @@ class Network(object):
         for layer in self.layers:
             layer.update_history()
 
-
     def __set_parentage(self):
         """ sets self as the parent network of all layers
 
@@ -107,7 +106,8 @@ class Network(object):
         self.layers[0].set_state(stimulus)
         for _ in xrange(self.params.presentations):
             for idx in self.node_idx:
-                self.idx_to_layer[idx].update(idx)
+                layer, unit_idx = self.idx_to_layer[idx]
+                layer.update_state(unit_idx)
         self.__update_layer_histories()
 
     def training_iteration(self):

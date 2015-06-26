@@ -109,6 +109,7 @@ class Layer(object):
         energy = 0
         for output_layer in self.outputs:
             energy += output_layer.energy_shadow(idx)
+        return energy
 
     def unpack_network_params(self, network):
         """ adds an attribute pointing to the parent network and sets up the

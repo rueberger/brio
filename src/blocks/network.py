@@ -100,6 +100,8 @@ class Network(object):
         """
         for layer in self.layers:
             layer.unpack_network_params(self)
+        for connection in self.connections:
+            connection.unpack_network_params(self)
 
 
     def update_network(self, stimulus):

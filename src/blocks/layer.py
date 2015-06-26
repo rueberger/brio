@@ -123,8 +123,9 @@ class Layer(object):
         time_constant = 1./ network.params.presentations
         normalizing_constant = (np.sqrt(np.pi) /  (2 * time_constant))
         self.max_history_length = network.params.layer_history_length
+        # I don't think normalization matters
         self.avg_weighting = normalizing_constant * np.exp(
-            - time_constant * np.arange(2 * self.max_history_length))
+            - time_constant * np.arange(self.max_history_length))[:, np.newaxis]
         self.target_firing_rate = (self.ltype.firing_rate_multiplier *
                                    network.params.baseline_firing_rate)
         self.learning_rate = network.params.bias_learning_rate
@@ -151,7 +152,7 @@ class Layer(object):
         :returns: weighted firing rates
         :rtype: float array
         """
-        return np.sum(self.history * self.avg_weighting[:len(self.history)], axis=0)
+        return np.sum(self.history[:self.max_history_length] * self.avg_weighting, axis=0)
 
 
 class BoltzmannMachineLayer(Layer):

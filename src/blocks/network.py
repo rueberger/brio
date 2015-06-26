@@ -34,13 +34,43 @@ class Network(object):
         """ Presents the stimulus to the network
         Updates the state and performs a training iteration
         This is the method to call from external code
+        training does not begin until the network has sufficient history to compute
+          mean firing rates
 
         :param stimulus: array of shape (input_layer.ndims, )
         :returns: None
         :rtype: None
         """
         self.update_network(stimulus)
-        self.training_iteration()
+        # look to see if the layers have accumulated sufficient history
+        if len(self.layers[0].history) >= self.params.layer_history_length:
+            self.training_iteration()
+
+    def update_network(self, stimulus):
+        """ Present stimulus to the network and update the state
+
+        :param stimulus: array of shape (input_layer.ndims, )
+        """
+        np.random.shuffle(self.node_idx)
+        self.layers[0].set_state(stimulus)
+        for _ in xrange(self.params.presentations):
+            for idx in self.node_idx:
+                layer, unit_idx = self.idx_to_layer[idx]
+                layer.update_state(unit_idx)
+        self.__update_layer_histories()
+
+    def training_iteration(self):
+        """ Calls the training method in each layer and connection
+        Connection training method updates weights
+        layer training method update biases
+
+        :returns: None
+        :rtype: None
+        """
+        for connection in self.connections:
+            connection.apply_weight_rule()
+        for layer in self.layers[1:]:
+            layer.apply_bias_rule()
 
 
     def __check_layers(self):
@@ -104,31 +134,6 @@ class Network(object):
             connection.unpack_network_params(self)
 
 
-    def update_network(self, stimulus):
-        """ Present stimulus to the network and update the state
-
-        :param stimulus: array of shape (input_layer.ndims, )
-        """
-        np.random.shuffle(self.node_idx)
-        self.layers[0].set_state(stimulus)
-        for _ in xrange(self.params.presentations):
-            for idx in self.node_idx:
-                layer, unit_idx = self.idx_to_layer[idx]
-                layer.update_state(unit_idx)
-        self.__update_layer_histories()
-
-    def training_iteration(self):
-        """ Calls the training method in each layer and connection
-        Connection training method updates weights
-        layer training method update biases
-
-        :returns: None
-        :rtype: None
-        """
-        for connection in self.connections:
-            connection.apply_weight_rule()
-        for layer in self.layers[1:]:
-            layer.apply_bias_rule()
 
 
     # burn in method

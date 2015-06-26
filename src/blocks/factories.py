@@ -17,7 +17,7 @@ def rbm_factory(layer_sizes):
     for lsize in layer_sizes[1:]:
         layers.append(layer.BoltzmannMachineLayer(lsize))
     for input_layer, output_layer in zip(layers[:-1], layers[1:]):
-        connection.Connection(input_layer, output_layer)
+        connection.CMConnection(input_layer, output_layer)
     return network.Network(layers)
 
 def mlp_factory(layer_sizes):
@@ -32,7 +32,7 @@ def mlp_factory(layer_sizes):
     for lsize in layer_sizes[1:]:
         layers.append(layer.PerceptronLayer(lsize))
     for input_layer, output_layer in zip(layers[:-1], layers[1:]):
-        connection.Connection(input_layer, output_layer)
+        connection.CMConnection(input_layer, output_layer)
     return network.Network(layers)
 
 def einet_factory(layer_sizes):
@@ -51,8 +51,8 @@ def einet_factory(layer_sizes):
         layer.BoltzmannMachineLayer(layer_sizes[1], LayerType.excitatory),
         layer.BoltzmannMachineLayer(layer_sizes[2], LayerType.inhibitory)
     ]
-    connection.Connection(layers[0], layers[1])
-    connection.Connection(layers[1], layers[2])
-    connection.Connection(layers[2], layers[2])
-    connection.Connection(layers[2], layers[1])
+    connection.OjaConnection(layers[0], layers[1])
+    connection.CMConnection(layers[1], layers[2])
+    connection.CMConnection(layers[2], layers[2])
+    connection.CMConnection(layers[2], layers[1])
     return network.Network(layers)

@@ -21,13 +21,12 @@ class Network(object):
            network for each stimulus. For async networks
         """
         self.layers = layers
-        self.__check_layers()
-        self.__set_parentage()
-        self.__find_connections()
         self.params = params
         self.__check_layers()
+        self.__find_connections()
         self.node_idx = np.arange(np.sum([l.n_dims for l in layers[1:]]))
         self.idx_to_layer = self.__build_layer_dict()
+        self.__set_parentage()
 
 
 
@@ -125,7 +124,7 @@ class Network(object):
         :rtype: None
         """
         for connection in self.connections:
-            connection.update_weights()
+            connection.apply_weight_rule()
         for layer in self.layers[1:]:
             layer.apply_bias_rule()
 

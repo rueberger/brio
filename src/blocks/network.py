@@ -23,7 +23,7 @@ class Network(object):
         self.layers = layers
         self.params = params
         self.__check_layers()
-        self.node_idx = np.arange(np.sum([l.n_dims for l in layers]))
+        self.node_idx = np.arange(np.sum([l.n_dims for l in layers[1:]]))
         self.idx_to_layer = self.__build_layer_dict()
 
     def run_network(self, stimulus):
@@ -58,7 +58,7 @@ class Network(object):
         """
         unit_dict = {}
         start_idx = 0
-        for layer in self.layers:
+        for layer in self.layers[1:]:
             for idx in xrange(layer.n_dims):
                 unit_dict[idx + start_idx] = layer
             start_idx = len(unit_dict)
@@ -104,7 +104,7 @@ class Network(object):
         :param stimulus: array of shape (input_layer.ndims, )
         """
         np.random.shuffle(self.node_idx)
-        self.input_layer.set_state(stimulus)
+        self.layers[0].set_state(stimulus)
         for _ in xrange(self.params.presentations):
             for idx in self.node_idx:
                 self.idx_to_layer[idx].update(idx)
@@ -120,7 +120,7 @@ class Network(object):
         """
         for connection in self.connections:
             connection.update_weights()
-        for layer in self.layers:
+        for layer in self.layers[1:]:
             layer.apply_bias_rule()
 
 

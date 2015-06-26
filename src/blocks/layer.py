@@ -76,7 +76,7 @@ class Layer(object):
         :rtype: None
 
         """
-        assert self.input_connection not in self.inputs
+        assert input_connection not in self.inputs
         self.inputs.append(input_connection)
 
     def add_output(self, output_connection):
@@ -88,7 +88,7 @@ class Layer(object):
         :rtype: None
 
         """
-        assert self.output_connection not in self.outputs
+        assert output_connection not in self.outputs
         self.outputs.append(output_connection)
 
     def input_energy(self, idx):
@@ -229,8 +229,9 @@ class InputLayer(Layer):
 
     def set_state(self, state):
         """
-        set state as the current state of the layer
-        state must be an array of shape (ndims, )
+        set flat_state as the current flat_state of the layer
+        flat_state must be an array of shape (ndims, )
         """
-        assert state.shape == self.state.shape
-        self.state = state.copy()
+        flat_state = np.ravel(state)
+        assert flat_state.shape == self.state.shape
+        self.state = flat_state.copy()

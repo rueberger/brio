@@ -83,8 +83,8 @@ class OjaConnection(Connection):
 
     @overrides(Connection)
     def weight_rule(self):
-        pre_syn_state = self.input_layer.history[-1]
-        post_syn_state = self.output_layer.history[-1]
+        pre_syn_state = self.presynaptic_layer.history[-1]
+        post_syn_state = self.postsynaptic_layer.history[-1]
         delta = np.outer(pre_syn_state, post_syn_state) - (post_syn_state ** 2) * self.weights
         self.weights += self.learning_rate * delta
 
@@ -97,10 +97,10 @@ class FoldiakConnection(Connection):
 
     @overrides(Connection)
     def weight_rule(self):
-        pre_syn_state = self.input_layer.history[-1]
-        post_syn_state = self.output_layer.history[-1]
-        pre_syn_avg_rates = self.input_layer.firing_rates()
-        post_syn_avg_rates = self.output_layer.firing_rates()
+        pre_syn_state = self.presynaptic_layer.history[-1]
+        post_syn_state = self.postsynaptic_layer.history[-1]
+        pre_syn_avg_rates = self.presynaptic_layer.firing_rates()
+        post_syn_avg_rates = self.postsynaptic_layer.firing_rates()
         delta = (np.outer(pre_syn_state, post_syn_state) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates))
         self.weights += self.learning_rate * delta
@@ -115,10 +115,10 @@ class CMConnection(Connection):
 
     @overrides(Connection)
     def weight_rule(self):
-        pre_syn_state = self.input_layer.history[-1]
-        post_syn_state = self.output_layer.history[-1]
-        pre_syn_avg_rates = self.input_layer.firing_rates()
-        post_syn_avg_rates = self.output_layer.firing_rates()
+        pre_syn_state = self.presynaptic_layer.history[-1]
+        post_syn_state = self.postsynaptic_layer.history[-1]
+        pre_syn_avg_rates = self.presynaptic_layer.firing_rates()
+        post_syn_avg_rates = self.postsynaptic_layer.firing_rates()
         delta = (np.outer(pre_syn_state, post_syn_state) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates)) * (1 + self.weights)
         self.weights += self.learning_rate * delta

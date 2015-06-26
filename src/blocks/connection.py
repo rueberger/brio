@@ -21,7 +21,7 @@ class Connection(object):
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.learning_rate_multiplier = learning_rate_multiplier
 
-    def __weight_rule(self):
+    def weight_rule(self):
         """ Local update rule for the weights in this connection
         Must be implemented by inheriting class
 
@@ -36,7 +36,7 @@ class Connection(object):
 
         :returns: None
         """
-        self.__weight_rule()
+        self.weight_rule()
         if self.presynaptic_layer.ltype.constrain_weights:
             self.__impose_constraint()
 
@@ -74,7 +74,7 @@ class Connection(object):
         self.weights[out_of_bounds_idx] = 0
 
 
-class OjaConnection(object):
+class OjaConnection(Connection):
     """
     Connection class that uses Oja's rule to iteratively update the weights
     """
@@ -82,13 +82,13 @@ class OjaConnection(object):
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
-    def __weight_rule(self):
+    def weight_rule(self):
         pre_syn_state = self.input_layer.history[-1]
         post_syn_state = self.output_layer.history[-1]
         delta = np.outer(pre_syn_state, post_syn_state) - (post_syn_state ** 2) * self.weights
         self.weights += self.learning_rate * delta
 
-class FoldiakConnection(object):
+class FoldiakConnection(Connection):
     """
     Connection class that uses Foldiak's rule to iteratively update the weights
     """
@@ -96,7 +96,7 @@ class FoldiakConnection(object):
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
-    def __weight_rule(self):
+    def weight_rule(self):
         pre_syn_state = self.input_layer.history[-1]
         post_syn_state = self.output_layer.history[-1]
         pre_syn_avg_rates = self.input_layer.firing_rates()
@@ -105,7 +105,7 @@ class FoldiakConnection(object):
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates))
         self.weights += self.learning_rate * delta
 
-class CMConnection(object):
+class CMConnection(Connection):
     """
     Connection class that uses the Correlation Measuring rule to iteratively update the weights
     """
@@ -114,7 +114,7 @@ class CMConnection(object):
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
-    def __weight_rule(self):
+    def weight_rule(self):
         pre_syn_state = self.input_layer.history[-1]
         post_syn_state = self.output_layer.history[-1]
         pre_syn_avg_rates = self.input_layer.firing_rates()

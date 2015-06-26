@@ -120,7 +120,7 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        time_constant = 1./ network.presentations
+        time_constant = 1./ network.params.presentations
         normalizing_constant = (np.sqrt(np.pi) /  (2 * time_constant))
         self.avg_weighting = normalizing_constant * np.exp(
             - time_constant * np.arange(2 * self.max_history_length))

@@ -21,10 +21,15 @@ class Network(object):
            network for each stimulus. For async networks
         """
         self.layers = layers
+        self.__check_layers()
+        self.__set_parentage()
+        self.__find_connections()
         self.params = params
         self.__check_layers()
         self.node_idx = np.arange(np.sum([l.n_dims for l in layers[1:]]))
         self.idx_to_layer = self.__build_layer_dict()
+
+
 
     def run_network(self, stimulus):
         """ Presents the stimulus to the network
@@ -43,6 +48,7 @@ class Network(object):
         """ Checks that the input layer is the first element of layers
           and that all other layers have inputs and outputs (except for possibly the output layer)
         """
+        # also check type of input layer
         assert len(self.layers[0].inputs) == 0
         assert len(self.layers[0].outputs) != 0
         for layer in self.layers[1:-1]:

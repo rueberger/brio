@@ -20,4 +20,4 @@ def patch_generator(images, patch_size, n_patches=1000):
         hgt_idx = np.random.randint(height_max_draw)
         wdt_idx = np.random.randint(width_max_draw)
         img_idx = np.random.randint(n_imgs)
-        yield images[hgt_idx, wdt_idx, img_idx]
+        yield images[hgt_idx : hgt_idx + patch_size, wdt_idx : wdt_idx + patch_size, img_idx]

@@ -153,7 +153,7 @@ class Layer(object):
         :returns: weighted firing rates
         :rtype: float array
         """
-        rectified_hist = (self.history[:self.max_history_length] + 1)
+        rectified_hist = (np.array(self.history[:self.max_history_length]) + 1)
         return np.sum(rectified_hist, * self.avg_weighting, axis=0)
 
 

@@ -28,6 +28,20 @@ class Network(object):
         self.idx_to_layer = self.__build_layer_dict()
         self.__set_parentage()
 
+    def train(self, stimulus_generator):
+        """ Trains the network on the generated stimulus
+        Reports progress
+
+        :param stimulus_generator: a generator object. calling next on this generator must return
+          an array that can be flatted to the shape of the input layer
+        :returns: None
+        :rtype: None
+        """
+        for idx, stimulus in enumerate(stimulus_generator):
+            if idx % 25 == 0:
+                print "Now training on stimulus number {}".format(idx)
+            self.run_network(stimulus)
+
 
 
     def run_network(self, stimulus):

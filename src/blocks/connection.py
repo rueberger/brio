@@ -4,6 +4,7 @@ Connection: Base class for connections. Defines interface and shared methods
 """
 from misc.utils import overrides
 import numpy as np
+np.seterr('raise')
 
 class Connection(object):
     """

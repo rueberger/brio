@@ -8,6 +8,7 @@ BoltzmannMachineLayer: Layer subclass with a Boltzmann Machine activation functi
 from misc.utils import overrides
 from blocks.aux import LayerType
 import numpy as np
+np.seterr('raise')
 
 # to do: add a synchronous layer (eg for rbms)
 
@@ -152,7 +153,8 @@ class Layer(object):
         :returns: weighted firing rates
         :rtype: float array
         """
-        return np.sum(self.history[:self.max_history_length] * self.avg_weighting, axis=0)
+        rectified_hist = (self.history[:self.max_history_length] + 1)
+        return np.sum(rectified_hist, * self.avg_weighting, axis=0)
 
 
 class BoltzmannMachineLayer(Layer):
@@ -234,6 +236,7 @@ class InputLayer(Layer):
         set flat_state as the current flat_state of the layer
         flat_state must be an array of shape (ndims, )
         """
+        # will want to record input data shape for plotting purposesx
         flat_state = np.ravel(state)
         assert flat_state.shape == self.state.shape
         self.state = flat_state.copy()

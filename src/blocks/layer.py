@@ -22,7 +22,9 @@ class Layer(object):
 
     def __init__(self, n_dims, ltype=LayerType.unconstrained):
         self.n_dims = n_dims
+        # randomly initialize state
         self.state = np.ones(n_dims)
+        self.state[np.random.random(n_dims) < 5] = 0
         # to do allow for specification of init method
         self.bias = np.zeros(n_dims)
         self.inputs = []
@@ -38,7 +40,7 @@ class Layer(object):
 
         :param energy: the input energy to a unit.
            Generally the weighted outputs of units in the previous layer
-        :returns: the updated state of the unit in {-1, 1}
+        :returns: the updated state of the unit in {0, 1}
         :rtype: int
         """
         raise NotImplementedError
@@ -158,7 +160,7 @@ class Layer(object):
         :returns: weighted firing rates
         :rtype: float array
         """
-        rectified_hist = (np.array(self.history[:self.max_history_length]) + 1) / 2
+        rectified_hist = np.array(self.history[:self.max_history_length])
         return np.sum(rectified_hist * self.avg_weighting, axis=0)
 
     def __repr__(self):
@@ -185,13 +187,13 @@ class BoltzmannMachineLayer(Layer):
         if energy > 200:
             return 1
         elif energy < -200:
-            return -1
+            return 0
         else:
             p_on = 1. / (1 + np.exp(-energy))
             if np.random.random() < p_on:
                 return 1
             else:
-                return -1
+                return 0
 
     @overrides(Layer)
     def update_state(self, idx):
@@ -226,7 +228,7 @@ class PerceptronLayer(Layer):
         if energy > 0:
             return 1
         else:
-            return -1
+            return 0
 
     @overrides(Layer)
     def update_state(self, idx):

@@ -126,8 +126,8 @@ class CMConnection(Connection):
 
     @overrides(Connection)
     def weight_rule(self):
-        pre_syn_state = (self.presynaptic_layer.history[0] + 1) / 2
-        post_syn_state = (self.postsynaptic_layer.history[0] + 1) / 2
+        pre_syn_state = self.presynaptic_layer.history[0]
+        post_syn_state = self.postsynaptic_layer.history[0]
         pre_syn_avg_rates = self.presynaptic_layer.firing_rates()
         post_syn_avg_rates = self.postsynaptic_layer.firing_rates()
         delta = (np.outer(pre_syn_state, post_syn_state) -

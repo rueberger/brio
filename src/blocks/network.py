@@ -41,7 +41,6 @@ class Network(object):
         :rtype: [array]
 
         """
-        # changed my emacs bindings recently... still getting used to them
         activations = []
         stim = []
         for idx, stimulus in enumerate(stimulus_generator):
@@ -52,9 +51,12 @@ class Network(object):
             # what this does is append the idx of the current stimulus to activations
             #  if the neuron at that idx fired in response to this stimulus
             #  (using binary neurons in {0, 1})
-            activations.append(self.layers[layer_idx] * idx)
+            activations.append(self.layers[layer_idx].state * idx)
         stas = []
-        for activation_idx in activations:
+        filt_activations = np.array(activations).T
+
+        for idx in xrange(self.layers[layer_idx].n_dims):
+            activation_idx = filt_activations[(filt_activations[idx] != 0)]
             sta_at_idx = np.mean(stim[activation_idx], axis=0)
             stas.append(sta_at_idx)
         return stas

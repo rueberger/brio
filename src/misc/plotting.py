@@ -4,8 +4,9 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+plt.ion()
 
-def plot_receptive_fields(network, layer_idx=0):
+def plot_receptive_fields(weights):
     """ Make a plot of the receptive field of network
     by default the receptive field of the input layer is shown
 
@@ -15,4 +16,4 @@ def plot_receptive_fields(network, layer_idx=0):
     :rtype: None
     """
     seamap = mpl.colors.ListedColormap(sns.cubehelix_palette(256, start=.5, rot=-.75))
-    plt.imshow(network.layers[0].outputs[0].weights[:, 0].reshape(11, 11), cmap=seamap)
+    plt.imshow(weights, cmap=seamap)

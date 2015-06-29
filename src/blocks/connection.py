@@ -80,7 +80,7 @@ class Connection(object):
         :returns: descriptive string
         :rtype: string
         """
-        return "{}: In: {}; Out: {}".format(self.__name__,
+        return "{}: In: {}; Out: {}".format(type(self).__name__,
                                             self.presynaptic_layer.__str__(),
                                             self.postsynaptic_layer.__str__())
 

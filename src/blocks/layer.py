@@ -92,7 +92,9 @@ class Layer(object):
 
         """
         assert output_connection not in self.outputs
-        self.outputs.append(output_connection)
+        # avoids double counting for recurrent connections
+        if output_connection not in self.inputs:
+            self.outputs.append(output_connection)
 
     def input_energy(self, idx):
         """
@@ -174,12 +176,16 @@ class BoltzmannMachineLayer(Layer):
         :returns: the updated state of the unit in {-1, 1}
         :rtype: int
         """
-
-        p_on = 1. / (1 + np.exp(-energy))
-        if np.random.random() < p_on:
+        if energy > 200:
             return 1
-        else:
+        elif energy < -200:
             return -1
+        else:
+            p_on = 1. / (1 + np.exp(-energy))
+            if np.random.random() < p_on:
+                return 1
+            else:
+                return -1
 
     @overrides(Layer)
     def update_state(self, idx):

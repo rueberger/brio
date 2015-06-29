@@ -24,7 +24,7 @@ class Layer(object):
         self.n_dims = n_dims
         self.state = np.ones(n_dims)
         # to do allow for specification of init method
-        self.bias = np.random.randn(n_dims)
+        self.bias = np.zeros(n_dims)
         self.inputs = []
         self.outputs = []
         self.history = []
@@ -64,7 +64,9 @@ class Layer(object):
         :rtype: None
         """
         # to do add a non windowed mean to see how this does
-        delta = self.firing_rates() - self.target_firing_rate
+        # is this the right sign convention for all layers?
+        # delta = self.firing_rates() - self.target_firing_rate
+        delta = self.target_firing_rate - self.firing_rates()
         self.bias += self.learning_rate * delta
 
 
@@ -121,12 +123,13 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        time_constant = 1./ network.params.presentations
-        normalizing_constant = (np.sqrt(np.pi) /  (2 * time_constant))
+        # time_constant = 1./ network.params.presentations
+        time_constant = 1./ (network.params.presentations * 25)
         self.max_history_length = network.params.layer_history_length
         # I don't think normalization matters
-        self.avg_weighting = normalizing_constant * np.exp(
+        self.avg_weighting = np.exp(
             - time_constant * np.arange(self.max_history_length))[:, np.newaxis]
+        self.avg_weighting *= 1. / (np.sum(self.avg_weighting))
         self.target_firing_rate = (self.ltype.firing_rate_multiplier *
                                    network.params.baseline_firing_rate)
         self.learning_rate = network.params.bias_learning_rate
@@ -140,7 +143,7 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        self.history.insert(0, self.state)
+        self.history.insert(0, self.state.copy())
         if len(self.history) > 2 * self.max_history_length:
             self.history = self.history[:self.max_history_length]
 
@@ -153,8 +156,8 @@ class Layer(object):
         :returns: weighted firing rates
         :rtype: float array
         """
-        rectified_hist = (np.array(self.history[:self.max_history_length]) + 1)
-        return np.sum(rectified_hist, * self.avg_weighting, axis=0)
+        rectified_hist = (np.array(self.history[:self.max_history_length]) + 1) / 2
+        return np.sum(rectified_hist * self.avg_weighting, axis=0)
 
 
 class BoltzmannMachineLayer(Layer):

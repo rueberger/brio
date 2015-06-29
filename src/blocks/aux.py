@@ -37,10 +37,10 @@ class NetworkParams(object):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.008,
+    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.025,
                  weight_learning_rate=0.028, presentations=5):
         self.presentations = presentations
         self.baseline_firing_rate = baseline_firing_rate
         self.bias_learning_rate = bias_learning_rate
         self.weight_learning_rate = weight_learning_rate
-        self.layer_history_length = 500
+        self.layer_history_length = 100

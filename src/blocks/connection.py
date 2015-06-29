@@ -16,7 +16,7 @@ class Connection(object):
                  learning_rate_multiplier=1):
         self.presynaptic_layer = input_layer
         self.postsynaptic_layer = output_layer
-        self.weights = np.random.randn(input_layer.n_dims, output_layer.n_dims)
+        self.weights = np.random.randn(input_layer.n_dims, output_layer.n_dims) * 0.01
         self.postsynaptic_layer.add_input(self)
         self.presynaptic_layer.add_output(self)
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier

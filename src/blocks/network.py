@@ -38,7 +38,7 @@ class Network(object):
         :rtype: None
         """
         for idx, stimulus in enumerate(stimulus_generator):
-            if idx % 25 == 0 and idx > 500:
+            if idx % 25 == 0 and idx > 100:
                 print "Now training on stimulus number {}".format(idx)
                 print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
             self.run_network(stimulus)

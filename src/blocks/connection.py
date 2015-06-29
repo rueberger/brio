@@ -131,5 +131,5 @@ class CMConnection(Connection):
         pre_syn_avg_rates = self.presynaptic_layer.firing_rates()
         post_syn_avg_rates = self.postsynaptic_layer.firing_rates()
         delta = (np.outer(pre_syn_state, post_syn_state) -
-                 np.outer(pre_syn_avg_rates, post_syn_avg_rates)) * (1 + self.weights)
+                 (np.outer(pre_syn_avg_rates, post_syn_avg_rates) * (1 + self.weights)))
         self.weights += self.learning_rate * delta

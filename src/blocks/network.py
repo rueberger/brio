@@ -28,6 +28,19 @@ class Network(object):
         self.idx_to_layer = self.__build_layer_dict()
         self.__set_parentage()
 
+    def compute_sta(self, stimulus_generator):
+        """ Computes the spike triggered averages for the layers
+
+        :param stimulus_generator: a generator object. calling next on this generator must return
+          an array that can be flatted to the shape of the input layer
+        :returns: a list containing the spike triggered averages for each layer
+          list contains one array for each layer, in the same order self.layers
+          averages are of the format (input_n_dims, layer_n_dims)
+        :rtype: [array]
+        """
+        pass
+
+
     def train(self, stimulus_generator):
         """ Trains the network on the generated stimulus
         Reports progress

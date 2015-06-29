@@ -28,18 +28,36 @@ class Network(object):
         self.idx_to_layer = self.__build_layer_dict()
         self.__set_parentage()
 
-    def compute_sta(self, stimulus_generator):
+    def compute_sta(self, stimulus_generator, layer_idx, num_stim_to_avg=250):
         """ Computes the spike triggered averages for the layers
 
         :param stimulus_generator: a generator object. calling next on this generator must return
           an array that can be flatted to the shape of the input layer
+        :param layer: idx to layer to compute STA's for
+        :param num_stim_to_avg:
         :returns: a list containing the spike triggered averages for each layer
           list contains one array for each layer, in the same order self.layers
           averages are of the format (input_n_dims, layer_n_dims)
         :rtype: [array]
-        """
-        pass
 
+        """
+        # changed my emacs bindings recently... still getting used to them
+        activations = []
+        stim = []
+        for idx, stimulus in enumerate(stimulus_generator):
+            if idx == num_stim_to_avg:
+                break
+            stim.append(stimulus)
+            self.update_network(stimulus)
+            # what this does is append the idx of the current stimulus to activations
+            #  if the neuron at that idx fired in response to this stimulus
+            #  (using binary neurons in {0, 1})
+            activations.append(self.layers[layer_idx] * idx)
+        stas = []
+        for activation_idx in activations:
+            sta_at_idx = np.mean(stim[activation_idx], axis=0)
+            stas.append(sta_at_idx)
+        return stas
 
     def train(self, stimulus_generator):
         """ Trains the network on the generated stimulus

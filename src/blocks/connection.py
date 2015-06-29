@@ -74,7 +74,7 @@ class Connection(object):
         out_of_bounds_idx = (self.weights < 0)
         self.weights[out_of_bounds_idx] = 0
 
-    def __str__(self):
+    def __repr__(self):
         """ overrides str for more useful info about connections
 
         :returns: descriptive string

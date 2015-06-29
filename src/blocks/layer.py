@@ -161,7 +161,7 @@ class Layer(object):
         rectified_hist = (np.array(self.history[:self.max_history_length]) + 1) / 2
         return np.sum(rectified_hist * self.avg_weighting, axis=0)
 
-    def __str__(self):
+    def __repr__(self):
         """
         A nicer string for this class
         """

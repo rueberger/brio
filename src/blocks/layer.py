@@ -161,6 +161,12 @@ class Layer(object):
         rectified_hist = (np.array(self.history[:self.max_history_length]) + 1) / 2
         return np.sum(rectified_hist * self.avg_weighting, axis=0)
 
+    def __str__(self):
+        """
+        A nicer string for this class
+        """
+        return "{} layer of size {}".format(self.ltype.name, self.n_dims)
+
 
 class BoltzmannMachineLayer(Layer):
     """

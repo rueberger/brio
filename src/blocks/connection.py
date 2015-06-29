@@ -12,15 +12,13 @@ class Connection(object):
     holds network weights
     """
 
-    def __init__(self, input_layer, output_layer,
-                 learning_rate_multiplier=1):
+    def __init__(self, input_layer, output_layer):
         self.presynaptic_layer = input_layer
         self.postsynaptic_layer = output_layer
         self.weights = np.random.randn(input_layer.n_dims, output_layer.n_dims) * 0.01
         self.postsynaptic_layer.add_input(self)
         self.presynaptic_layer.add_output(self)
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
-        self.learning_rate_multiplier = learning_rate_multiplier
 
     def weight_rule(self):
         """ Local update rule for the weights in this connection
@@ -64,8 +62,10 @@ class Connection(object):
         :returns: None
         :rtype: None
         """
-
-        self.learning_rate = network.params.weight_learning_rate * self.learning_rate_multiplier
+        self.learning_rate = network.params.weight_learning_rate
+        # TEMP FIX:
+#        if self.presynaptic_layer == self.postsynaptic_layer:
+#            self.learning_rate = 0.06
 
     def __impose_constraint(self):
         """
@@ -73,6 +73,16 @@ class Connection(object):
         """
         out_of_bounds_idx = (self.weights < 0)
         self.weights[out_of_bounds_idx] = 0
+
+    def __str__(self):
+        """ overrides str for more useful info about connections
+
+        :returns: descriptive string
+        :rtype: string
+        """
+        return "{}: In: {}; Out: {}".format(self.__name__,
+                                            self.presynaptic_layer.__str__(),
+                                            self.postsynaptic_layer.__str__())
 
 
 class OjaConnection(Connection):

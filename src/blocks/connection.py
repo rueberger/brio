@@ -45,7 +45,6 @@ class Connection(object):
         """
         return np.sum(self.weight_multiplier * self.weights[:, idx] * self.presynaptic_layer.state)
 
-    # to do: better name needed: use pre and post synaptic
     def energy_shadow(self, input_idx):
         """
         return the energy of the output states 'shadowed' by the input unit
@@ -63,9 +62,6 @@ class Connection(object):
         :rtype: None
         """
         self.learning_rate = network.params.weight_learning_rate
-        # TEMP FIX:
-#        if self.presynaptic_layer == self.postsynaptic_layer:
-#            self.learning_rate = 0.06
 
     def __impose_constraint(self):
         """

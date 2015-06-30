@@ -20,7 +20,7 @@ def plot_receptive_fields(net, layer_idx, unit_idx, stimulus_generator):
     :rtype: None
 
     """
-    receptive_field = net.compute_sta(stimulus_generator, layer_idx)[unit_idx]
+    receptive_field = net.compute_sta(stimulus_generator, layer_idx, 2000)[unit_idx]
     seamap = mpl.colors.ListedColormap(sns.cubehelix_palette(256, start=.5, rot=-.75))
     plt.imshow(receptive_field, cmap=seamap)
 

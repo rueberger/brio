@@ -19,6 +19,7 @@ class Connection(object):
         self.postsynaptic_layer.add_input(self)
         self.presynaptic_layer.add_output(self)
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
+        self.__impose_constraint()
 
     def weight_rule(self):
         """ Local update rule for the weights in this connection

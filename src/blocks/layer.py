@@ -257,3 +257,18 @@ class InputLayer(Layer):
         flat_state = np.ravel(state)
         assert flat_state.shape == self.state.shape
         self.state = flat_state.copy()
+
+class RasterInputLayer(Layer):
+    """
+    An input layer that contains methods to rasterize scalar variables into spike trains
+    The range of the scalar variable is partitioned into equal bins from specified bounds and n_dims
+    Each bin is represented by a single neuron with independent poisson spiking behavior
+    For each stimulus value, the rate at which a particular neuron fires is computed as the integral
+       of a gaussian centered around the stimulus value across the bin that neuron codes for
+    """
+
+    def __init__(self, n_dims, ltype=LayerType.unconstrained,
+                 min_range, max_range):
+        super(RasterInputLayer, self).__init__(n_dims, ltype)
+        self.min_range = min_range
+        self.max_range = max_range

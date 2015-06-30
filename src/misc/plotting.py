@@ -18,11 +18,14 @@ def weight_slideshow(weights):
     :returns: None
     :rtype: None
     """
-    side_length = np.sqrt(weights.shape[0])
+    fig = plt.figure()
+    side_length = np.sqrt(weights.shape[1])
     assert side_length == int(side_length)
     for idx in xrange(weights.shape[0]):
+        plt.clf()
         plt.imshow(weights[idx].reshape(side_length, side_length), cmap=SEAMAP)
-        time.sleep(.5)
+        fig.canvas.draw()
+        time.sleep(.1)
 
 
 def plot_receptive_fields(net, layer_idx, unit_idx, stimulus_generator):

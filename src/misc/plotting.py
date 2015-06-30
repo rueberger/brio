@@ -1,12 +1,29 @@
 """
  This model contains various plotting utilities
 """
+import time
 import itertools
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 plt.ion()
+
+SEAMAP = mpl.colors.ListedColormap(sns.cubehelix_palette(256, start=.5, rot=-.75))
+
+def weight_slideshow(weights):
+    """ slideshow of weights. must be able to formated as a square
+
+    :param weights: displays rows. column dimension must be a perfect square
+    :returns: None
+    :rtype: None
+    """
+    side_length = np.sqrt(weights.shape[0])
+    assert side_length == int(side_length)
+    for idx in xrange(weights.shape[0]):
+        plt.imshow(weights[idx].reshape(side_length, side_length), cmap=SEAMAP)
+        time.sleep(.5)
+
 
 def plot_receptive_fields(net, layer_idx, unit_idx, stimulus_generator):
     """ Make a plot of the receptive field of network
@@ -20,9 +37,8 @@ def plot_receptive_fields(net, layer_idx, unit_idx, stimulus_generator):
     :rtype: None
 
     """
-    receptive_field = net.compute_sta(stimulus_generator, layer_idx, 2000)[unit_idx]
-    seamap = mpl.colors.ListedColormap(sns.cubehelix_palette(256, start=.5, rot=-.75))
-    plt.imshow(receptive_field, cmap=seamap)
+    receptive_field = net.compute_sta(stimulus_generator, layer_idx, 5000)[unit_idx]
+    plt.imshow(receptive_field, cmap=SEAMAP)
 
 def concat_receptive_fields(net, layer_idx, stimulus_generator):
     """ concatenate the receptive fields of each neuron together into a block array

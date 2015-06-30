@@ -41,6 +41,7 @@ class Network(object):
         :rtype: [array]
 
         """
+        stas = []
         activations = []
         stim = []
         for idx, stimulus in enumerate(stimulus_generator):
@@ -48,15 +49,11 @@ class Network(object):
                 break
             stim.append(stimulus)
             self.update_network(stimulus)
-            # what this does is append the idx of the current stimulus to activations
-            #  if the neuron at that idx fired in response to this stimulus
-            #  (using binary neurons in {0, 1})
             activations.append(self.layers[layer_idx].state * idx)
-        stas = []
-        filt_activations = np.array(activations).T
-
+        filt_activations = np.array(activations, dtype=np.int32).T
+        stim = np.array(stim)
         for idx in xrange(self.layers[layer_idx].n_dims):
-            activation_idx = filt_activations[(filt_activations[idx] != 0)]
+            activation_idx = np.where(filt_activations[idx] != 0)[0]
             sta_at_idx = np.mean(stim[activation_idx], axis=0)
             stas.append(sta_at_idx)
         return stas

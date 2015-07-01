@@ -267,8 +267,8 @@ class RasterInputLayer(Layer):
        of a gaussian centered around the stimulus value across the bin that neuron codes for
     """
 
-    def __init__(self, n_dims, ltype=LayerType.unconstrained,
-                 min_range, max_range):
+    def __init__(self, n_dims, min_range, max_range,
+                 ltype=LayerType.unconstrained):
         super(RasterInputLayer, self).__init__(n_dims, ltype)
         assert min_range < max_range
         self.min_range = min_range

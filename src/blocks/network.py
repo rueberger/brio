@@ -27,6 +27,7 @@ class Network(object):
         self.node_idx = np.arange(np.sum([l.n_dims for l in layers[1:]]))
         self.idx_to_layer = self.__build_layer_dict()
         self.__set_parentage()
+        self.t_counter = 0
 
     def compute_sta(self, stimulus_generator, layer_idx, num_stim_to_avg=250):
         """ Computes the spike triggered averages for the layers
@@ -58,7 +59,17 @@ class Network(object):
             stas.append(sta_at_idx)
         return stas
 
-    def train(self, stimulus_generator):
+    def describe_progress(self):
+        """ prints some information on how the training is progressing
+
+        :returns: None
+        :rtype: None
+        """
+        if self.t_counter % 25 == 0 and self.t_counter > self.params.layer_history_length:
+            print "Training iteration: {}".format(self.t_counter)
+            print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
+
+    def train(self, stimulus_generator, verbose=True):
         """ Trains the network on the generated stimulus
         Reports progress
 
@@ -67,15 +78,13 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        for idx, stimulus in enumerate(stimulus_generator):
-            if idx % 25 == 0 and idx > 100:
-                print "Now training on stimulus number {}".format(idx)
-                print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
+        for stimulus in stimulus_generator:
             self.run_network(stimulus)
+            if verbose:
+                self.describe_progress()
+            self.t_counter += 1
 
-
-
-    def run_network(self, stimulus):
+    def run_network(self, stimulus, verbose=True):
         """ Presents the stimulus to the network
         Updates the state and performs a training iteration
         This is the method to call from external code
@@ -87,9 +96,11 @@ class Network(object):
         :rtype: None
         """
         self.update_network(stimulus)
-        # look to see if the layers have accumulated sufficient history
         if len(self.layers[0].history) >= self.params.layer_history_length:
             self.training_iteration()
+        if verbose:
+            self.describe_progress()
+        self.t_counter += 1
 
     def update_network(self, stimulus):
         """ Present stimulus to the network and update the state

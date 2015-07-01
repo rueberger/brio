@@ -270,5 +270,40 @@ class RasterInputLayer(Layer):
     def __init__(self, n_dims, ltype=LayerType.unconstrained,
                  min_range, max_range):
         super(RasterInputLayer, self).__init__(n_dims, ltype)
+        assert min_range < max_range
         self.min_range = min_range
         self.max_range = max_range
+        self.sample_points = np.linspace(min_range, max_range, n_dims)
+        # current variance of gaussian
+        self.var = 1
+        # overall scale of gaussian. 1 is normalized
+        self.scale = 1
+        # how long in each time bin
+        self.timestep = 0.1
+        # also need to represent cooling schedule somehow
+
+    def set_state(self, scalar_value):
+        """ sets the state of this layer probabilistically according to the scheme
+          described in the class header doc
+
+        :param scalar_value: a scalar. must be in (min_range, max_range)
+        :returns:  None
+        :rtype: None
+        """
+        assert self.min_range < scalar_value < self.max_range
+        rates = self.rate_at_points(scalar_value)
+        p_fire_in_bin = 1 - np.exp(rates * self.timestep)
+        self.state = np.zeros(self.n_dims)
+        self.state[(p_fire_in_bin < np.random.random(self.n_dims))] = np.ones(self.n_dims)
+
+
+    def rate_at_points(self, scalar_value):
+        """ returns an array with the rates at each sample point
+
+        :param scalar_value: the value being coded for
+        :returns: rate array
+        :rtype: array
+
+        """
+        scale_cons = self.scale / np.sqrt(2 * self.var * np.pi)
+        return scale_cons * np.exp(- ((self.sample_points - scalar_value) ** 2) / (2 * self.var))

@@ -279,7 +279,7 @@ class RasterInputLayer(Layer):
         # overall scale of gaussian. 1 is normalized
         self.scale = 1
         # how long in each time bin
-        self.timestep = 0.1
+        self.timestep = 0.5
         # also need to represent cooling schedule somehow
 
     def set_state(self, scalar_value):
@@ -292,7 +292,7 @@ class RasterInputLayer(Layer):
         """
         assert self.min_range < scalar_value < self.max_range
         rates = self.rate_at_points(scalar_value)
-        p_fire_in_bin = 1 - np.exp(rates * self.timestep)
+        p_fire_in_bin = 1 - np.exp(-rates * self.timestep)
         firing_idx = (np.random.random(self.n_dims) < p_fire_in_bin)
         self.state = np.zeros(self.n_dims)
         self.state[firing_idx] = np.ones(self.n_dims)[firing_idx]
@@ -308,3 +308,10 @@ class RasterInputLayer(Layer):
         """
         scale_cons = self.scale / np.sqrt(2 * self.var * np.pi)
         return scale_cons * np.exp(- ((self.sample_points - scalar_value) ** 2) / (2 * self.var))
+
+    def avg_activation(self, scalar_value):
+        hist = []
+        for _ in xrange(500):
+            self.set_state(scalar_value)
+            hist.append(self.state)
+        return np.mean(hist, axis=0)

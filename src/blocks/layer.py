@@ -293,8 +293,9 @@ class RasterInputLayer(Layer):
         assert self.min_range < scalar_value < self.max_range
         rates = self.rate_at_points(scalar_value)
         p_fire_in_bin = 1 - np.exp(rates * self.timestep)
+        firing_idx = (np.random.random(self.n_dims) < p_fire_in_bin)
         self.state = np.zeros(self.n_dims)
-        self.state[(p_fire_in_bin < np.random.random(self.n_dims))] = np.ones(self.n_dims)
+        self.state[firing_idx] = np.ones(self.n_dims)[firing_idx]
 
 
     def rate_at_points(self, scalar_value):

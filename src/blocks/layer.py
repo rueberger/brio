@@ -277,7 +277,7 @@ class RasterInputLayer(Layer):
         # current variance of gaussian
         self.var = 1
         # overall scale of gaussian. 1 is normalized
-        self.scale = 1
+        self.scale = 10
         # how long in each time bin
         self.timestep = 0.5
         # also need to represent cooling schedule somehow
@@ -310,8 +310,15 @@ class RasterInputLayer(Layer):
         return scale_cons * np.exp(- ((self.sample_points - scalar_value) ** 2) / (2 * self.var))
 
     def avg_activation(self, scalar_value):
+        """ returns an array with the average activation of each neuron
+        for testing purposes
+
+        :param scalar_value: the value to test for activation for
+        :returns: array of average activation
+        :rtype: array
+        """
         hist = []
-        for _ in xrange(500):
+        for _ in xrange(1000):
             self.set_state(scalar_value)
             hist.append(self.state)
         return np.mean(hist, axis=0)

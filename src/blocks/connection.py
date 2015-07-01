@@ -130,3 +130,18 @@ class CMConnection(Connection):
         delta = (np.outer(pre_syn_state, post_syn_state) -
                  (np.outer(pre_syn_avg_rates, post_syn_avg_rates) * (1 + self.weights)))
         self.weights += self.learning_rate * delta
+
+class ConstantConnection(Connection):
+    """
+    A connection class with no learning rule
+    Intended to be use as simple feedforward weights from the input layer to the first layer
+    """
+
+    def __init__(self, input_layer, output_layer):
+        super(ConstantConnection, self).__init__(input_layer, output_layer)
+        assert input_layer.n_dims == output_layer.n_dims
+        self.weights = np.diag(np.ones(input_layer.n_dims)
+
+    @overrides(Connection)
+    def weight_rule(self):
+        pass

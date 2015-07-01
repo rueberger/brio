@@ -271,8 +271,8 @@ class RasterInputLayer(Layer):
                  ltype=LayerType.unconstrained):
         super(RasterInputLayer, self).__init__(n_dims, ltype)
         assert min_range < max_range
-        self.min_range = min_range
-        self.max_range = max_range
+        self.lower_bnd = min_range
+        self.upper_bnd = max_range
         self.sample_points = np.linspace(min_range, max_range, n_dims)
         # dviding by 1E4 produces a pretty wide distribution of rates
         # probably a good starting point for
@@ -292,7 +292,7 @@ class RasterInputLayer(Layer):
         :returns:  None
         :rtype: None
         """
-        assert self.min_range < scalar_value < self.max_range
+        assert self.lower_bnd < scalar_value < self.upper_bnd
         rates = self.rate_at_points(scalar_value)
         p_fire_in_bin = 1 - np.exp(-rates * self.timestep)
         firing_idx = (np.random.random(self.n_dims) < p_fire_in_bin)

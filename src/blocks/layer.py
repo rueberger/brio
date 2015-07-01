@@ -274,10 +274,12 @@ class RasterInputLayer(Layer):
         self.min_range = min_range
         self.max_range = max_range
         self.sample_points = np.linspace(min_range, max_range, n_dims)
+        # dviding by 1E4 produces a pretty wide distribution of rates
+        # probably a good starting point for
         # current variance of gaussian
-        self.var = 1
+        self.var = (max_range - min_range) / 1E6
         # overall scale of gaussian. 1 is normalized
-        self.scale = 10
+        self.scale = 3
         # how long in each time bin
         self.timestep = 0.5
         # also need to represent cooling schedule somehow
@@ -306,8 +308,11 @@ class RasterInputLayer(Layer):
         :rtype: array
 
         """
-        scale_cons = self.scale / np.sqrt(2 * self.var * np.pi)
-        return scale_cons * np.exp(- ((self.sample_points - scalar_value) ** 2) / (2 * self.var))
+        # right now not normalizing at all which means that larger variance vastly increases
+        # firing rate of whole population
+        # normalizing the gaussian will not translate to keeping constant firing rates across gaussian
+        # need to normalize wrt the poisson cdf
+        return self.scale * np.exp(- ((self.sample_points - scalar_value) ** 2) / (2 * self.var))
 
     def avg_activation(self, scalar_value):
         """ returns an array with the average activation of each neuron

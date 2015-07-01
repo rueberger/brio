@@ -140,7 +140,7 @@ class ConstantConnection(Connection):
     def __init__(self, input_layer, output_layer):
         super(ConstantConnection, self).__init__(input_layer, output_layer)
         assert input_layer.n_dims == output_layer.n_dims
-        self.weights = np.diag(np.ones(input_layer.n_dims)
+        self.weights = np.diag(np.ones(input_layer.n_dims))
 
     @overrides(Connection)
     def weight_rule(self):

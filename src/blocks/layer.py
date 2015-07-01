@@ -128,7 +128,7 @@ class Layer(object):
         :rtype: None
         """
         # time_constant = 1./ network.params.presentations
-        time_constant = 1./ (network.params.presentations * 25)
+        time_constant = 1./ (network.params.presentations * network.params.char_itrs)
         self.max_history_length = network.params.layer_history_length
         # I don't think normalization matters
         self.avg_weighting = np.exp(

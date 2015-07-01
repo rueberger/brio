@@ -65,7 +65,7 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        if self.t_counter % 25 == 0 and self.t_counter > self.params.layer_history_length:
+        if self.t_counter % 100 == 0 and self.t_counter > self.params.layer_history_length:
             print "Training iteration: {}".format(self.t_counter)
             print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
 

@@ -72,3 +72,20 @@ def img_sta(net, n_samples=1E4, img_dim=None):
                                                np.random.uniform(-1, img_dim[1], n_samples))):
         stimuli[idx] = np.outer(gauss(x_idx, x_mean), gauss(y_idx, y_mean))
     return record_responses(net, stimuli)
+
+def auto_sta(net, n_samples=1E4):
+    """ calls either img_sta or scalar_sta depending on input layer type
+
+    :param net: a trained network
+    :param n_samples: the number of samples to base the sta off of
+    :returns: a dictionary of spike triggered averages
+    :rtype: dict((layer_idx, unit_idx): array(sta))
+    """
+    if type(net.layers[0]).__name__ == 'InputLayer':
+        return img_sta(net, n_samples)
+    elif type(net.layers[0]).__name__ == 'RasterInputLayer':
+        return scalar_sta(net, n_samples)
+    else:
+        raise NotImplementedError(
+            "STA method has not been specified for input layer type: {}".format(
+                type(net.layers[0]).__name__))

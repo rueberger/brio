@@ -24,9 +24,9 @@ def scalar_sta(net, n_samples=1E4):
     for sample_idx, scalar in enumerate(samples):
         net.update_network(scalar)
         for l_idx in active_layers:
-            responses[l_idx].append(net.layers[l_idx].state * sample_idx)
+            responses[l_idx - 1].append(net.layers[l_idx].state * sample_idx)
     for l_idx in active_layers:
-        layer_responses = np.array(responses[l_idx]).T
+        layer_responses = np.array(responses[l_idx - 1]).T
         for idx in xrange(net.layers[l_idx].n_dims):
             active_at_sample_idx = np.where(layer_responses[idx] != 0)[0]
             response_dict[(l_idx, idx)] = np.array(samples[active_at_sample_idx])

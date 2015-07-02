@@ -11,7 +11,7 @@ def record_responses(net, stimuli):
     :returns: a dictionary recording the responses of each unit
     :rtype: dict((layer_idx, unit_idx) : array(responses))
     """
-
+    # can run in parallel
     active_layers = range(1, len(net.layers))
     responses = [[] for _ in active_layers]
     response_dict = {}

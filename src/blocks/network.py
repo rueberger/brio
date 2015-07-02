@@ -80,9 +80,6 @@ class Network(object):
         """
         for stimulus in stimulus_generator:
             self.run_network(stimulus)
-            if verbose:
-                self.describe_progress()
-            self.t_counter += 1
 
     def run_network(self, stimulus, verbose=True):
         """ Presents the stimulus to the network

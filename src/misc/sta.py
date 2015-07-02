@@ -62,7 +62,7 @@ def img_sta(net, n_samples=1E4, img_dim=None):
         assert img_dim[0] * img_dim[1] == net.layers[0].n_dims
 
     def gauss(x_arr, mean):
-        var = np.random.uniform(.5, 1.5)
+        var = np.random.uniform(*var_range)
         return scale * np.exp(- ((x_arr - mean) ** 2) / (2 * var))
 
     stimuli = np.zeros((n_samples, img_dim[0], img_dim[1]))

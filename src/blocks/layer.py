@@ -16,7 +16,7 @@ class Layer(object):
     """
     Base class for network layers.
     Defines the interface for layers and implements some common functionality
-    To use, inheriting classes must override the activation and update_state methods
+    To use, inheriting classes must override the async_activation and async_update methods
     """
     # pylint: disable=too-many-instance-attributes
 
@@ -33,7 +33,7 @@ class Layer(object):
         self.ltype = ltype
 
 
-    def activation(self, energy):
+    def async_activation(self, energy):
         """ The activation function determines the nonlinearity of units in this layer
         Must be implemented by inheriting classes
         Sets the state of a unit for a given input energy
@@ -45,7 +45,7 @@ class Layer(object):
         """
         raise NotImplementedError
 
-    def update_state(self, idx):
+    def async_update(self, idx):
         """ Update the unit at idx by summing the weighted contributions of its input units
         and running the activation function
         Must be implemented by inheriting class
@@ -172,11 +172,11 @@ class Layer(object):
 
 class BoltzmannMachineLayer(Layer):
     """
-    Implements the Boltzman Machine activation function
+    Implements the Boltzman Machine async_activation function
     """
 
     @overrides(Layer)
-    def activation(self, energy):
+    def async_activation(self, energy):
         """ The Boltzmann Machine activation function
         Returns the state of the unit selected stochastically from a sigmoid
 
@@ -196,7 +196,7 @@ class BoltzmannMachineLayer(Layer):
                 return 0
 
     @overrides(Layer)
-    def update_state(self, idx):
+    def async_update(self, idx):
         """ Updates the state of the unit at idx according to the Boltzmann Machine scheme
         Calculates the global energy difference between the unit at idx being up and down
         Sets the unit stochastically according the Boltzmann Machine activation function
@@ -208,7 +208,7 @@ class BoltzmannMachineLayer(Layer):
         e_diff = self.bias[idx]
         e_diff += self.input_energy(idx)
         e_diff += self.output_energy(idx)
-        self.state[idx] = self.activation(e_diff)
+        self.state[idx] = self.async_activation(e_diff)
 
 class PerceptronLayer(Layer):
     """
@@ -216,7 +216,7 @@ class PerceptronLayer(Layer):
     """
 
     @overrides(Layer)
-    def activation(self, energy):
+    def async_activation(self, energy):
         """ Perceptron activation rule
         A simple hard threshold
 
@@ -231,7 +231,7 @@ class PerceptronLayer(Layer):
             return 0
 
     @overrides(Layer)
-    def update_state(self, idx):
+    def async_update(self, idx):
         """ Updates the state of the unit at idx according to the Perceptron scheme
         Computes the feedforward contributions to the unit at idx and uses the hard threshold
           in the activation function to compute the update
@@ -245,7 +245,7 @@ class PerceptronLayer(Layer):
 
 class InputLayer(Layer):
     """
-    Input layer. Lacks update_state methods
+    Input layer. Lacks async_update methods
     """
 
     def set_state(self, state):
@@ -277,7 +277,7 @@ class RasterInputLayer(Layer):
         # dviding by 1E4 produces a pretty wide distribution of rates
         # probably a good starting point for
         # current variance of gaussian
-        self.var = (max_range - min_range) / 1E6
+        self.var = (max_range - min_range) / 1E5
         # overall scale of gaussian. 1 is normalized
         self.scale = 3
         # how long in each time bin

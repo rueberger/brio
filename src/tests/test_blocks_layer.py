@@ -39,11 +39,11 @@ class TestBoltzmannMachineLayer(unittest.TestCase):
 
     def test_activation(self):
         # test a particular value
-        self.assertEqual(1, self.test_layer.activation(np.inf))
+        self.assertEqual(1, self.test_layer.async_activation(np.inf))
         # test validity of returned values
         allowed_updates = {1, -1}
         for energy in 5 * np.random.randn(250):
-            self.assertTrue(self.test_layer.activation(energy) in allowed_updates)
+            self.assertTrue(self.test_layer.async_activation(energy) in allowed_updates)
 
 
 

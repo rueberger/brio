@@ -47,3 +47,4 @@ class NetworkParams(object):
         self.bias_learning_rate = bias_learning_rate
         self.weight_learning_rate = weight_learning_rate
         self.layer_history_length = 100
+        self.async = False

@@ -42,18 +42,19 @@ def hist_slideshow(arr):
 
 
 
-def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5):
+def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5, stimulus_generator=None):
     """ Make a plot of the receptive field of network
 
     :param net: trained network to plot the receptive fields of
     :param layer_idx: idx of the layer you would like to plot. keys into network.layers
     :param unit_idx: idx of the receptive field you'd like to look at
     :param stimulus_generator: a generator object. calling next on this generator must return
-          an array that can be flatted to the shape of the input layer
+          an array that can be flatted to the shape of the input layer.
+          By default uniform random stimuli are generated for the relevant domain
     :returns: None
     :rtype: None
     """
-    response_dict = auto_sta(net, n_samples)
+    response_dict = auto_sta(net, n_samples, stimulus_generator)
     are_imgs = (response_dict.values()[0].ndim == 3)
     if are_imgs:
         imgs = [np.mean(response_dict[layer_idx, unit_idx], axis=0) for

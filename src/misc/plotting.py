@@ -42,7 +42,7 @@ def hist_slideshow(arr):
 
 
 
-def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=5E3):
+def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5):
     """ Make a plot of the receptive field of network
 
     :param net: trained network to plot the receptive fields of
@@ -54,7 +54,7 @@ def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=5E3):
     :rtype: None
     """
     response_dict = auto_sta(net, n_samples)
-    are_imgs = (response_dict.values()[0].ndims == 2)
+    are_imgs = (response_dict.values()[0].ndim == 3)
     if are_imgs:
         imgs = [np.mean(response_dict[layer_idx, unit_idx], axis=0) for
                 unit_idx in xrange(net.layers[layer_idx].n_dims)]
@@ -97,3 +97,5 @@ def plot_concat_imgs(imgs, border_thickness=2, border_color=10):
         concat_rf[x_idx * img_length + x_offset: (x_idx + 1) * img_length + x_offset,
                   y_idx * img_length + y_offset: (y_idx + 1) * img_length + y_offset] = imgs[flat_idx]
     plt.imshow(concat_rf, cmap=SEAMAP)
+
+def plot_weight_distr(self, )

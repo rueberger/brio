@@ -69,7 +69,7 @@ class Network(object):
             print "Training iteration: {}".format(self.t_counter)
             print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
 
-    def train(self, stimulus_generator, verbose=True):
+    def train(self, stimulus_generator):
         """ Trains the network on the generated stimulus
         Reports progress
 
@@ -104,13 +104,19 @@ class Network(object):
 
         :param stimulus: array of shape (input_layer.ndims, )
         """
-        np.random.shuffle(self.node_idx)
         self.layers[0].set_state(stimulus)
-        for _ in xrange(self.params.presentations):
-            for idx in self.node_idx:
-                layer, unit_idx = self.idx_to_layer[idx]
-                layer.update_state(unit_idx)
-        self.__update_layer_histories()
+        if self.params.async:
+            np.random.shuffle(self.node_idx)
+            for _ in xrange(self.params.presentations):
+                for idx in self.node_idx:
+                    layer, unit_idx = self.idx_to_layer[idx]
+                    layer.async_update(unit_idx)
+        else:
+            for layer in self.layers[1:]:
+                layer.sync_update()
+        for layer in self.layers:
+            layer.update_history()
+
 
     def training_iteration(self):
         """ Calls the training method in each layer and connection
@@ -163,17 +169,6 @@ class Network(object):
         for layer in self.layers:
             for connection in layer.inputs + layer.outputs:
                 self.connections.add(connection)
-
-    def __update_layer_histories(self):
-        """ calls the update history method in each layer
-        intended to be called once during each network update
-          after all units have been updated
-
-        :returns: None
-        :rtype: None
-        """
-        for layer in self.layers:
-            layer.update_history()
 
     def __set_parentage(self):
         """ sets self as the parent network of all layers

@@ -45,7 +45,7 @@ def scalar_sta(net, n_samples=1E4, stim_gen=None):
     else:
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
         stimuli = np.array(list(
-            itertools.takewhile(lambda i, x: i < n_samples), enumerate(stim_gen)))
+            itertools.takewhile(lambda i, x: i < n_samples, enumerate(stim_gen))))
         assert stimuli.ndim == 1
     return record_responses(net, stimuli)
 
@@ -86,7 +86,7 @@ def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None):
     else:
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
         stimuli = np.array(list(
-            itertools.takewhile(lambda i, x: i < n_samples), enumerate(stim_gen)))
+            itertools.takewhile(lambda i, x: i < n_samples, enumerate(stim_gen))))
         assert stimuli.shape[1] == img_dim[0] and stimuli.shape[2] == img_dim[1]
     return record_responses(net, stimuli)
 
@@ -102,9 +102,9 @@ def auto_sta(net, n_samples=1E4, stim_gen=None):
 
     """
     if type(net.layers[0]).__name__ == 'InputLayer':
-        return img_sta(net, n_samples, stim_gen)
+        return img_sta(net, n_samples, stim_gen=stim_gen)
     elif type(net.layers[0]).__name__ == 'RasterInputLayer':
-        return scalar_sta(net, n_samples, stim_gen)
+        return scalar_sta(net, n_samples, stim_gen=stim_gen)
     else:
         raise NotImplementedError(
             "STA method has not been specified for input layer type: {}".format(

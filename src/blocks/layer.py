@@ -193,7 +193,8 @@ class BoltzmannMachineLayer(Layer):
         :returns: None
         :rtype: None
         """
-        delta_e = self.bias
+        # need to check and write tests for this
+        delta_e = self.bias.copy()
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T

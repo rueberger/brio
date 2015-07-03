@@ -2,8 +2,7 @@
 Factories for networks
 """
 from blocks import layer, connection, network
-from blocks.aux import LayerType
-
+from blocks.aux import LayerType, NetworkParams
 
 def rbm_factory(layer_sizes):
     """ Constructs a Restricted Boltzmann Machine
@@ -35,7 +34,7 @@ def mlp_factory(layer_sizes):
         connection.CMConnection(input_layer, output_layer)
     return network.Network(layers)
 
-def einet_factory(layer_sizes):
+def einet_factory(layer_sizes, params=NetworkParams()):
     """ Constructs EI-net, inspired from King and Deweese 2013 (with some differences)
     Use Boltzmann machine units for now
 
@@ -55,4 +54,4 @@ def einet_factory(layer_sizes):
     connection.CMConnection(layers[1], layers[2])
     connection.CMConnection(layers[2], layers[2])
     connection.CMConnection(layers[2], layers[1])
-    return network.Network(layers)
+    return network.Network(layers, params)

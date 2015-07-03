@@ -24,7 +24,7 @@ class Layer(object):
         self.n_dims = n_dims
         # randomly initialize state
         self.state = np.ones(n_dims)
-        self.state[np.random.random(n_dims) < 5] = 0
+        self.state[np.random.random(n_dims) < .5] = 0
         # to do allow for specification of init method
         self.bias = np.zeros(n_dims)
         self.inputs = []

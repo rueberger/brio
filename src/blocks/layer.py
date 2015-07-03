@@ -209,7 +209,7 @@ class BoltzmannMachineLayer(Layer):
         update_idxs = np.where(np.random.random(self.n_dims) < p_on)[0]
         new_state = np.zeros(self.n_dims)
         # I think there is a more efficient method
-        np.place(new_state, update_idxs,  np.ones(self.n_dims))
+        np.place(new_state, update_idxs, np.ones(self.n_dims))
 
 
     @overrides(Layer)

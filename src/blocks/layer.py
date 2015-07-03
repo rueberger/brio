@@ -12,6 +12,7 @@ np.seterr('raise')
 
 # to do: add a synchronous layer (eg for rbms)
 
+
 class Layer(object):
     """
     Base class for network layers.
@@ -31,6 +32,16 @@ class Layer(object):
         self.outputs = []
         self.history = []
         self.ltype = ltype
+
+
+    def sync_update(self):
+        """ Synchronously updates the state of all of the units in this layer
+        Must be implemented by inheriting class
+
+        :returns: None
+        :rtype: None
+        """
+        raise NotImplementedError
 
 
     def async_activation(self, energy):
@@ -176,6 +187,32 @@ class BoltzmannMachineLayer(Layer):
     """
 
     @overrides(Layer)
+    def sync_update(self):
+        """ Implements synchronous state update for Boltzmann Machines
+
+        :returns: None
+        :rtype: None
+        """
+        delta_e = self.bias
+        for input_connection in self.inputs:
+            multiplier = input_connection.weight_multiplier
+            weights = input_connection.weights
+            state = input_connection.presynaptic_layer.history[0]
+            delta_e += multiplier * np.dot(weights, state)
+        for output_connection in self.outputs:
+            multiplier = output_connection.weight_multiplier
+            weights = output_connection.weights.T
+            state = output_connection.postsynaptic_layer.history[0]
+            delta_e += multiplier * np.dot(weights, state)
+
+        p_on = 1. / (1 = np.exp(-delta_e))
+        update_idxs = np.where(np.random.random(self.n_dims) < p_on)[0]
+        new_state = np.zeros(self.n_dims)
+        # I think there is a more efficient method
+        np.place(new_state, update_idxs,  np.ones(self.n_dims))
+
+
+    @overrides(Layer)
     def async_activation(self, energy):
         """ The Boltzmann Machine activation function
         Returns the state of the unit selected stochastically from a sigmoid
@@ -205,10 +242,10 @@ class BoltzmannMachineLayer(Layer):
         :returns: None
         :rtype: None
         """
-        e_diff = self.bias[idx]
-        e_diff += self.input_energy(idx)
-        e_diff += self.output_energy(idx)
-        self.state[idx] = self.async_activation(e_diff)
+        delta_e = self.bias[idx]
+        delta_e += self.input_energy(idx)
+        delta_e += self.output_energy(idx)
+        self.state[idx] = self.async_activation(delta_e)
 
 class PerceptronLayer(Layer):
     """

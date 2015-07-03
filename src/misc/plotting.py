@@ -26,6 +26,21 @@ def img_slideshow(imgs):
         fig.canvas.draw()
         time.sleep(.1)
 
+def hist_slideshow(arr):
+    """ plots a histogram or density plot of the scalar distribution data
+
+    :param arr: list of array of draws from scalar distribution
+    :returns: None
+    :rtype: None
+    """
+    fig = plt.figure()
+    for distr in arr:
+        plt.clf()
+        plt.hist(distr, bins=250, normed=True)
+        fig.canvas.draw()
+        time.sleep(.1)
+
+
 
 def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=5E3):
     """ Make a plot of the receptive field of network
@@ -47,6 +62,12 @@ def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=5E3):
             img_slideshow(imgs)
         else:
             plot_concat_imgs(imgs)
+    else:
+        distrs = [response_dict[layer_idx, unit_idx] for unit_idx in xrange(net.layers[layer_idx].n_dims)]
+        if slideshow:
+            hist_slideshow(distrs)
+        else:
+            raise NotImplementedError("Have yet to implement multiple scalar distr")
 
 
 

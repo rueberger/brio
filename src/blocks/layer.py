@@ -207,8 +207,8 @@ class BoltzmannMachineLayer(Layer):
 
         p_on = 1. / (1 + np.exp(-delta_e))
         update_idxs = np.where(np.random.random(self.n_dims) < p_on)[0]
-        new_state = np.zeros(self.n_dims)
-        new_state[update_idxs] = 1
+        self.state = np.zeros(self.n_dims)
+        self.state[update_idxs] = 1
 
 
     @overrides(Layer)

@@ -22,7 +22,7 @@ def img_slideshow(imgs):
     fig = plt.figure()
     for img in imgs:
         plt.clf()
-        plt.imshow(img, cmap=SEAMAP)
+        plt.imshow(img, cmap=SEAMAP, interpolation='none')
         fig.canvas.draw()
         time.sleep(.1)
 
@@ -119,4 +119,4 @@ def plot_concat_imgs(imgs, border_thickness=2):
         # not sure how to do a continuation line cleanly here
         concat_rf[x_idx * img_length + x_offset: (x_idx + 1) * img_length + x_offset,
                   y_idx * img_length + y_offset: (y_idx + 1) * img_length + y_offset] = imgs[flat_idx]
-    plt.imshow(concat_rf, cmap=SEAMAP)
+    plt.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')

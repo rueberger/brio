@@ -3,6 +3,7 @@ This module holds the Network class
 """
 import numpy as np
 from blocks.aux import NetworkParams
+from misc.plotting import plot_param_distr
 
 class Network(object):
     """
@@ -96,6 +97,7 @@ class Network(object):
         if len(self.layers[0].history) >= self.params.layer_history_length:
             self.training_iteration()
         if verbose:
+            plot_param_distr(self)
             self.describe_progress()
         self.t_counter += 1
 

@@ -47,8 +47,8 @@ def einet_factory(layer_sizes, params=NetworkParams()):
     assert len(layer_sizes) == 3
     layers = [
         layer.InputLayer(layer_sizes[0]),
-        layer.BoltzmannMachineLayer(layer_sizes[1], LayerType.excitatory),
-        layer.BoltzmannMachineLayer(layer_sizes[2], LayerType.inhibitory)
+        layer.LIFLayer(layer_sizes[1], LayerType.excitatory),
+        layer.LIFLayer(layer_sizes[2], LayerType.inhibitory)
     ]
     connection.OjaConnection(layers[0], layers[1], learning_rate=0.008)
     connection.CMConnection(layers[1], layers[2])

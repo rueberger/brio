@@ -80,7 +80,7 @@ class Layer(object):
         delta = self.target_firing_rate - self.firing_rates()
         self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         if len(self.bias_updates) >= self.params.update_batch_size:
-            self.bias += np.mean(self.bias_updates)
+            self.bias += np.mean(self.bias_updates, axis=0)
             self.bias_updates = []
 
     def add_input(self, input_connection):

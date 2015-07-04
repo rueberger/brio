@@ -94,14 +94,12 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        self.update_network(stimulus)
-        if len(self.layers[0].history) >= self.params.layer_history_length:
-            self.training_iteration()
+        self.update_network(stimulus,train=(len(self.layers[0].history) >= self.params.layer_history_length))
         if verbose:
             self.describe_progress()
         self.t_counter += 1
 
-    def update_network(self, stimulus):
+    def update_network(self, stimulus, train=False):
         """ Present stimulus to the network and update the state
 
         :param stimulus: array of shape (input_layer.ndims, )
@@ -117,12 +115,16 @@ class Network(object):
                     layer.async_update(unit_idx)
                 for layer in self.layers:
                     layer.update_history()
+                if train:
+                    self.training_iteration()
         else:
             for _ in xrange(self.params.presentations):
                 for layer in self.layers[1:]:
                     layer.sync_update()
                 for layer in self.layers:
                     layer.update_history()
+                if train:
+                    self.training_iteration()
 
 
 

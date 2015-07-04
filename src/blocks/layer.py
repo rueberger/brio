@@ -34,7 +34,6 @@ class Layer(object):
         self.history = [self.state.copy()]
         self.ltype = ltype
 
-
     def sync_update(self):
         """ Synchronously updates the state of all of the units in this layer
         Must be implemented by inheriting class
@@ -141,8 +140,7 @@ class Layer(object):
         # time_constant = 1./ network.params.presentations
         time_constant = 1. / (
             network.params.presentations
-            * network.params.char_itrs
-            * self.ltype.firing_rate_multiplier)
+            * network.params.char_itrs)
         self.max_history_length = network.params.layer_history_length
         # I don't think normalization matters
         self.avg_weighting = np.exp(
@@ -178,11 +176,59 @@ class Layer(object):
         rectified_hist = np.array(self.history[:self.max_history_length])
         return np.sum(rectified_hist * self.avg_weighting, axis=0)
 
+    def reset(self):
+        """ reset the state for this layer
+
+        :returns: None
+        :rtype: None
+        """
+        self.state = np.zeros(self.n_dims)
+
     def __repr__(self):
         """
         A nicer string for this class
         """
         return "{} layer of size {}".format(self.ltype.name, self.n_dims)
+
+
+class LIFLayer(Layer):
+    """
+    Implements a layer of leaky integrate and fire neurons
+    """
+
+    def __init__(self, n_dims, ltype=LayerType.unconstrained):
+        super(LIFLayer, self).__init__(n_dims, ltype)
+        # now state represents spikes and still works with everything else
+        self.potentials = np.zeros(n_dims)
+        self.timestep = 0.1
+        self.decay_const = 1. / ltype.firing_rate_multiplier
+
+    @overrides(Layer)
+    def sync_update(self):
+        """ Implements synchronous state update for leaky integrate and fire neurons
+
+        :returns: None
+        :rtype: None
+        """
+        # update mebrane potentials
+        self.potential *= np.exp(-self.timestep / self.decay_const)
+        for input_connection in self.inputs:
+            multiplier = input_connection.weight_multiplier
+            weights = input_connection.weights.T
+            state = input_connection.presynaptic_layer.history[0]
+            self.potential += multiplier * np.dot(weights, state)
+
+        # set state for neurons that cross threshold
+        fire_idxs = np.where(self.potential >= self.bias)
+        self.state = np.zeros(self.n_dims)
+        self.state[fire_idxs] = 1
+        # reset membrane potential
+        self.potential[fire_idxs] = 0
+
+    @overrides(Layer)
+    def reset(self):
+        self.state = np.zeros(self.n_dims)
+        self.potentials = np.zeros(self.n_dims)
 
 
 class BoltzmannMachineLayer(Layer):

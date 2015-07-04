@@ -107,21 +107,23 @@ class Network(object):
         :param stimulus: array of shape (input_layer.ndims, )
         """
         self.layers[0].set_state(stimulus)
-        # first reset states to zero
         for layer in self.layers[1:]:
-            layer.state = np.zeros(layer.n_dims)
+            layer.reset()
         if self.params.async:
             np.random.shuffle(self.node_idx)
             for _ in xrange(self.params.presentations):
                 for idx in self.node_idx:
                     layer, unit_idx = self.idx_to_layer[idx]
                     layer.async_update(unit_idx)
+                for layer in self.layers:
+                    layer.update_history()
         else:
             for _ in xrange(self.params.presentations):
                 for layer in self.layers[1:]:
                     layer.sync_update()
-        for layer in self.layers:
-            layer.update_history()
+                for layer in self.layers:
+                    layer.update_history()
+
 
 
     def training_iteration(self):

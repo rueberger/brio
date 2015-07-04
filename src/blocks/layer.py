@@ -257,6 +257,24 @@ class PerceptronLayer(Layer):
     """
 
     @overrides(Layer)
+    def sync_update(self):
+        """ Implemented a synchronous state update for a perceptron layer
+
+        :returns: None
+        :rtype: None
+        """
+        energy = self.bias.copy()
+        for input_connection in self.input_layers:
+            multiplier = input_connection.weight_multiplier
+            weights = input_connection.weights.T
+            state = input_connection.presynaptic_layer.history[0]
+            energy += multiplier * np.dot(weights, state)
+        update_idxs = np.where(energy > 0)[0]
+        self.state = np.zeros(self.n_dims)
+        self.state[update_idxs] = 1
+
+
+    @overrides(Layer)
     def async_activation(self, energy):
         """ Perceptron activation rule
         A simple hard threshold

@@ -33,6 +33,7 @@ class Layer(object):
         self.outputs = []
         self.history = [self.state.copy()]
         self.ltype = ltype
+        self.update_sign = 1
 
     def sync_update(self):
         """ Synchronously updates the state of all of the units in this layer
@@ -77,7 +78,7 @@ class Layer(object):
         :rtype: None
         """
         delta = self.target_firing_rate - self.firing_rates()
-        self.bias_updates.append(self.learning_rate * delta)
+        self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         if len(self.bias_updates) >= self.params.update_batch_size:
             self.bias += np.mean(self.bias_updates)
             self.bias_updates = []
@@ -202,6 +203,7 @@ class LIFLayer(Layer):
         self.potentials = np.zeros(n_dims)
         self.timestep = 0.1
         self.decay_const = 1. / ltype.firing_rate_multiplier
+        self.update_sign = -1
 
     @overrides(Layer)
     def sync_update(self):
@@ -211,19 +213,19 @@ class LIFLayer(Layer):
         :rtype: None
         """
         # update mebrane potentials
-        self.potential *= np.exp(-self.timestep / self.decay_const)
+        self.potentials *= np.exp(-self.timestep / self.decay_const)
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
             state = input_connection.presynaptic_layer.history[0]
-            self.potential += multiplier * np.dot(weights, state)
+            self.potentials += multiplier * np.dot(weights, state)
 
         # set state for neurons that cross threshold
-        fire_idxs = np.where(self.potential >= self.bias)
+        fire_idxs = np.where(self.potentials >= self.bias)
         self.state = np.zeros(self.n_dims)
         self.state[fire_idxs] = 1
         # reset membrane potential
-        self.potential[fire_idxs] = 0
+        self.potentials[fire_idxs] = 0
 
     @overrides(Layer)
     def reset(self):

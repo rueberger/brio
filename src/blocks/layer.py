@@ -264,7 +264,7 @@ class PerceptronLayer(Layer):
         :rtype: None
         """
         energy = self.bias.copy()
-        for input_connection in self.input_layers:
+        for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
             state = input_connection.presynaptic_layer.history[0]

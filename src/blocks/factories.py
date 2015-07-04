@@ -50,8 +50,8 @@ def einet_factory(layer_sizes, params=NetworkParams()):
         layer.BoltzmannMachineLayer(layer_sizes[1], LayerType.excitatory),
         layer.BoltzmannMachineLayer(layer_sizes[2], LayerType.inhibitory)
     ]
-    connection.OjaConnection(layers[0], layers[1])
+    connection.OjaConnection(layers[0], layers[1], learning_rate=0.008)
     connection.CMConnection(layers[1], layers[2])
-    connection.CMConnection(layers[2], layers[2])
+    connection.CMConnection(layers[2], layers[2], learning_rate=0.06)
     connection.CMConnection(layers[2], layers[1])
     return network.Network(layers, params)

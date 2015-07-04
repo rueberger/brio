@@ -69,7 +69,7 @@ class Network(object):
         if self.t_counter % 1000 == 0 and self.t_counter > self.params.layer_history_length:
             print "Training iteration: {}".format(self.t_counter)
             print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
-            plot_param_distr(self)
+            #            plot_param_distr(self)
 
     def train(self, stimulus_generator):
         """ Trains the network on the generated stimulus

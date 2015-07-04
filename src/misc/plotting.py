@@ -53,14 +53,13 @@ def plot_param_distr(net):
     cons = list(net.connections)
     nrows = max(len(cons), len(net.layers[1:]))
     fig, ax_arr = plt.subplots(nrows=nrows, ncols=2)
-    plt.clf()
     for con, axis in zip(cons, ax_arr[:, 0]):
         axis.hist(np.ravel(con.weights), bins=250, normed=True)
         axis.set_title("Weight distribution for {}".format(str(con)))
     for layer, axis in zip(net.layers[1:], ax_arr[:, 1]):
         axis.hist(np.ravel(layer.bias), bins=250, normed=True)
         axis.set_title("Bias distribution for {}".format(str(layer)))
-    fig.canvas.draw()
+    plt.show()
 
 
 
@@ -95,7 +94,7 @@ def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5, stimulu
 
 
 
-def plot_concat_imgs(imgs, border_thickness=2, border_color=10):
+def plot_concat_imgs(imgs, border_thickness=2):
     """ concatenate the imgs together into one big image separated by borders
 
     :param imgs: list or array of images. total number of images must be a perfect square and
@@ -106,10 +105,11 @@ def plot_concat_imgs(imgs, border_thickness=2, border_color=10):
     """
     assert int(np.sqrt(len(imgs))) == np.sqrt(len(imgs))
     assert imgs[0].shape[0] == imgs[0].shape[1]
-    layer_length = imgs[0].shape[0]
-    img_length = np.sqrt(len(imgs))
+    img_length = imgs[0].shape[0]
+    layer_length = int(np.sqrt(len(imgs)))
     concat_length = layer_length * img_length + (layer_length - 1) * border_thickness
-    concat_rf = np.ones(concat_length, concat_length) * border_color
+    border_color = np.max(imgs)
+    concat_rf = np.ones((concat_length, concat_length)) * border_color
     for x_idx, y_idx in itertools.product(xrange(layer_length),
                                           xrange(layer_length)):
         # this keys into imgs

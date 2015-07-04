@@ -44,8 +44,7 @@ def scalar_sta(net, n_samples=1E4, stim_gen=None):
         stimuli = np.random.uniform(net.layers[0].lower_bnd, net.layers[0].upper_bnd, n_samples)
     else:
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
-        stimuli = np.array(list(
-            itertools.takewhile(lambda i, x: i < n_samples, enumerate(stim_gen))))
+        stimuli = np.array(itertools.islice(stim_gen, n_samples))
         assert stimuli.ndim == 1
     return record_responses(net, stimuli)
 
@@ -85,8 +84,7 @@ def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None):
             stimuli[idx] = np.outer(gauss(x_idx, x_mean), gauss(y_idx, y_mean))
     else:
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
-        stimuli = np.array(list(
-            itertools.takewhile(lambda i, x: i < n_samples, enumerate(stim_gen))))
+        stimuli = np.array(itertools.islice(stim_gen, n_samples))
         assert stimuli.shape[1] == img_dim[0] and stimuli.shape[2] == img_dim[1]
     return record_responses(net, stimuli)
 

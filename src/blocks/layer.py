@@ -28,6 +28,7 @@ class Layer(object):
         self.state[np.random.random(n_dims) < .5] = 0
         # to do allow for specification of init method
         self.bias = np.zeros(n_dims)
+        self.bias_updates = []
         self.inputs = []
         self.outputs = []
         self.history = [self.state.copy()]
@@ -68,7 +69,7 @@ class Layer(object):
         """
         raise NotImplementedError
 
-    def apply_bias_rule(self):
+    def bias_update(self):
         """ Update the unit biases for this layer
         By default uses the homeostatic threshold rule from
           Foldiak 1990
@@ -76,12 +77,11 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        # to do add a non windowed mean to see how this does
-        # is this the right sign convention for all layers?
-        # delta = self.firing_rates() - self.target_firing_rate
         delta = self.target_firing_rate - self.firing_rates()
-        self.bias += self.learning_rate * delta
-
+        self.bias_updates.append(self.learning_rate * delta)
+        if len(self.bias_updates) >= self.params.update_batch_size:
+            self.bias += np.mean(self.bias_updates)
+            self.bias_updates = []
 
     def add_input(self, input_connection):
         """ add input_connection to the list of connections feeding into this layer
@@ -151,6 +151,7 @@ class Layer(object):
         self.target_firing_rate = (self.ltype.firing_rate_multiplier *
                                    network.params.baseline_firing_rate)
         self.learning_rate = network.params.bias_learning_rate
+        self.params = network.params
 
 
 

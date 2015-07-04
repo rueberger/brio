@@ -133,9 +133,9 @@ class Network(object):
         :rtype: None
         """
         for connection in self.connections:
-            connection.apply_weight_rule()
+            connection.weight_update()
         for layer in self.layers[1:]:
-            layer.apply_bias_rule()
+            layer.bias_update()
 
 
     def __check_layers(self):

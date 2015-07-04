@@ -38,6 +38,8 @@ class NetworkParams(object):
       to a long list of kwargs in Network
     """
     # pylint: disable=too-few-public-methods
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments
 
     def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.1,
                  weight_learning_rate=0.028, presentations=5, async=False):
@@ -50,3 +52,4 @@ class NetworkParams(object):
         self.weight_learning_rate = weight_learning_rate
         self.layer_history_length = 100
         self.async = async
+        self.update_batch_size = 100

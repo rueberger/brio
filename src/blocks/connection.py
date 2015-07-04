@@ -16,30 +16,38 @@ class Connection(object):
         self.presynaptic_layer = input_layer
         self.postsynaptic_layer = output_layer
         self.weights = np.random.randn(input_layer.n_dims, output_layer.n_dims) * 0.01
+        self.weight_updates = []
         self.postsynaptic_layer.add_input(self)
         self.presynaptic_layer.add_output(self)
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.__impose_constraint()
         self.learning_rate = learning_rate
 
-    def weight_rule(self):
+
+    def weight_update(self):
+        """ accumulate weight updates and apply them as specified
+        by the network parameters
+        This is the method to call from external code
+
+        :returns: None
+        :rtype: None
+        """
+        self.accumulate_weight_update()
+        if len(self.weight_updates) >= self.params.update_batch_size:
+            self.weights += np.mean(self.weight_updates)
+            self.weight_updates = []
+            if self.presynaptic_layer.ltype.constrain_weights:
+                self.__impose_constraint()
+
+
+    def accumulate_weight_update(self):
         """ Local update rule for the weights in this connection
+        adds the weight update the pending list of updates
         Must be implemented by inheriting class
 
         :returns: None
         """
         raise NotImplementedError
-
-    def apply_weight_rule(self):
-        """ Updates the weights in this connection according to
-          the update rule (which must be specified by inheriting classes)
-        Constrains the weights to be non-negative if the input layer is inhibitory or excitatory
-
-        :returns: None
-        """
-        self.weight_rule()
-        if self.presynaptic_layer.ltype.constrain_weights:
-            self.__impose_constraint()
 
     def feedforward_energy(self, idx):
         """
@@ -64,6 +72,7 @@ class Connection(object):
         :rtype: None
         """
         self.learning_rate = self.learning_rate or network.params.weight_learning_rate
+        self.params = network.params
 
     def __impose_constraint(self):
         """
@@ -91,11 +100,11 @@ class OjaConnection(Connection):
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
-    def weight_rule(self):
+    def accumulate_weight_update(self):
         pre_syn_state = self.presynaptic_layer.history[0]
         post_syn_state = self.postsynaptic_layer.history[0]
         delta = np.outer(pre_syn_state, post_syn_state) - (post_syn_state ** 2) * self.weights
-        self.weights += self.learning_rate * delta
+        self.weight_updates.append(self.learning_rate * delta)
 
 class FoldiakConnection(Connection):
     """
@@ -105,14 +114,14 @@ class FoldiakConnection(Connection):
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
-    def weight_rule(self):
+    def accumulate_weight_update(self):
         pre_syn_state = self.presynaptic_layer.history[0]
         post_syn_state = self.postsynaptic_layer.history[0]
         pre_syn_avg_rates = self.presynaptic_layer.firing_rates()
         post_syn_avg_rates = self.postsynaptic_layer.firing_rates()
         delta = (np.outer(pre_syn_state, post_syn_state) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates))
-        self.weights += self.learning_rate * delta
+        self.weight_updates.append(self.learning_rate * delta)
 
 class CMConnection(Connection):
     """
@@ -123,14 +132,14 @@ class CMConnection(Connection):
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
-    def weight_rule(self):
+    def accumulate_weight_update(self):
         pre_syn_state = self.presynaptic_layer.history[0]
         post_syn_state = self.postsynaptic_layer.history[0]
         pre_syn_avg_rates = self.presynaptic_layer.firing_rates()
         post_syn_avg_rates = self.postsynaptic_layer.firing_rates()
         delta = (np.outer(pre_syn_state, post_syn_state) -
                  (np.outer(pre_syn_avg_rates, post_syn_avg_rates) * (1 + self.weights)))
-        self.weights += self.learning_rate * delta
+        self.weight_updates.append(self.learning_rate * delta)
 
 class ConstantConnection(Connection):
     """
@@ -144,5 +153,5 @@ class ConstantConnection(Connection):
         self.weights = np.diag(np.ones(input_layer.n_dims))
 
     @overrides(Connection)
-    def weight_rule(self):
+    def accumulate_weight_update(self):
         pass

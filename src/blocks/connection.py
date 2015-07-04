@@ -12,7 +12,7 @@ class Connection(object):
     holds network weights
     """
 
-    def __init__(self, input_layer, output_layer):
+    def __init__(self, input_layer, output_layer, learning_rate=None):
         self.presynaptic_layer = input_layer
         self.postsynaptic_layer = output_layer
         self.weights = np.random.randn(input_layer.n_dims, output_layer.n_dims) * 0.01
@@ -20,6 +20,7 @@ class Connection(object):
         self.presynaptic_layer.add_output(self)
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.__impose_constraint()
+        self.learning_rate = learning_rate
 
     def weight_rule(self):
         """ Local update rule for the weights in this connection
@@ -62,7 +63,7 @@ class Connection(object):
         :returns: None
         :rtype: None
         """
-        self.learning_rate = network.params.weight_learning_rate
+        self.learning_rate = self.learning_rate or network.params.weight_learning_rate
 
     def __impose_constraint(self):
         """

@@ -40,6 +40,30 @@ def hist_slideshow(arr):
         fig.canvas.draw()
         time.sleep(.1)
 
+def plot_param_distr(net, update_interval=5, n_updates=30):
+    """ plots histograms of the weight distributions in the different layers
+
+    :param net: a network that is currently being trained
+    :param update_interval: time interval in seconds for the plot to update
+    :param n_updates: number of times to update the plot
+    :returns: None
+    :rtype: None
+
+    """
+    cons = list(net.connections)
+    nrows = max(len(cons), len(net.layers[1:]))
+    fig, ax_arr = plt.subplots(nrows=nrows, ncols=2)
+    for _ in xrange(n_updates):
+        plt.clf()
+        for con, axis in zip(cons, ax_arr[:,0]):
+            axis.hist(np.ravel(con.weights), bins=250, normed=True)
+            axis.set_title("Weight distribution for {}".format(str(con)))
+        for layer, axis in zip(net.layers[1:], ax_arr[:, 1]):
+            axis.hist(np.ravel(layer.bias), bins=250, normed=True)
+            axis.set_title("Bias distribution for {}".format(str(layer)))
+        fig.canvas.draw()
+        time.sleep(update_interval)
+
 
 
 def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5, stimulus_generator=None):
@@ -98,5 +122,3 @@ def plot_concat_imgs(imgs, border_thickness=2, border_color=10):
         concat_rf[x_idx * img_length + x_offset: (x_idx + 1) * img_length + x_offset,
                   y_idx * img_length + y_offset: (y_idx + 1) * img_length + y_offset] = imgs[flat_idx]
     plt.imshow(concat_rf, cmap=SEAMAP)
-
-def plot_weight_distr(self, )

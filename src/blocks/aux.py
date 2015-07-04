@@ -42,11 +42,11 @@ class NetworkParams(object):
     # pylint: disable=too-many-arguments
 
     def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.1,
-                 weight_learning_rate=0.028, presentations=5, async=False):
+                 weight_learning_rate=0.028, presentations=50, async=False):
         self.presentations = presentations
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
-        self.char_itrs = 10
+        self.char_itrs = 1. / 5
         self.baseline_firing_rate = baseline_firing_rate
         self.bias_learning_rate = bias_learning_rate
         self.weight_learning_rate = weight_learning_rate

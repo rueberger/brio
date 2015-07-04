@@ -40,29 +40,41 @@ def hist_slideshow(arr):
         fig.canvas.draw()
         time.sleep(.1)
 
-def plot_param_distr(net, update_interval=5, n_updates=30):
-    """ plots histograms of the weight distributions in the different layers
-
-    :param net: a network that is currently being trained
-    :param update_interval: time interval in seconds for the plot to update
-    :param n_updates: number of times to update the plot
-    :returns: None
-    :rtype: None
-
+class ParamPlot(object):
+    """ this class contains methods to update histograms of weights and biases on the fly
+       while training
     """
-    cons = list(net.connections)
-    nrows = max(len(cons), len(net.layers[1:]))
-    fig, ax_arr = plt.subplots(nrows=nrows, ncols=2)
-    for _ in xrange(n_updates):
+
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, net):
+        """ Initialize the live plot
+
+        :param net: network that is currently being trained (presumably)
+        :returns: None
+        :rtype: None
+        """
+        self.net = net
+        cons = list(net.connections)
+        nrows = max(len(cons), len(net.layers[1:]))
+        self.fig, self.ax_arr = plt.subplots(nrows=nrows, ncols=2)
+
+
+    def update(self):
+        """ update the histograms
+
+        :returns: None
+        :rtype: None
+
+        """
         plt.clf()
-        for con, axis in zip(cons, ax_arr[:,0]):
+        for con, axis in zip(self.cons, self.ax_arr[:, 0]):
             axis.hist(np.ravel(con.weights), bins=250, normed=True)
             axis.set_title("Weight distribution for {}".format(str(con)))
-        for layer, axis in zip(net.layers[1:], ax_arr[:, 1]):
+        for layer, axis in zip(self.net.layers[1:], self.ax_arr[:, 1]):
             axis.hist(np.ravel(layer.bias), bins=250, normed=True)
             axis.set_title("Bias distribution for {}".format(str(layer)))
-        fig.canvas.draw()
-        time.sleep(update_interval)
+        self.fig.canvas.draw()
 
 
 

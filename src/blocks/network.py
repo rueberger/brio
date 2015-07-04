@@ -3,7 +3,7 @@ This module holds the Network class
 """
 import numpy as np
 from blocks.aux import NetworkParams
-from misc.plotting import plot_param_distr
+from misc.plotting import ParamPlot
 
 class Network(object):
     """
@@ -69,6 +69,7 @@ class Network(object):
         if self.t_counter % 1000 == 0 and self.t_counter > self.params.layer_history_length:
             print "Training iteration: {}".format(self.t_counter)
             print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
+            self.ParamPlot.update()
 
     def train(self, stimulus_generator):
         """ Trains the network on the generated stimulus
@@ -97,7 +98,7 @@ class Network(object):
         if len(self.layers[0].history) >= self.params.layer_history_length:
             self.training_iteration()
         if verbose:
-            plot_param_distr(self)
+            self.param_plot = ParamPlot(self)
             self.describe_progress()
         self.t_counter += 1
 

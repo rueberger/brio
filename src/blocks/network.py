@@ -66,7 +66,7 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        if self.t_counter % 1000 == 0 and self.t_counter > self.params.layer_history_length:
+        if self.t_counter % 100 == 0 and self.t_counter > self.params.layer_history_length:
             print "Training iteration: {}".format(self.t_counter)
             print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
             #            plot_param_distr(self)
@@ -94,7 +94,7 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        self.update_network(stimulus,train=(len(self.layers[0].history) >= self.params.layer_history_length))
+        self.update_network(stimulus, train=(len(self.layers[0].history) >= self.params.layer_history_length))
         if verbose:
             self.describe_progress()
         self.t_counter += 1

@@ -41,8 +41,9 @@ class NetworkParams(object):
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.1,
-                 weight_learning_rate=0.028, presentations=50, async=False):
+    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.001,
+                 weight_learning_rate=0.028, presentations=50, async=False,
+                 display=False):
         self.presentations = presentations
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
@@ -53,4 +54,4 @@ class NetworkParams(object):
         self.layer_history_length = 100
         self.async = async
         self.update_batch_size = 100
-        self.display = False
+        self.display = display

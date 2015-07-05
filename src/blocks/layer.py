@@ -27,7 +27,7 @@ class Layer(object):
         self.state = np.ones(n_dims)
         self.state[np.random.random(n_dims) < .5] = 0
         # to do allow for specification of init method
-        self.bias = np.zeros(n_dims)
+        self.bias = np.random.randn(n_dims)
         self.bias_updates = []
         self.inputs = []
         self.outputs = []

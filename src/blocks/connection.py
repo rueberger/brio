@@ -12,16 +12,36 @@ class Connection(object):
     holds network weights
     """
 
-    def __init__(self, input_layer, output_layer, learning_rate=None):
+    def __init__(self, input_layer, output_layer,
+                 learning_rate=None, weight_scheme='uniform'):
         self.presynaptic_layer = input_layer
         self.postsynaptic_layer = output_layer
-        self.weights = np.random.randn(input_layer.n_dims, output_layer.n_dims) * 0.01
         self.weight_updates = []
         self.postsynaptic_layer.add_input(self)
         self.presynaptic_layer.add_output(self)
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
-        self.__impose_constraint()
         self.learning_rate = learning_rate
+        self.__init_weights(weight_scheme)
+
+
+    def __init_weights(self, scheme):
+        if scheme == 'uniform':
+            self.weights = np.random.random((self.presynaptic_layer.n_dims,
+                                             self.postsynaptic_layer.n_dims))
+            if not self.presynaptic_layer.ltype.constrain_weights:
+                self.weights = 2 * self.weights - 1
+        elif scheme == 'gaussian':
+            self.weights = np.random.randn((self.presynaptic_layer.n_dims,
+                                            self.postsynaptic_layer.n_dims))
+            if not self.presynaptic_layer.ltype.constrain_weights:
+                self.weights = np.abs(self.weights)
+        elif scheme == 'zero':
+            self.weights = np.zeros((self.presynaptic_layer.n_dims,
+                                     self.postsynaptic_layer.n_dims))
+        else:
+            raise NotImplementedError("please choose on of the implemented weight schemes")
+
+
 
 
     def weight_update(self):

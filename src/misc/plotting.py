@@ -40,6 +40,52 @@ def hist_slideshow(arr):
         fig.canvas.draw()
         time.sleep(.1)
 
+
+class ParamPlot(object):
+    """
+    This class provides a plot to visualize network parameters that can be updated on the fly
+    """
+
+    #pylint: disable=too-few-public-methods
+
+    def __init__(self, net):
+        """ Initialize this class
+
+        :param net: network is a currently in training network
+        :returns: the initialized ParamPlot object
+        :rtype: ParamPlot
+        """
+        self.net = net
+        self.cons = list(net.connections)
+        self.nrows = max(len(self.cons), len(net.layers[1:]) * 2)
+        self.fig, self.ax_arr = plt.subplots(nrows=self.nrows,
+                                             ncols=2, figsize=(16, 10))
+
+    def update_plot(self):
+        """ updates the plot without creating a new figure
+
+        :returns: None
+        :rtype: None
+        """
+
+        self.fig.suptitle("Parameter distributions at timestep {}".format(self.net.t_counter))
+        for axis in np.ravel(self.ax_arr):
+            axis.clear()
+        for con, axis in zip(self.cons, self.ax_arr[:, 0]):
+            axis.hist(np.ravel(con.weights), bins=250, normed=True)
+            axis.set_title("Weight distribution for {}".format(str(con)))
+        for layer, axis in zip(self.net.layers[1:], self.ax_arr[:, 1]):
+            axis.hist(np.ravel(layer.bias), bins=250, normed=True)
+            axis.set_title("Bias distribution for {}".format(str(layer)))
+        for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 1]):
+            axis.hist(np.ravel(layer.firing_rates()), bins=250, normed=True)
+            axis.set_title("Firing rate distibution for {}".format(str(layer)))
+        self.fig.subplots_adjust(hspace=0.4)
+        plt.draw()
+
+
+
+
 def plot_param_distr(net):
     """ plots histograms of the weight distributions in the different layers
 

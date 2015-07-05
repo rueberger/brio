@@ -53,3 +53,4 @@ class NetworkParams(object):
         self.layer_history_length = 100
         self.async = async
         self.update_batch_size = 100
+        self.display = False

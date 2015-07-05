@@ -3,7 +3,7 @@ This module holds the Network class
 """
 import numpy as np
 from blocks.aux import NetworkParams
-from misc.plotting import plot_param_distr
+from misc.plotting import ParamPlot
 
 class Network(object):
     """
@@ -29,6 +29,8 @@ class Network(object):
         self.idx_to_layer = self.__build_layer_dict()
         self.__set_parentage()
         self.t_counter = 0
+        if params.display:
+            self.param_plot = ParamPlot(self)
 
     def compute_sta(self, stimulus_generator, layer_idx, num_stim_to_avg=250):
         """ Computes the spike triggered averages for the layers
@@ -69,7 +71,8 @@ class Network(object):
         if self.t_counter % 100 == 0 and self.t_counter > self.params.layer_history_length:
             print "Training iteration: {}".format(self.t_counter)
             print "Example firing rate: {}".format(self.layers[1].firing_rates()[0])
-            #            plot_param_distr(self)
+            if self.params.display:
+                self.param_plot.update_plot()
 
     def train(self, stimulus_generator):
         """ Trains the network on the generated stimulus

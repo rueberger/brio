@@ -158,7 +158,7 @@ def plot_concat_imgs(imgs, border_thickness=2):
     img_length = imgs[0].shape[0]
     layer_length = int(np.sqrt(len(imgs)))
     concat_length = layer_length * img_length + (layer_length - 1) * border_thickness
-    border_color = np.max(imgs)
+    border_color = np.nan
     concat_rf = np.ones((concat_length, concat_length)) * border_color
     for x_idx, y_idx in itertools.product(xrange(layer_length),
                                           xrange(layer_length)):

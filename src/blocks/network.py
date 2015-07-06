@@ -117,6 +117,7 @@ class Network(object):
                     layer, unit_idx = self.idx_to_layer[idx]
                     layer.async_update(unit_idx)
                 for layer in self.layers:
+                    layer.update_firing_rate()
                     layer.update_history()
                 if train:
                     self.training_iteration()
@@ -124,6 +125,7 @@ class Network(object):
             for _ in xrange(self.params.presentations):
                 for layer in self.layers[1:]:
                     layer.sync_update()
+                    layer.update_firing_rates()
                 for layer in self.layers:
                     layer.update_history()
                 if train:

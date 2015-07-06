@@ -241,7 +241,7 @@ class LIFLayer(Layer):
         if self.params.keep_extra_history:
             if len(self.pot_history) >= self.params.presentations:
                 self.pot_history = []
-            self.pot_history.append(self.pot_history)
+            self.pot_history.append(self.potentials)
 
 
 

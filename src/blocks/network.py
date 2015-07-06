@@ -108,6 +108,7 @@ class Network(object):
         :param stimulus: array of shape (input_layer.ndims, )
         """
         self.layers[0].set_state(stimulus)
+        self.layers[0].update_firing_rates()
         for layer in self.layers[1:]:
             layer.reset()
         if self.params.async:

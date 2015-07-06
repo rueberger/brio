@@ -153,6 +153,7 @@ def plot_concat_imgs(imgs, border_thickness=2):
     :rtype: array
 
     """
+    plt.clf()
     assert int(np.sqrt(len(imgs))) == np.sqrt(len(imgs))
     assert imgs[0].shape[0] == imgs[0].shape[1]
     img_length = imgs[0].shape[0]

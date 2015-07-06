@@ -81,10 +81,9 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        delta = self.target_firing_rate - self.firing_rates()
+        delta = self.target_firing_rate - self.firing_rates
         self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         if len(self.bias_updates) >= self.params.update_batch_size:
-            # self.bias += np.mean(self.bias_updates, axis=0)
             self.bias += np.mean(self.bias_updates, axis=0)
             self.bias_updates = []
 
@@ -170,21 +169,24 @@ class Layer(object):
         if len(self.history) > 2 * self.max_history_length:
             self.history = self.history[:self.max_history_length]
         if self.params.keep_extra_history:
-            self.fr_history.append(self.state.firing_rates())
+            self.fr_history.append(self.firing_rates)
             if len(self.fr_history) > 10 * self.max_history_length:
                 self.fr_history = self.fr_history[-5*self.max_history_length:]
 
-    def firing_rates(self):
-        """ returns the mean firing rate for the units in this layer
+    def update_firing_rates(self):
+        """ Compute the current firing rates
           weighted by a decaying exponential.
         The time constant is set as the inverse of the number of presentations
           for each stimulus for the parent network.
+        Should only be called once per simulation step
 
-        :returns: weighted firing rates
-        :rtype: float array
+        :returns: None
+        :rtype: None
         """
-        rectified_hist = np.array(self.history[:self.max_history_length])
-        return np.sum(rectified_hist * self.avg_weighting, axis=0)
+        rect_hist_len = min(len(self.history), self.max_history_length)
+        rectified_hist = np.array(self.history[:rect_hist_len])
+        rectified_avg = self.avg_weighting[:rect_hist_len]
+        self.firing_rates = np.sum(rectified_hist * rectified_avg, axis=0)
 
     def reset(self):
         """ reset the state for this layer

@@ -79,7 +79,7 @@ class ParamPlot(object):
             axis.hist(np.ravel(layer.bias), bins=250, normed=True)
             axis.set_title("Bias distribution for {}".format(str(layer)))
         for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 1]):
-            axis.hist(np.ravel(layer.firing_rates()), bins=250, normed=True)
+            axis.hist(np.ravel(layer.firing_rates), bins=250, normed=True)
             axis.set_title("Firing rates for one stimulus {}".format(str(layer)))
         for layer, axis in zip(self.net.layers[1:], self.ax_arr[:, 2]):
             axis.hist(np.ravel(layer.fr_history), bins=250, normed=True)
@@ -88,7 +88,7 @@ class ParamPlot(object):
             potentials = np.array(layer.pot_history).T
             for u_t in potentials:
                 axis.plot(self.t, u_t)
-            axis.set_title("Potential history for one stimulus {}".format(str(layer))
+            axis.set_title("Potential history for one stimulus {}".format(str(layer)))
         self.fig.subplots_adjust(hspace=0.4)
         plt.draw()
 

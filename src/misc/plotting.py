@@ -115,7 +115,7 @@ def plot_param_distr(net):
         axis.hist(np.ravel(layer.bias), bins=250, normed=True)
         axis.set_title("Bias distribution for {}".format(str(layer)))
     for layer, axis in zip(net.layers[1:], ax_arr[len(net.layers[1:]):, 1]):
-        axis.hist(np.ravel(layer.firing_rates()), bins=250, normed=True)
+        axis.hist(np.ravel(layer.firing_rates), bins=250, normed=True)
         axis.set_title("Firing rate distibution for {}".format(str(layer)))
     fig.subplots_adjust(hspace=0.4)
     plt.draw()

@@ -24,14 +24,18 @@ class Layer(object):
     def __init__(self, n_dims, ltype=LayerType.unconstrained):
         self.n_dims = n_dims
         # randomly initialize state
-        self.state = np.ones(n_dims)
-        self.state[np.random.random(n_dims) < .5] = 0
+        # self.state = np.ones(n_dims)
+        self.state = np.zeros(n_dims)
+#        self.state[np.random.random(n_dims) < .5] = 0
         # to do allow for specification of init method
-        self.bias = np.random.randn(n_dims)
+        # self.bias = np.random.randn(n_dims)
+#        self.bias = np.random.random(n_dims)
+        self.bias = np.ones(n_dims) * 2
         self.bias_updates = []
         self.inputs = []
         self.outputs = []
         self.history = [self.state.copy()]
+        self.fr_history = []
         self.ltype = ltype
         self.update_sign = 1
 
@@ -80,6 +84,7 @@ class Layer(object):
         delta = self.target_firing_rate - self.firing_rates()
         self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         if len(self.bias_updates) >= self.params.update_batch_size:
+            # self.bias += np.mean(self.bias_updates, axis=0)
             self.bias += np.mean(self.bias_updates, axis=0)
             self.bias_updates = []
 
@@ -164,6 +169,10 @@ class Layer(object):
         self.history.insert(0, self.state.copy())
         if len(self.history) > 2 * self.max_history_length:
             self.history = self.history[:self.max_history_length]
+        if self.params.keep_extra_history:
+            self.fr_history.append(self.state.firing_rates())
+            if len(self.fr_history) > 10 * self.max_history_length:
+                self.fr_history = self.fr_history[-5*self.max_history_length:]
 
     def firing_rates(self):
         """ returns the mean firing rate for the units in this layer
@@ -204,6 +213,7 @@ class LIFLayer(Layer):
         self.timestep = 0.1
         self.decay_const = 1. / ltype.firing_rate_multiplier
         self.update_sign = -1
+        self.pot_history = []
 
     @overrides(Layer)
     def sync_update(self):
@@ -226,6 +236,12 @@ class LIFLayer(Layer):
         self.state[fire_idxs] = 1
         # reset membrane potential
         self.potentials[fire_idxs] = 0
+        if self.params.keep_extra_history:
+            if len(self.pot_history) >= self.params.presentations:
+                self.pot_history = []
+            self.pot_history.append(self.pot_history)
+
+
 
     @overrides(Layer)
     def reset(self):

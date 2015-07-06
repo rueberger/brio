@@ -53,5 +53,6 @@ class NetworkParams(object):
         self.weight_learning_rate = weight_learning_rate
         self.layer_history_length = 100
         self.async = async
-        self.update_batch_size = 100
+        self.update_batch_size = presentations
         self.display = display
+        self.keep_extra_history = True

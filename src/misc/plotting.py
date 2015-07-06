@@ -59,7 +59,8 @@ class ParamPlot(object):
         self.cons = list(net.connections)
         self.nrows = max(len(self.cons), len(net.layers[1:]) * 2)
         self.fig, self.ax_arr = plt.subplots(nrows=self.nrows,
-                                             ncols=2, figsize=(16, 10))
+                                             ncols=3, figsize=(16, 10))
+        self.t = np.arange(self.net.params.presentations)
 
     def update_plot(self):
         """ updates the plot without creating a new figure
@@ -79,7 +80,15 @@ class ParamPlot(object):
             axis.set_title("Bias distribution for {}".format(str(layer)))
         for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 1]):
             axis.hist(np.ravel(layer.firing_rates()), bins=250, normed=True)
-            axis.set_title("Firing rate distibution for {}".format(str(layer)))
+            axis.set_title("Firing rates for one stimulus {}".format(str(layer)))
+        for layer, axis in zip(self.net.layers[1:], self.ax_arr[:, 2]):
+            axis.hist(np.ravel(layer.fr_history), bins=250, normed=True)
+            axis.set_title("Firing rate distribution for {}".format(str(layer)))
+        for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 2]):
+            potentials = np.array(layer.pot_history).T
+            for u_t in potentials:
+                axis.plot(self.t, u_t)
+            axis.set_title("Potential history for one stimulus {}".format(str(layer))
         self.fig.subplots_adjust(hspace=0.4)
         plt.draw()
 

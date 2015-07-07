@@ -179,7 +179,7 @@ class Layer(object):
         # rectified_avg = self.avg_weighting[:rect_hist_len]
         # self.firing_rates = np.sum(rectified_hist * rectified_avg, axis=0)
         self.firing_rates += self.params.ema_curr * (self.state - self.firing_rates)
-        self.lifetime_firing_rates += self.params.ema_hist * (self.state _ self.lifetime_firing_rates)
+        self.lifetime_firing_rates += self.params.ema_hist * (self.state - self.lifetime_firing_rates)
 
     def reset(self):
         """ reset the state for this layer

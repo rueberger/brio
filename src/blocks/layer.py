@@ -10,7 +10,6 @@ from blocks.aux import LayerType
 import numpy as np
 np.seterr('raise')
 
-# to do: add a synchronous layer (eg for rbms)
 
 
 class Layer(object):
@@ -23,12 +22,9 @@ class Layer(object):
 
     def __init__(self, n_dims, ltype=LayerType.unconstrained):
         self.n_dims = n_dims
-        # randomly initialize state
-        # self.state = np.ones(n_dims)
         self.state = np.zeros(n_dims)
         self.state[np.random.random(n_dims) < .5] = 0
-        # to do allow for specification of init metho
-        self.bias = np.ones(self.n_dims) * ltype.firing_rate_multiplier
+        self.bias = np.zeros(self.n_dims)
         self.bias_updates = []
         self.inputs = []
         self.outputs = []

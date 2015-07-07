@@ -223,7 +223,7 @@ class LIFLayer(Layer):
         :rtype: None
         """
         # update mebrane potentials
-        self.potentials *= np.exp(- 1. / self.decay_scale)
+        self.potentials *= np.exp(- self.timestep * self.decay_scale)
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T

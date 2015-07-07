@@ -79,11 +79,12 @@ class ParamPlot(object):
             axis.hist(np.ravel(layer.bias), bins=250, normed=True)
             axis.set_title("Bias distribution for {}".format(str(layer)))
         for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 1]):
-            axis.hist(np.ravel(layer.firing_rates), bins=250, normed=True)
-            axis.set_title("Firing rates for one stimulus {}".format(str(layer)))
-        for layer, axis in zip(self.net.layers[1:], self.ax_arr[:, 2]):
             axis.hist(np.ravel(layer.fr_history), bins=250, normed=True)
             axis.set_title("Firing rate distribution for {}".format(str(layer)))
+        for layer, axis in zip(self.net.layers[1:], self.ax_arr[:, 2]):
+            spikes = np.array(layer.history[:self.net.params.presentations]).T
+            axis.hist(np.sum(spikes, axis=0), bins=50)
+            axis.set_title("Spike times for {}".format(str(layer)))
         for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 2]):
             potentials = np.array(layer.pot_history).T
             for u_t in potentials:

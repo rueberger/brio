@@ -137,8 +137,10 @@ class FoldiakConnection(Connection):
     def accumulate_weight_update(self):
         pre_syn_rates = self.presynaptic_layer.firing_rates
         post_syn_rates = self.postsynaptic_layer.firing_rates
-        pre_syn_avg_rates = np.mean(self.presynaptic_layer.fr_history, axis=0)
-        post_syn_avg_rates = np.mean(self.postsynaptic_layer.fr_history, axis=0)
+        # pre_syn_avg_rates = np.mean(self.presynaptic_layer.fr_history, axis=0)
+        # post_syn_avg_rates = np.mean(self.postsynaptic_layer.fr_history, axis=0)
+        pre_syn_avg_rates = self.presynaptic_layer.lifetime_firing_rates
+        post_syn_avg_rates = self.postsynaptic_layer.lifetime_firing_rates
         delta = (np.outer(pre_syn_rates, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates))
         self.weight_updates.append(self.learning_rate * delta)
@@ -155,8 +157,10 @@ class CMConnection(Connection):
     def accumulate_weight_update(self):
         pre_syn_rates = self.presynaptic_layer.firing_rates
         post_syn_rates = self.postsynaptic_layer.firing_rates
-        pre_syn_avg_rates = np.mean(self.presynaptic_layer.fr_history, axis=0)
-        post_syn_avg_rates = np.mean(self.postsynaptic_layer.fr_history, axis=0)
+        # pre_syn_avg_rates = np.mean(self.presynaptic_layer.fr_history, axis=0)
+        # post_syn_avg_rates = np.mean(self.postsynaptic_layer.fr_history, axis=0)
+        pre_syn_avg_rates = self.presynaptic_layer.lifetime_firing_rates
+        post_syn_avg_rates = self.postsynaptic_layer.lifetime_firing_rates
         delta = (np.outer(pre_syn_rates, post_syn_rates) -
                  (np.outer(pre_syn_avg_rates, post_syn_avg_rates) * (1 + self.weights)))
         self.weight_updates.append(self.learning_rate * delta)

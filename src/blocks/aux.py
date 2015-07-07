@@ -41,7 +41,7 @@ class NetworkParams(object):
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.001,
+    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.05,
                  weight_learning_rate=0.028, presentations=50, async=False,
                  display=False):
         self.presentations = presentations
@@ -50,9 +50,10 @@ class NetworkParams(object):
         self.baseline_firing_rate = baseline_firing_rate
         self.bias_learning_rate = bias_learning_rate
         self.weight_learning_rate = weight_learning_rate
+        # how many firing rates to keep in computing the average
         self.layer_history_length = 100
         self.async = async
-        self.update_batch_size = 1
+        self.update_batch_size = presentations
         self.display = display
         self.keep_extra_history = True
         # the number of simulation steps corresponding to the characteristic time of the membrane
@@ -60,3 +61,5 @@ class NetworkParams(object):
         # this is is less meaningful for non-LIF neurons
         self.steps_per_rc_time = 10
         self.steps_per_fr_time = 25
+        self.ema_hist = 0.01
+        self.ema_curr = 0.1

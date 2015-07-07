@@ -30,9 +30,11 @@ class Layer(object):
         self.outputs = []
         self.history = [self.state.copy()]
         self.firing_rates = np.zeros(self.n_dims)
+        self.lifetime_firing_rates = np.zeros(self.n_dims)
         self.fr_history = []
         self.ltype = ltype
         self.update_sign = 1
+
 
     def sync_update(self):
         """ Synchronously updates the state of all of the units in this layer
@@ -172,10 +174,12 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        rect_hist_len = min(len(self.history), self.max_history_length)
-        rectified_hist = np.array(self.history[:rect_hist_len])
-        rectified_avg = self.avg_weighting[:rect_hist_len]
-        self.firing_rates = np.sum(rectified_hist * rectified_avg, axis=0)
+        # rect_hist_len = min(len(self.history), self.max_history_length)
+        # rectified_hist = np.array(self.history[:rect_hist_len])
+        # rectified_avg = self.avg_weighting[:rect_hist_len]
+        # self.firing_rates = np.sum(rectified_hist * rectified_avg, axis=0)
+        self.firing_rates += self.params.ema_curr * (self.state - self.firing_rates)
+        self.lifetime_firing_rates += self.params.ema_hist * (self.state _ self.lifetime_firing_rates)
 
     def reset(self):
         """ reset the state for this layer

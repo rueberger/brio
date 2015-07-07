@@ -121,9 +121,9 @@ class OjaConnection(Connection):
 
     @overrides(Connection)
     def accumulate_weight_update(self):
-        pre_syn_state = self.presynaptic_layer.history[0]
-        post_syn_state = self.postsynaptic_layer.history[0]
-        delta = np.outer(pre_syn_state, post_syn_state) - (post_syn_state ** 2) * self.weights
+        pre_syn_rates = self.presynaptic_layer.firing_rates
+        post_syn_rates = self.postsynaptic_layer.firing_rates
+        delta = np.outer(pre_syn_rates, post_syn_rates) - (post_syn_rates ** 2) * self.weights
         self.weight_updates.append(self.learning_rate * delta)
 
 class FoldiakConnection(Connection):
@@ -135,11 +135,11 @@ class FoldiakConnection(Connection):
 
     @overrides(Connection)
     def accumulate_weight_update(self):
-        pre_syn_state = self.presynaptic_layer.history[0]
-        post_syn_state = self.postsynaptic_layer.history[0]
-        pre_syn_avg_rates = self.presynaptic_layer.firing_rates
-        post_syn_avg_rates = self.postsynaptic_layer.firing_rates
-        delta = (np.outer(pre_syn_state, post_syn_state) -
+        pre_syn_rates = self.presynaptic_layer.firing_rates
+        post_syn_rates = self.postsynaptic_layer.firing_rates
+        pre_syn_avg_rates = np.mean(self.presynaptic_layer.fr_history, axis=0)
+        post_syn_avg_rates = np.mean(self.postsynaptic_layer.fr_history, axis=0)
+        delta = (np.outer(pre_syn_rates, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates))
         self.weight_updates.append(self.learning_rate * delta)
 
@@ -153,11 +153,11 @@ class CMConnection(Connection):
 
     @overrides(Connection)
     def accumulate_weight_update(self):
-        pre_syn_state = self.presynaptic_layer.history[0]
-        post_syn_state = self.postsynaptic_layer.history[0]
-        pre_syn_avg_rates = self.presynaptic_layer.firing_rates
-        post_syn_avg_rates = self.postsynaptic_layer.firing_rates
-        delta = (np.outer(pre_syn_state, post_syn_state) -
+        pre_syn_rates = self.presynaptic_layer.firing_rates
+        post_syn_rates = self.postsynaptic_layer.firing_rates
+        pre_syn_avg_rates = np.mean(self.presynaptic_layer.fr_history, axis=0)
+        post_syn_avg_rates = np.mean(self.postsynaptic_layer.fr_history, axis=0)
+        delta = (np.outer(pre_syn_rates, post_syn_rates) -
                  (np.outer(pre_syn_avg_rates, post_syn_avg_rates) * (1 + self.weights)))
         self.weight_updates.append(self.learning_rate * delta)
 

@@ -47,7 +47,6 @@ class NetworkParams(object):
         self.presentations = presentations
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
-        self.char_timesteps = 10
         self.baseline_firing_rate = baseline_firing_rate
         self.bias_learning_rate = bias_learning_rate
         self.weight_learning_rate = weight_learning_rate
@@ -56,3 +55,8 @@ class NetworkParams(object):
         self.update_batch_size = 1
         self.display = display
         self.keep_extra_history = True
+        # the number of simulation steps corresponding to the characteristic time of the membrane
+        #  rc constant
+        # this is is less meaningful for non-LIF neurons
+        self.steps_per_rc_time = 10
+        self.steps_per_fr_time = 25

@@ -37,8 +37,6 @@ class Layer(object):
         self.fr_history = []
         self.ltype = ltype
         self.update_sign = 1
-        # check this for consistency
-        self.timestep = 0.01
 
     def sync_update(self):
         """ Synchronously updates the state of all of the units in this layer
@@ -143,7 +141,7 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        time_constant = 1. / (network.params.char_timesteps)
+        time_constant = 1. / (network.params.steps_per_fr_time)
         self.max_history_length = network.params.layer_history_length
         self.avg_weighting = np.exp(
             - time_constant * np.arange(self.max_history_length))[:, np.newaxis]
@@ -212,7 +210,8 @@ class LIFLayer(Layer):
         self.potentials = np.zeros(n_dims)
         self.update_sign = -1
         self.pot_history = []
-        # nasty hack
+        # messy trick: inhibitory neurons have a faster firing rate and this gives them
+        # a faster rc time constant too
         self.decay_scale = ltype.firing_rate_multiplier
 
     @overrides(Layer)
@@ -223,7 +222,7 @@ class LIFLayer(Layer):
         :rtype: None
         """
         # update mebrane potentials
-        self.potentials *= np.exp(- self.timestep * self.decay_scale)
+        self.potentials *= np.exp(- self.decay_scale / float(self.steps_per_rc_time))
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
@@ -381,8 +380,8 @@ class InputLayer(Layer):
         flat_state = np.ravel(state)
         assert flat_state.shape == self.state.shape
         # current injection per unit time
-        self.state = flat_state.copy() * self.timestep
-        # self.state = flat_state.copy()
+        # unit of current is in membrane rc time
+        self.state = flat_state.copy() / float(self.params.steps_per_rc_time)
 
 
 class RasterInputLayer(Layer):
@@ -408,7 +407,6 @@ class RasterInputLayer(Layer):
         # overall scale of gaussian. 1 is normalized
         self.scale = 3
         # how long in each time bin
-#        self.timestep = 0.5
         # also need to represent cooling schedule somehow
 
     def set_state(self, scalar_value):
@@ -421,6 +419,8 @@ class RasterInputLayer(Layer):
         """
         assert self.lower_bnd < scalar_value < self.upper_bnd
         rates = self.rate_at_points(scalar_value)
+        # this will raise an error
+        # need to decide what the proper timescale here is
         p_fire_in_bin = 1 - np.exp(-rates * self.timestep)
         firing_idx = (np.random.random(self.n_dims) < p_fire_in_bin)
         self.state = np.zeros(self.n_dims)

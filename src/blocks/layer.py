@@ -161,12 +161,10 @@ class Layer(object):
         :rtype: None
         """
         self.history.insert(0, self.state.copy())
+        self.fr_history.append(self.firing_rates)
         if len(self.history) > 2 * self.max_history_length:
             self.history = self.history[:self.max_history_length]
-        if self.params.keep_extra_history:
-            self.fr_history.append(self.firing_rates)
-            if len(self.fr_history) > 10 * self.max_history_length:
-                self.fr_history = self.fr_history[-5*self.max_history_length:]
+            self.fr_history = self.fr_history[self.max_history_length:]
 
     def update_firing_rates(self):
         """ Compute the current firing rates

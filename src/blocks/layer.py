@@ -26,18 +26,19 @@ class Layer(object):
         # randomly initialize state
         # self.state = np.ones(n_dims)
         self.state = np.zeros(n_dims)
-#        self.state[np.random.random(n_dims) < .5] = 0
-        # to do allow for specification of init method
-        # self.bias = np.random.randn(n_dims)
-#        self.bias = np.random.random(n_dims)
-        self.bias = np.ones(n_dims) * 2
+        self.state[np.random.random(n_dims) < .5] = 0
+        # to do allow for specification of init metho
+        self.bias = np.ones(self.n_dims) * ltype.firing_rate_multiplier
         self.bias_updates = []
         self.inputs = []
         self.outputs = []
         self.history = [self.state.copy()]
+        self.firing_rates = np.zeros(self.n_dims)
         self.fr_history = []
         self.ltype = ltype
         self.update_sign = 1
+        # check this for consistency
+        self.timestep = 0.01
 
     def sync_update(self):
         """ Synchronously updates the state of all of the units in this layer
@@ -84,7 +85,7 @@ class Layer(object):
         delta = self.target_firing_rate - self.firing_rates
         self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         if len(self.bias_updates) >= self.params.update_batch_size:
-            self.bias += np.mean(self.bias_updates, axis=0)
+            self.bias += np.sum(self.bias_updates, axis=0)
             self.bias_updates = []
 
     def add_input(self, input_connection):
@@ -142,12 +143,8 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        # time_constant = 1./ network.params.presentations
-        time_constant = 1. / (
-            network.params.presentations
-            * network.params.char_itrs)
+        time_constant = 1. / (network.params.char_timesteps)
         self.max_history_length = network.params.layer_history_length
-        # I don't think normalization matters
         self.avg_weighting = np.exp(
             - time_constant * np.arange(self.max_history_length))[:, np.newaxis]
         self.avg_weighting *= 1. / (np.sum(self.avg_weighting))
@@ -195,6 +192,7 @@ class Layer(object):
         :rtype: None
         """
         self.state = np.zeros(self.n_dims)
+        self.update_history()
 
     def __repr__(self):
         """
@@ -212,10 +210,10 @@ class LIFLayer(Layer):
         super(LIFLayer, self).__init__(n_dims, ltype)
         # now state represents spikes and still works with everything else
         self.potentials = np.zeros(n_dims)
-        self.timestep = 0.1
-        self.decay_const = 1. / ltype.firing_rate_multiplier
         self.update_sign = -1
         self.pot_history = []
+        # nasty hack
+        self.decay_scale = ltype.firing_rate_multiplier
 
     @overrides(Layer)
     def sync_update(self):
@@ -225,13 +223,12 @@ class LIFLayer(Layer):
         :rtype: None
         """
         # update mebrane potentials
-        self.potentials *= np.exp(-self.timestep / self.decay_const)
+        self.potentials *= np.exp(- 1. / self.decay_scale)
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
             state = input_connection.presynaptic_layer.history[0]
             self.potentials += multiplier * np.dot(weights, state)
-
         # set state for neurons that cross threshold
         fire_idxs = np.where(self.potentials >= self.bias)
         self.state = np.zeros(self.n_dims)
@@ -248,7 +245,9 @@ class LIFLayer(Layer):
     @overrides(Layer)
     def reset(self):
         self.state = np.zeros(self.n_dims)
+        # self.potentials = np.random.random(self.n_dims) * 0.5 + 0.2
         self.potentials = np.zeros(self.n_dims)
+        self.update_history()
 
 
 class BoltzmannMachineLayer(Layer):
@@ -381,7 +380,10 @@ class InputLayer(Layer):
         # will want to record input data shape for plotting purposesx
         flat_state = np.ravel(state)
         assert flat_state.shape == self.state.shape
-        self.state = flat_state.copy()
+        # current injection per unit time
+        self.state = flat_state.copy() * self.timestep
+        # self.state = flat_state.copy()
+
 
 class RasterInputLayer(Layer):
     """
@@ -406,7 +408,7 @@ class RasterInputLayer(Layer):
         # overall scale of gaussian. 1 is normalized
         self.scale = 3
         # how long in each time bin
-        self.timestep = 0.5
+#        self.timestep = 0.5
         # also need to represent cooling schedule somehow
 
     def set_state(self, scalar_value):

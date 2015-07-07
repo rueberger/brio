@@ -54,7 +54,7 @@ class Connection(object):
         """
         self.accumulate_weight_update()
         if len(self.weight_updates) >= self.params.update_batch_size:
-            self.weights += np.mean(self.weight_updates, axis=0)
+            self.weights += np.sum(self.weight_updates, axis=0)
             self.weight_updates = []
             if self.presynaptic_layer.ltype.constrain_weights:
                 self.__impose_constraint()

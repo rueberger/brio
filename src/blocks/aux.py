@@ -47,12 +47,12 @@ class NetworkParams(object):
         self.presentations = presentations
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
-        self.char_itrs = 1. / 5
+        self.char_timesteps = 10
         self.baseline_firing_rate = baseline_firing_rate
         self.bias_learning_rate = bias_learning_rate
         self.weight_learning_rate = weight_learning_rate
         self.layer_history_length = 100
         self.async = async
-        self.update_batch_size = presentations
+        self.update_batch_size = 1
         self.display = display
         self.keep_extra_history = True

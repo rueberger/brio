@@ -31,6 +31,8 @@ class Layer(object):
         self.history = [self.state.copy()]
         self.firing_rates = np.zeros(self.n_dims)
         self.lifetime_firing_rates = np.zeros(self.n_dims)
+        self.lfr_bias, self.lfr_max = 1, 1
+        self.fr_bias, self.fr_max = 1, 1
         self.fr_history = []
         self.ltype = ltype
         self.update_sign = 1
@@ -82,7 +84,7 @@ class Layer(object):
         # moving average used for the firing rate everywhere else....
         # inelegant and I hope not necessary but this comes directly out of the
         # EI net implementation
-        non_windowed_rate = np.mean(self.history[:self.max_history_length])
+        non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
         delta = self.target_firing_rate - non_windowed_rate
         self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         if len(self.bias_updates) >= self.params.update_batch_size:
@@ -179,8 +181,14 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        self.firing_rates += self.params.ema_curr * (self.state - self.firing_rates)
-        self.lifetime_firing_rates += self.params.ema_hist * (self.state - self.lifetime_firing_rates)
+        self.fr_bias += self.params.ema_curr * (self.state - self.fr_bias)
+        self.fr_max += self.params.ema_curr * (1 - self.fr_max)
+        # double EMA
+        self.lfr_bias += self.params.ema_hist * (self.fr_bias - self.lfr_bias)
+        self.lfr_max += self.params.ema_hist * (1 - self.lfr_max)
+        # normalize
+        self.firing_rates = self.fr_bias / self.fr_max
+        self.lifetime_firing_rates = self.lfr_bias / self.lfr_max
 
     def reset(self):
         """ reset the state for this layer

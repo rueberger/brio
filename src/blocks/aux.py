@@ -4,7 +4,7 @@ LayerType: Enum that holds type information for layers
 NetworkParams: container
 """
 from enum import Enum, unique
-
+import numpy as np
 #to do: look into replacing this with protobuf
 
 @unique
@@ -45,6 +45,8 @@ class NetworkParams(object):
                  weight_learning_rate=0.028, presentations=50, async=False,
                  display=False):
         self.presentations = presentations
+        self.images_per_batch = 100
+        self.update_batch_size = presentations * self.images_per_batch
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
         self.baseline_firing_rate = baseline_firing_rate
@@ -53,13 +55,13 @@ class NetworkParams(object):
         # how many firing rates to keep in computing the average
         self.layer_history_length = presentations * 10
         self.async = async
-        self.update_batch_size = presentations
         self.display = display
         self.keep_extra_history = True
         # the number of simulation steps corresponding to the characteristic time of the membrane
         #  rc constant
         # this is is less meaningful for non-LIF neurons
         self.steps_per_rc_time = 10
-        self.steps_per_fr_time = 25
-        self.ema_hist = 0.0005
-        self.ema_curr = 0.1
+        self.steps_per_fr_time = 10
+        # for now the characteristic time for the ema history is the update batch size
+        self.ema_hist = 1 - np.exp(- 1. / self.update_batch_size)
+        self.ema_curr = 1 - np.exp( -1. / self.steps_per_fr_time)

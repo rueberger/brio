@@ -82,7 +82,7 @@ class Layer(object):
         # moving average used for the firing rate everywhere else....
         # inelegant and I hope not necessary but this comes directly out of the
         # EI net implementation
-        non_windowed_rate = np.mean(self.history[:self.max_history_lengthy])
+        non_windowed_rate = np.mean(self.history[:self.max_history_length])
         delta = self.target_firing_rate - non_windowed_rate
         self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         if len(self.bias_updates) >= self.params.update_batch_size:

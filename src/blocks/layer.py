@@ -78,7 +78,12 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        delta = self.target_firing_rate - self.firing_rates
+        # incredibly confusing, but the bias update does NOT use the exponential
+        # moving average used for the firing rate everywhere else....
+        # inelegant and I hope not necessary but this comes directly out of the
+        # EI net implementation
+        non_windowed_rate = np.mean(self.history[:self.max_history_lengthy])
+        delta = self.target_firing_rate - non_windowed_rate
         self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         if len(self.bias_updates) >= self.params.update_batch_size:
             self.bias += np.sum(self.bias_updates, axis=0)
@@ -174,10 +179,6 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        # rect_hist_len = min(len(self.history), self.max_history_length)
-        # rectified_hist = np.array(self.history[:rect_hist_len])
-        # rectified_avg = self.avg_weighting[:rect_hist_len]
-        # self.firing_rates = np.sum(rectified_hist * rectified_avg, axis=0)
         self.firing_rates += self.params.ema_curr * (self.state - self.firing_rates)
         self.lifetime_firing_rates += self.params.ema_hist * (self.state - self.lifetime_firing_rates)
 

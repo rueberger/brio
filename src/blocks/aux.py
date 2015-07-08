@@ -51,7 +51,7 @@ class NetworkParams(object):
         self.bias_learning_rate = bias_learning_rate
         self.weight_learning_rate = weight_learning_rate
         # how many firing rates to keep in computing the average
-        self.layer_history_length = 100
+        self.layer_history_length = presentations * 10
         self.async = async
         self.update_batch_size = presentations
         self.display = display
@@ -61,5 +61,5 @@ class NetworkParams(object):
         # this is is less meaningful for non-LIF neurons
         self.steps_per_rc_time = 10
         self.steps_per_fr_time = 25
-        self.ema_hist = 0.01
+        self.ema_hist = 0.0005
         self.ema_curr = 0.1

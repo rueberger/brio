@@ -41,8 +41,8 @@ class NetworkParams(object):
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.0001,
-                 weight_learning_rate=0.005, presentations=50, async=False,
+    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.002,
+                 weight_learning_rate=0.01, presentations=50, async=False,
                  display=False):
         self.presentations = presentations
         self.stimuli_per_epoch = 100

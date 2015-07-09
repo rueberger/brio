@@ -85,8 +85,9 @@ class Layer(object):
         # moving average used for the firing rate everywhere else....
         # inelegant and I hope not necessary but this comes directly out of the
         # EI net implementation
-        non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
-        delta = self.target_firing_rate - non_windowed_rate
+        # non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
+        # delta = self.target_firing_rate - non_windowed_rate
+        delta = self.target_firing_rate - self.lfr_mean
         # self.bias_updates.append(self.update_sign * self.learning_rate * delta)
         self.bias += (self.update_sign * self.learning_rate *
                       self.params.update_batch_size * delta)

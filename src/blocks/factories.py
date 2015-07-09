@@ -50,8 +50,8 @@ def einet_factory(layer_sizes, params=NetworkParams()):
         layer.LIFLayer(layer_sizes[1], LayerType.excitatory),
         layer.LIFLayer(layer_sizes[2], LayerType.inhibitory)
     ]
-    connection.OjaConnection(layers[0], layers[1], lrate_multiplier=0.02)
-    connection.CMConnection(layers[1], layers[2], weight_scheme='uniform', lrate_multiplier=.28)
-    connection.CMConnection(layers[2], layers[2], lrate_multiplier=0.6, weight_scheme='zero')
-    connection.CMConnection(layers[2], layers[1], weight_scheme='zero', lrate_multiplier=0.28)
+    connection.OjaConnection(layers[0], layers[1], lrate_multiplier=0.2)
+    connection.CMConnection(layers[1], layers[2], weight_scheme='uniform', lrate_multiplier=.7)
+    connection.CMConnection(layers[2], layers[2],weight_scheme='zero', lrate_multiplier=1.5)
+    connection.CMConnection(layers[2], layers[1], weight_scheme='zero', lrate_multiplier=0.7)
     return network.Network(layers, params)

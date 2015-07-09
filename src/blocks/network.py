@@ -83,10 +83,11 @@ class Network(object):
         :rtype: None
         """
         for idx, stimulus in enumerate(stimulus_generator):
-            self.run_network(stimulus)
+            self.update_network(stimulus)
             self.t_counter += 1
             if idx % self.params.stimuli_per_epoch == 0 and idx != 0:
                 self.training_iteration()
+                self.describe_progress()
 
 
     def update_network(self, stimulus):

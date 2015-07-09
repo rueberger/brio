@@ -28,14 +28,15 @@ class Layer(object):
         self.bias_updates = []
         self.inputs = []
         self.outputs = []
-        self.history = [self.state.copy()]
-        self.firing_rates = np.zeros(self.n_dims)
-        self.lifetime_firing_rates = np.zeros(self.n_dims)
-        self.lfr_bias, self.lfr_max = 1, 1
-        self.fr_bias, self.fr_max = 1, 1
-        self.fr_history = []
         self.ltype = ltype
         self.update_sign = 1
+        # hodge podge of firing rate attributes
+        self.history = [self.state.copy()]
+        self.firing_rates = np.zeros(self.n_dims)
+        self.fr_bias, self.fr_max = 1, 1
+        self.fr_history = []
+        # initialized when target firing rate is imported
+        self.lfr_mean = None
 
 
     def sync_update(self):
@@ -157,6 +158,17 @@ class Layer(object):
                                    network.params.baseline_firing_rate)
         self.learning_rate = network.params.bias_learning_rate
         self.params = network.params
+        self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
+
+
+    def update_lifetime_mean(self):
+        """ Updates the lifetime mean firing rate for this layer
+
+        :returns: None
+        :rtype: None
+        """
+        epoch_mean = np.mean(self.fr_history[:self.params.layer_history_length], axis=0)
+        self.lfr_mean += self.ema_lfr * (epoch_mean - self.lfr_mean)
 
 
 
@@ -185,12 +197,8 @@ class Layer(object):
         """
         self.fr_bias += self.params.ema_curr * (self.state - self.fr_bias)
         self.fr_max += self.params.ema_curr * (1 - self.fr_max)
-        # double EMA
-        self.lfr_bias += self.params.ema_hist * (self.fr_bias - self.lfr_bias)
-        self.lfr_max += self.params.ema_hist * (1 - self.lfr_max)
         # normalize
         self.firing_rates = self.fr_bias / self.fr_max
-        self.lifetime_firing_rates = self.lfr_bias / self.lfr_max
 
     def reset(self):
         """ reset the state for this layer

@@ -68,11 +68,10 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        if self.t_counter % 25 == 0:
-            print "Training iteration: {}".format(self.t_counter)
-            print "Example firing rate: {}".format(self.layers[1].firing_rates[0])
-            if self.params.display:
-                self.param_plot.update_plot()
+        print "Training iteration: {}".format(self.t_counter)
+        print "Example firing rate: {}".format(self.layers[1].firing_rates[0])
+        if self.params.display:
+            self.param_plot.update_plot()
 
     def train(self, stimulus_generator):
         """ Trains the network on the generated stimulus
@@ -83,26 +82,14 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        for stimulus in stimulus_generator:
+        for idx, stimulus in enumerate(stimulus_generator):
             self.run_network(stimulus)
+            self.t_counter += 1
+            if idx % self.params.stimuli_per_epoch == 0 and idx != 0:
+                self.training_iteration()
 
-    def run_network(self, stimulus, verbose=True):
-        """ Presents the stimulus to the network
-        Updates the state and performs a training iteration
-        This is the method to call from external code
-        training does not begin until the network has sufficient history to compute
-          mean firing rates
 
-        :param stimulus: array of shape (input_layer.ndims, )
-        :returns: None
-        :rtype: None
-        """
-        self.update_network(stimulus, train=(len(self.layers[0].history) >= self.params.layer_history_length))
-        if verbose:
-            self.describe_progress()
-        self.t_counter += 1
-
-    def update_network(self, stimulus, train=False):
+    def update_network(self, stimulus):
         """ Present stimulus to the network and update the state
 
         :param stimulus: array of shape (input_layer.ndims, )
@@ -119,8 +106,6 @@ class Network(object):
                 for layer in self.layers:
                     layer.update_firing_rate()
                     layer.update_history()
-                if train:
-                    self.training_iteration()
         else:
             for _ in xrange(self.params.presentations):
                 for layer in self.layers[1:]:
@@ -128,8 +113,6 @@ class Network(object):
                 for layer in self.layers:
                     layer.update_firing_rates()
                     layer.update_history()
-                if train:
-                    self.training_iteration()
 
 
 
@@ -195,8 +178,3 @@ class Network(object):
             layer.unpack_network_params(self)
         for connection in self.connections:
             connection.unpack_network_params(self)
-
-
-
-
-    # burn in method

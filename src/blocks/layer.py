@@ -25,6 +25,7 @@ class Layer(object):
         self.state = np.zeros(n_dims)
         self.state[np.random.random(n_dims) < .5] = 0
         self.bias = np.ones(self.n_dims) * 2
+#        self.bias = np.zeros(self.n_dims)
         self.bias_updates = []
         self.inputs = []
         self.outputs = []
@@ -85,15 +86,11 @@ class Layer(object):
         # moving average used for the firing rate everywhere else....
         # inelegant and I hope not necessary but this comes directly out of the
         # EI net implementation
-        # non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
-        # delta = self.target_firing_rate - non_windowed_rate
-        delta = self.target_firing_rate - self.lfr_mean
-        # self.bias_updates.append(self.update_sign * self.learning_rate * delta)
+        non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
+        delta = self.target_firing_rate - non_windowed_rate
+        # delta = self.target_firing_rate - self.lfr_mean
         self.bias += (self.update_sign * self.learning_rate *
                       self.params.update_batch_size * delta)
-        # if len(self.bias_updates) >= self.params.update_batch_size:
-        #     self.bias += np.sum(self.bias_updates, axis=0)
-        #     self.bias_updates = []
 
     def add_input(self, input_connection):
         """ add input_connection to the list of connections feeding into this layer
@@ -208,7 +205,6 @@ class Layer(object):
         :rtype: None
         """
         self.state = np.zeros(self.n_dims)
-        self.update_history()
 
     def __repr__(self):
         """
@@ -263,9 +259,8 @@ class LIFLayer(Layer):
     @overrides(Layer)
     def reset(self):
         self.state = np.zeros(self.n_dims)
-        # self.potentials = np.random.random(self.n_dims) * 0.5 + 0.2
-        self.potentials = np.zeros(self.n_dims)
-        self.update_history()
+        self.potentials = np.random.random(self.n_dims) * self.bias
+        #self.potentials = np.zeros(self.n_dims)
 
 
 class BoltzmannMachineLayer(Layer):

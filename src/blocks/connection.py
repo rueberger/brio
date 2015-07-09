@@ -13,13 +13,13 @@ class Connection(object):
     """
 
     def __init__(self, input_layer, output_layer,
-                 learning_rate=None, weight_scheme='uniform'):
+                 lrate_multiplier=1, weight_scheme='uniform'):
         self.presynaptic_layer = input_layer
         self.postsynaptic_layer = output_layer
         self.postsynaptic_layer.add_input(self)
         self.presynaptic_layer.add_output(self)
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
-        self.learning_rate = learning_rate
+        self.lrate_multiplier = lrate_multiplier
         self.__init_weights(weight_scheme)
 
 
@@ -89,7 +89,7 @@ class Connection(object):
         :rtype: None
         """
         self.params = network.params
-        self.learning_rate = self.learning_rate or network.params.weight_learning_rate
+        self.learning_rate = self.lrate_multiplier *  network.params.baseline_weight_lrate
         self.epoch_size = self.params.update_batch_size
 
     def __impose_constraint(self):

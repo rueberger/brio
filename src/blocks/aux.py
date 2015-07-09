@@ -41,17 +41,17 @@ class NetworkParams(object):
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.05,
-                 weight_learning_rate=0.028, presentations=50, async=False,
+    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.001,
+                 weight_learning_rate=0.005, presentations=50, async=False,
                  display=False):
         self.presentations = presentations
-        self.stimuli_per_epoch = 10
+        self.stimuli_per_epoch = 100
         self.update_batch_size = presentations * self.stimuli_per_epoch
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
         self.baseline_firing_rate = baseline_firing_rate
         self.bias_learning_rate = bias_learning_rate
-        self.weight_learning_rate = weight_learning_rate
+        self.baseline_weight_lrate = weight_learning_rate
         # how many firing rates to keep in computing the average
         self.layer_history_length = self.update_batch_size
         self.keep_extra_history = True

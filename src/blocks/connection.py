@@ -120,7 +120,8 @@ class OjaConnection(Connection):
     def bulk_weight_update(self):
         pre_syn_rates = self.presynaptic_layer.fr_history[:self.params.update_batch_size]
         post_syn_rates = self.postsynaptic_layer.fr_history[:self.params.update_batch_size]
-        delta = np.dot(pre_syn_rates, post_syn_rates) - (post_syn_rates ** 2) * self.weights
+        delta = (np.dot(pre_syn_rates, post_syn_rates) -
+                 np.sum(post_syn_rates ** 2, axis=0) * self.weights)
         self.weights += self.learning_rate * delta
 
 class FoldiakConnection(Connection):

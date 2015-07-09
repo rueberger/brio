@@ -45,7 +45,7 @@ class NetworkParams(object):
                  weight_learning_rate=0.028, presentations=50, async=False,
                  display=False):
         self.presentations = presentations
-        self.images_per_batch = 100
+        self.images_per_batch = 10
         self.update_batch_size = presentations * self.images_per_batch
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
@@ -53,10 +53,10 @@ class NetworkParams(object):
         self.bias_learning_rate = bias_learning_rate
         self.weight_learning_rate = weight_learning_rate
         # how many firing rates to keep in computing the average
-        self.layer_history_length = presentations * 10
+        self.layer_history_length = self.update_batch_size
+        self.keep_extra_history = True
         self.async = async
         self.display = display
-        self.keep_extra_history = True
         # the number of simulation steps corresponding to the characteristic time of the membrane
         #  rc constant
         # this is is less meaningful for non-LIF neurons

@@ -86,10 +86,12 @@ class Layer(object):
         # EI net implementation
         non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
         delta = self.target_firing_rate - non_windowed_rate
-        self.bias_updates.append(self.update_sign * self.learning_rate * delta)
-        if len(self.bias_updates) >= self.params.update_batch_size:
-            self.bias += np.sum(self.bias_updates, axis=0)
-            self.bias_updates = []
+        # self.bias_updates.append(self.update_sign * self.learning_rate * delta)
+        self.bias += (self.update_sign * self.learning_rate *
+                      self.params.update_batch_size * delta)
+        # if len(self.bias_updates) >= self.params.update_batch_size:
+        #     self.bias += np.sum(self.bias_updates, axis=0)
+        #     self.bias_updates = []
 
     def add_input(self, input_connection):
         """ add input_connection to the list of connections feeding into this layer

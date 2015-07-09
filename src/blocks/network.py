@@ -126,7 +126,7 @@ class Network(object):
         :rtype: None
         """
         for layer in self.layers:
-            self.update_lifetime_mean()
+            layer.update_lifetime_mean()
         for connection in self.connections:
             connection.weight_update()
         for layer in self.layers[1:]:

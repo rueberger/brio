@@ -88,8 +88,9 @@ class Connection(object):
         :returns: None
         :rtype: None
         """
-        self.learning_rate = self.learning_rate or network.params.weight_learning_rate
         self.params = network.params
+        self.learning_rate = self.learning_rate or network.params.weight_learning_rate
+        self.epoch_size = self.params.update_batch_size
 
     def __impose_constraint(self):
         """
@@ -120,7 +121,7 @@ class OjaConnection(Connection):
     def bulk_weight_update(self):
         pre_syn_rates = np.array(self.presynaptic_layer.fr_history[:self.params.update_batch_size])
         post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.params.update_batch_size])
-        delta = (np.dot(pre_syn_rates.T post_syn_rates) -
+        delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.sum(post_syn_rates ** 2, axis=0) * self.weights)
         self.weights += self.learning_rate * delta
 
@@ -133,14 +134,14 @@ class FoldiakConnection(Connection):
 
     @overrides(Connection)
     def bulk_weight_update(self):
-        pre_syn_rates = np.array(self.presynaptic_layer.fr_history[:self.params.update_batch_size])
-        post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.params.update_batch_size])
+        pre_syn_rates = np.array(self.presynaptic_layer.fr_history[:self.epoch_size])
+        post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.epoch_size])
         pre_syn_avg_rates = np.mean(
-            self.presynaptic_layer.history[:self.params.update_batch_size], axis=0)
+            self.presynaptic_layer.history[:self.epoch_size], axis=0)
         post_syn_avg_rates = np.mean(
-            self.postsynaptic_layer.history[:self.params.update_batch_size], axis=0)
+            self.postsynaptic_layer.history[:self.epoch_size], axis=0)
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
-                 np.outer(pre_syn_avg_rates, post_syn_avg_rates) * self.update_batch_size)
+                 np.outer(pre_syn_avg_rates, post_syn_avg_rates) * self.epoch_size)
         self.weights += self.learning_rate * delta
 
 
@@ -155,15 +156,15 @@ class CMConnection(Connection):
 
     @overrides(Connection)
     def bulk_weight_update(self):
-        pre_syn_rates = np.array(self.presynaptic_layer.fr_history[:self.params.update_batch_size])
-        post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.params.update_batch_size])
+        pre_syn_rates = np.array(self.presynaptic_layer.fr_history[:self.epoch_size])
+        post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.epoch_size])
         pre_syn_avg_rates = np.mean(
-            self.presynaptic_layer.history[:self.params.update_batch_size], axis=0)
+            self.presynaptic_layer.history[:self.epoch_size], axis=0)
         post_syn_avg_rates = np.mean(
-            self.postsynaptic_layer.history[:self.params.update_batch_size], axis=0)
-        delta = (np.dot(pre_syn_rates.T post_syn_rates) -
+            self.postsynaptic_layer.history[:self.epoch_size], axis=0)
+        delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates) *
-                 self.update_batch_size * (1 + self.weights))
+                 self.epoch_size * (1 + self.weights))
         self.weights += self.learning_rate * delta
 
 class ConstantConnection(Connection):

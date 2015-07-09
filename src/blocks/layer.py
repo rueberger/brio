@@ -24,7 +24,7 @@ class Layer(object):
         self.n_dims = n_dims
         self.state = np.zeros(n_dims)
         self.state[np.random.random(n_dims) < .5] = 0
-        self.bias = np.zeros(self.n_dims)
+        self.bias = np.ones(self.n_dims) * 2
         self.bias_updates = []
         self.inputs = []
         self.outputs = []

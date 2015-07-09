@@ -55,3 +55,22 @@ def einet_factory(layer_sizes, params=NetworkParams()):
     connection.CMConnection(layers[2], layers[2],weight_scheme='zero', lrate_multiplier=1.5)
     connection.CMConnection(layers[2], layers[1], weight_scheme='zero', lrate_multiplier=0.7)
     return network.Network(layers, params)
+
+def sailnet_factory(layer_sizes, params=NetworkParams()):
+    """ Constructs SAILnet as specified in Zylderberg 2011
+
+    :param layer_sizes: list of the layer sizes. Must be of length 3.
+      format is [input_size, excitatory_size, inhibitory_size]
+      in general the inhibitory layer should be much smaller than the excitatory layer
+    :returns: the constructed SAILnet
+    :rtype: Network
+    """
+
+    assert len(layer_sizes) == 2
+    layers = [
+        layer.InputLayer(layer_sizes[0]),
+        layer.LIFLayer(layer_sizes[1]),
+    ]
+    connection.OjaConnection(layers[0], layers[1], lrate_multiplier=0.2)
+    connection.FoldiakConnection(layers[1], layers[1], weight_scheme='uniform', lrate_multiplier=.7)
+    return network.Network(layers, params)

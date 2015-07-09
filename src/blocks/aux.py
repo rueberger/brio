@@ -45,8 +45,8 @@ class NetworkParams(object):
                  weight_learning_rate=0.028, presentations=50, async=False,
                  display=False):
         self.presentations = presentations
-        self.images_per_batch = 10
-        self.update_batch_size = presentations * self.images_per_batch
+        self.stimuli_per_epoch = 10
+        self.update_batch_size = presentations * self.stimuli_per_epoch
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
         self.baseline_firing_rate = baseline_firing_rate

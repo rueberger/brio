@@ -168,7 +168,7 @@ class Layer(object):
         :rtype: None
         """
         epoch_mean = np.mean(self.fr_history[:self.params.layer_history_length], axis=0)
-        self.lfr_mean += self.ema_lfr * (epoch_mean - self.lfr_mean)
+        self.lfr_mean += self.params.ema_lfr * (epoch_mean - self.lfr_mean)
 
 
 
@@ -232,6 +232,7 @@ class LIFLayer(Layer):
         self.decay_scale = ltype.firing_rate_multiplier
 
     @overrides(Layer)
+
     def sync_update(self):
         """ Implements synchronous state update for leaky integrate and fire neurons
 

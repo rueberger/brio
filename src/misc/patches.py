@@ -29,3 +29,9 @@ def patch_generator(images, patch_size, n_patches=1000, crop=4, normalize=True):
             yield img
         else:
             yield img
+
+def mean_zero_patch(images, patch_size, n_patches, crop=4):
+    patches = np.array(list(patch_generator(images, patch_size, n_patches, crop, True)))
+    pixel_mean = np.mean(patches, axis=0)
+    for patch in patches:
+        yield patch - pixel_mean

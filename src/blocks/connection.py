@@ -2,7 +2,7 @@
 This module holds the connection class and its subclasses:
 Connection: Base class for connections. Defines interface and shared methods
 """
-from misc.utils import overrides
+from misc.utils import overrides, normalize_by_row
 import numpy as np
 np.seterr('raise')
 
@@ -39,8 +39,6 @@ class Connection(object):
                                      self.postsynaptic_layer.n_dims))
         else:
             raise NotImplementedError("please choose on of the implemented weight schemes")
-
-
 
 
     def weight_update(self):
@@ -115,6 +113,14 @@ class OjaConnection(Connection):
     Connection class that uses Oja's rule to iteratively update the weights
     """
 
+    def __init__(self, input_layer, output_layer,
+                 lrate_multiplier=1, weight_scheme='uniform'):
+        super(OjaConnection, self).__init__(input_layer, output_layer,
+                                            lrate_multiplier, weight_scheme)
+        # stupid trick to normalize columns
+        self.weights = normalize_by_row(self.weights.T).T
+
+
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
@@ -156,8 +162,10 @@ class CMConnection(Connection):
     def bulk_weight_update(self):
         pre_syn_rates = np.array(self.presynaptic_layer.fr_history[:self.epoch_size])
         post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.epoch_size])
-        pre_syn_avg_rates = self.presynaptic_layer.lfr_mean
-        post_syn_avg_rates = self.postsynaptic_layer.lfr_mean
+#        pre_syn_avg_rates = self.presynaptic_layer.lfr_mean
+ #       post_syn_avg_rates = self.postsynaptic_layer.lfr_mean
+        pre_syn_avg_rates = self.presynaptic_layer.target_firing_rate
+        post_syn_avg_rates = self.postsynaptic_layer.target_firing_rate
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates) *
                  self.epoch_size * (1 + self.weights))

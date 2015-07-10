@@ -30,7 +30,8 @@ def normalize_by_row(matrix):
     normalizes rows of matrix
     returns normalized matrix
     """
-    row_sums = matrix.sum(axis=1)
+
+    row_sums = np.sqrt(np.sum(matrix ** 2, axis=1))
     # replaces 0 with 1 to avoid divide by 0
     np.place(row_sums, row_sums == 0, 1)
     norm_matrix = matrix / row_sums[:, np.newaxis]

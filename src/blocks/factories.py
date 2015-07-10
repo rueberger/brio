@@ -50,8 +50,8 @@ def einet_factory(layer_sizes, params=NetworkParams()):
         layer.LIFLayer(layer_sizes[1], LayerType.excitatory),
         layer.LIFLayer(layer_sizes[2], LayerType.inhibitory)
     ]
-    connection.OjaConnection(layers[0], layers[1], lrate_multiplier=0.2)
-    connection.CMConnection(layers[1], layers[2], weight_scheme='zero', lrate_multiplier=.7)
+    connection.OjaConnection(layers[0], layers[1], lrate_multiplier=0.1)
+    connection.CMConnection(layers[1], layers[2], weight_scheme='zero', olrate_multiplier=.7)
     connection.CMConnection(layers[2], layers[2],weight_scheme='zero', lrate_multiplier=1.5)
     connection.CMConnection(layers[2], layers[1], weight_scheme='zero', lrate_multiplier=0.7)
     return network.Network(layers, params)
@@ -76,10 +76,12 @@ def sailnet_factory(layer_sizes, params=NetworkParams()):
     return network.Network(layers, params)
 
 def perceptron_factory(layer_sizes, params=NetworkParams()):
+    import numpy as np
     assert len(layer_sizes) == 2
     layers = [
         layer.InputLayer(layer_sizes[0]),
-        layer.PerceptronLayer(layer_sizes[0])
+        layer.PerceptronLayer(layer_sizes[0], update_bias=False)
     ]
+    layers[1].bias = np.zeros(layer_sizes[1])
     connection.OjaConnection(layers[0], layers[1])
     return network.Network(layers, params)

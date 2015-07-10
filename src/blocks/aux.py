@@ -41,8 +41,8 @@ class NetworkParams(object):
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.01,
-                 weight_learning_rate=0.01, presentations=50, async=False,
+    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.25,
+                 baseline_lrate=0.01, presentations=50, async=False,
                  display=False):
         self.presentations = presentations
         self.stimuli_per_epoch = 100
@@ -51,7 +51,7 @@ class NetworkParams(object):
         #   average
         self.baseline_firing_rate = baseline_firing_rate
         self.bias_learning_rate = bias_learning_rate
-        self.baseline_weight_lrate = weight_learning_rate
+        self.baseline_lrate = baseline_lrate
         # how many firing rates to keep in computing the average
         self.layer_history_length = self.update_batch_size
         self.keep_extra_history = True
@@ -61,7 +61,7 @@ class NetworkParams(object):
         #  rc constant
         # this is is less meaningful for non-LIF neurons
         self.steps_per_rc_time = 10
-        self.steps_per_fr_time = 10
+        self.steps_per_fr_time = 1
         # in number of epochs
         self.lfr_char_time = 1
         # for now the characteristic time for the ema history is the update batch size

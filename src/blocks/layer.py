@@ -25,7 +25,6 @@ class Layer(object):
         self.state = np.zeros(n_dims)
         self.state[np.random.random(n_dims) < .5] = 0
         self.bias = np.ones(self.n_dims) * 2
-#        self.bias = np.zeros(self.n_dims)
         self.bias_updates = []
         self.inputs = []
         self.outputs = []
@@ -34,7 +33,7 @@ class Layer(object):
         # hodge podge of firing rate attributes
         self.history = [self.state.copy()]
         self.firing_rates = np.zeros(self.n_dims)
-        self.fr_bias, self.fr_max = 1, 1
+        self.fr_max = 1
         self.fr_history = []
         # initialized when target firing rate is imported
         self.lfr_mean = None
@@ -88,9 +87,8 @@ class Layer(object):
         # EI net implementation
         non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
         delta = self.target_firing_rate - non_windowed_rate
-        # delta = self.target_firing_rate - self.lfr_mean
-        self.bias += (self.update_sign * self.learning_rate *
-                      self.params.update_batch_size * delta)
+        #delta = self.target_firing_rate - self.lfr_mean
+        self.bias += (self.update_sign * self.learning_rate * self.params.update_batch_size * delta)
 
     def add_input(self, input_connection):
         """ add input_connection to the list of connections feeding into this layer
@@ -157,6 +155,7 @@ class Layer(object):
         self.learning_rate = network.params.bias_learning_rate
         self.params = network.params
         self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
+        self.fr_bias = np.ones(self.n_dims) * self.target_firing_rate
 
 
     def update_lifetime_mean(self):
@@ -237,7 +236,7 @@ class LIFLayer(Layer):
         :rtype: None
         """
         # update mebrane potentials
-        self.potentials *= np.exp(- self.decay_scale / float(self.params.steps_per_rc_time))
+        self.potentials *= np.exp(-self.decay_scale / float(self.params.steps_per_rc_time))
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T

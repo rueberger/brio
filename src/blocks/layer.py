@@ -91,6 +91,7 @@ class Layer(object):
             delta = self.target_firing_rate - non_windowed_rate
             #delta = self.target_firing_rate - self.lfr_mean
             self.bias += (self.update_sign * self.learning_rate * self.params.update_batch_size * delta)
+            self.bias[self.bias < 0] = 0
 
     def add_input(self, input_connection):
         """ add input_connection to the list of connections feeding into this layer

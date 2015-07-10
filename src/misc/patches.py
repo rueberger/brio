@@ -26,9 +26,10 @@ def patch_generator(images, patch_size, n_patches=1000, crop=4, normalize=True):
         if normalize:
             img -= np.mean(img)
             img *= 1. / np.std(img)
-            yield img
+            # divide by five as prescribed in the EINet paper
+            yield img / 5.
         else:
-            yield img
+            yield img / 5.
 
 def mean_zero_patch(images, patch_size, n_patches, crop=4):
     patches = np.array(list(patch_generator(images, patch_size, n_patches, crop, True)))

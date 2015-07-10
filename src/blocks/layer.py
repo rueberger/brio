@@ -87,10 +87,10 @@ class Layer(object):
         # inelegant and I hope not necessary but this comes directly out of the
         # EI net implementation
         if self.update_bias:
-            non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
-            delta = self.target_firing_rate - non_windowed_rate
-            #delta = self.target_firing_rate - self.lfr_mean
-            self.bias += (self.update_sign * self.learning_rate * self.params.update_batch_size * delta)
+            epoch_time_units = self.params.update_batch_size * self.params.timestep
+            delta = self.target_firing_rate - self.epoch_fr
+            self.bias += (self.update_sign * self.learning_rate * delta * epoch_time_units)
+            # sensible for LIF neurons but will want to change for others....
             self.bias[self.bias < 0] = 0
 
     def add_input(self, input_connection):
@@ -167,8 +167,10 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        epoch_mean = np.mean(self.fr_history[:self.params.layer_history_length], axis=0)
-        self.lfr_mean += self.params.ema_lfr * (epoch_mean - self.lfr_mean)
+        self.epoch_fr = (np.mean(self.fr_history[:self.params.layer_history_length], axis=0) /
+                         self.params.timestep)
+        self.lfr_mean += self.params.ema_lfr * (np.mean(self.firing_rates, axis=0) / self.params.timestep
+                                                - self.lfr_mean)
 
 
 
@@ -261,8 +263,8 @@ class LIFLayer(Layer):
     @overrides(Layer)
     def reset(self):
         self.state = np.zeros(self.n_dims)
-        self.potentials = np.random.random(self.n_dims) * self.bias
-        #self.potentials = np.zeros(self.n_dims)
+#        self.potentials = np.random.random(self.n_dims) * self.bias
+        self.potentials = np.zeros(self.n_dims)
 
 
 class BoltzmannMachineLayer(Layer):

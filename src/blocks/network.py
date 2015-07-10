@@ -69,7 +69,9 @@ class Network(object):
         :rtype: None
         """
         print "Training iteration: {}".format(self.t_counter)
-        print "Example firing rate: {}".format(self.layers[1].firing_rates[0])
+        print "Firing rates:"
+        for layer in self.layers[1:]:
+            print "{}: {}".format(str(layer), np.mean(layer.epoch_fr))
         if self.params.display:
             self.param_plot.update_plot()
 
@@ -87,8 +89,7 @@ class Network(object):
             self.t_counter += 1
             if idx % self.params.stimuli_per_epoch == 0 and idx != 0:
                 self.training_iteration()
-                if idx % 1000 == 0:
-                    self.describe_progress()
+                self.describe_progress()
 
 
     def update_network(self, stimulus):

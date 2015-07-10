@@ -87,7 +87,7 @@ class Connection(object):
         :rtype: None
         """
         self.params = network.params
-        self.learning_rate = self.lrate_multiplier *  network.params.baseline_lrate
+        self.learning_rate = self.lrate_multiplier *  network.params.baseline_lrate / self.params.timestep
         self.epoch_size = self.params.update_batch_size
 
     def __impose_constraint(self):
@@ -146,7 +146,7 @@ class FoldiakConnection(Connection):
         post_syn_avg_rates = self.postsynaptic_layer.lfr_mean
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates) * self.epoch_size)
-        self.weights += self.learning_rate * delta
+        self.weights += self.learning_rate * delta / self.epoch_size
 
 
 
@@ -162,13 +162,13 @@ class CMConnection(Connection):
     def bulk_weight_update(self):
         pre_syn_rates = np.array(self.presynaptic_layer.fr_history[:self.epoch_size])
         post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.epoch_size])
-        # pre_syn_avg_rates = self.presynaptic_layer.lfr_mean
-        # post_syn_avg_rates = self.postsynaptic_layer.lfr_mean
-        pre_syn_avg_rates = self.presynaptic_layer.target_firing_rate
-        post_syn_avg_rates = self.postsynaptic_layer.target_firing_rate
+        pre_syn_avg_rates = self.presynaptic_layer.lfr_mean * self.params.timestep
+        post_syn_avg_rates = self.postsynaptic_layer.lfr_mean * self.params.timestep
+        # pre_syn_avg_rates = self.presynaptic_layer.target_firing_rate
+        # post_syn_avg_rates = self.postsynaptic_layer.target_firing_rate
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
-                 np.outer(pre_syn_avg_rates, post_syn_avg_rates) *
-                 self.epoch_size * (1 + self.weights))
+                 np.outer(pre_syn_avg_rates, post_syn_avg_rates)
+                 * (1 + self.weights) * self.epoch_size)
         self.weights += self.learning_rate * delta
 
 class ConstantConnection(Connection):

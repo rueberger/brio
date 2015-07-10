@@ -20,7 +20,7 @@ class Layer(object):
     """
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, n_dims, ltype=LayerType.unconstrained):
+    def __init__(self, n_dims, ltype=LayerType.unconstrained, update_bias=True):
         self.n_dims = n_dims
         self.state = np.zeros(n_dims)
         self.state[np.random.random(n_dims) < .5] = 0
@@ -37,6 +37,7 @@ class Layer(object):
         self.fr_history = []
         # initialized when target firing rate is imported
         self.lfr_mean = None
+        self.update_bias = update_bias
 
 
     def sync_update(self):
@@ -85,10 +86,11 @@ class Layer(object):
         # moving average used for the firing rate everywhere else....
         # inelegant and I hope not necessary but this comes directly out of the
         # EI net implementation
-        non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
-        delta = self.target_firing_rate - non_windowed_rate
-        #delta = self.target_firing_rate - self.lfr_mean
-        self.bias += (self.update_sign * self.learning_rate * self.params.update_batch_size * delta)
+        if self.update_bias:
+            non_windowed_rate = np.mean(self.history[:self.max_history_length], axis=0)
+            delta = self.target_firing_rate - non_windowed_rate
+            #delta = self.target_firing_rate - self.lfr_mean
+            self.bias += (self.update_sign * self.learning_rate * self.params.update_batch_size * delta)
 
     def add_input(self, input_connection):
         """ add input_connection to the list of connections feeding into this layer
@@ -152,7 +154,7 @@ class Layer(object):
         self.avg_weighting *= 1. / (np.sum(self.avg_weighting))
         self.target_firing_rate = (self.ltype.firing_rate_multiplier *
                                    network.params.baseline_firing_rate)
-        self.learning_rate = network.params.bias_learning_rate
+        self.learning_rate = network.params.bias_learning_rate * network.params.baseline_lrate
         self.params = network.params
         self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
         self.fr_bias = np.ones(self.n_dims) * self.target_firing_rate

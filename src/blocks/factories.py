@@ -74,3 +74,12 @@ def sailnet_factory(layer_sizes, params=NetworkParams()):
     connection.OjaConnection(layers[0], layers[1], lrate_multiplier=0.2)
     connection.FoldiakConnection(layers[1], layers[1], weight_scheme='uniform', lrate_multiplier=.7)
     return network.Network(layers, params)
+
+def perceptron_factory(layer_sizes, params=NetworkParams()):
+    assert len(layer_sizes) == 2
+    layers = [
+        layer.InputLayer(layer_sizes[0]),
+        layer.PerceptronLayer(layer_sizes[0])
+    ]
+    connection.OjaConnection(layers[0], layers[1])
+    return network.Network(layers, params)

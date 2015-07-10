@@ -87,7 +87,8 @@ class Network(object):
             self.t_counter += 1
             if idx % self.params.stimuli_per_epoch == 0 and idx != 0:
                 self.training_iteration()
-                self.describe_progress()
+                if idx % 1000 == 0:
+                    self.describe_progress()
 
 
     def update_network(self, stimulus):

@@ -237,12 +237,12 @@ class LIFLayer(Layer):
     def __init__(self, *args, **kwargs):
         super(LIFLayer, self).__init__(*args, **kwargs)
         # now state represents spikes and still works with everything else
-        self.potentials = np.zeros(n_dims)
+        self.potentials = np.zeros(self.n_dims)
         self.update_sign = -1
         self.pot_history = []
         # messy trick: inhibitory neurons have a faster firing rate and this gives them
         # a faster rc time constant too
-        self.decay_scale = ltype.firing_rate_multiplier
+        self.decay_scale = self.ltype.firing_rate_multiplier
 
     @overrides(Layer)
 

@@ -48,7 +48,7 @@ def einet_factory(layer_sizes, params=NetworkParams()):
     layers = [
         layer.InputLayer(layer_sizes[0]),
         layer.LIFLayer(layer_sizes[1], LayerType.excitatory),
-        layer.LIFLayer(layer_sizes[2], LayerType.inhibitory)
+        layer.LIFLayer(layer_sizes[2], LayerType.inhibitory, allow_self_con=False)
     ]
     input_con = connection.OjaConnection(layers[0], layers[1], lrate_multiplier=0.1)
     input_con.weight_multiplier = 5

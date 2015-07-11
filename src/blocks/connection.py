@@ -12,6 +12,8 @@ class Connection(object):
     holds network weights
     """
 
+    #pylint: disable=too-many-instance-attributes
+
     def __init__(self, input_layer, output_layer,
                  lrate_multiplier=1, weight_scheme='uniform'):
         self.presynaptic_layer = input_layer
@@ -21,6 +23,11 @@ class Connection(object):
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.lrate_multiplier = lrate_multiplier
         self.__init_weights(weight_scheme)
+        if input_layer is output_layer:
+            self.allow_self_con = input_layer.allow_self_con
+        else:
+            self.allow_self_con = True
+        self.__impose_constraint()
 
 
     def __init_weights(self, scheme):
@@ -96,6 +103,8 @@ class Connection(object):
         """
         out_of_bounds_idx = (self.weights < 0)
         self.weights[out_of_bounds_idx] = 0
+        if not self.allow_self_con:
+            np.fill_diagonal(self.weights, 0)
 
     def __repr__(self):
         """ overrides str for more useful info about connections

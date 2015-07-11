@@ -20,7 +20,19 @@ class Layer(object):
     """
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, n_dims, ltype=LayerType.unconstrained, update_bias=True):
+    def __init__(self, n_dims, ltype=LayerType.unconstrained,
+                 update_bias=True, allow_self_con=True):
+        """ Initialize Layer object
+
+        :param n_dims: the number of neurons in the layer
+        :param ltype: Enum holding constants particular to layer type.
+           unconstrainted, excitatory or inhibitory
+        :param update_bias: True if this layer should update its biases following foldiak's rule during traing
+        :param allow_self_con: True if neurons in this layer are allowed to connect to themselves
+        :returns: a Layer object
+        :rtype: Layer
+        """
+
         self.n_dims = n_dims
         self.state = np.zeros(n_dims)
         self.state[np.random.random(n_dims) < .5] = 0
@@ -38,7 +50,7 @@ class Layer(object):
         # initialized when target firing rate is imported
         self.lfr_mean = None
         self.update_bias = update_bias
-
+        self.allow_self_con = allow_self_con
 
     def sync_update(self):
         """ Synchronously updates the state of all of the units in this layer
@@ -437,9 +449,7 @@ class RasterInputLayer(Layer):
         """
         assert self.lower_bnd < scalar_value < self.upper_bnd
         rates = self.rate_at_points(scalar_value)
-        # this will raise an error
-        # need to decide what the proper timescale here is
-        p_fire_in_bin = 1 - np.exp(-rates * self.timestep)
+        p_fire_in_bin = 1 - np.exp(-rates)
         firing_idx = (np.random.random(self.n_dims) < p_fire_in_bin)
         self.state = np.zeros(self.n_dims)
         self.state[firing_idx] = np.ones(self.n_dims)[firing_idx]

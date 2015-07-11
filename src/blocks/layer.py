@@ -234,8 +234,8 @@ class LIFLayer(Layer):
     Implements a layer of leaky integrate and fire neurons
     """
 
-    def __init__(self, n_dims, ltype=LayerType.unconstrained):
-        super(LIFLayer, self).__init__(n_dims, ltype)
+    def __init__(self, *args, **kwargs):
+        super(LIFLayer, self).__init__(*args, **kwargs)
         # now state represents spikes and still works with everything else
         self.potentials = np.zeros(n_dims)
         self.update_sign = -1
@@ -423,9 +423,8 @@ class RasterInputLayer(Layer):
        of a gaussian centered around the stimulus value across the bin that neuron codes for
     """
 
-    def __init__(self, n_dims, min_range, max_range,
-                 ltype=LayerType.unconstrained):
-        super(RasterInputLayer, self).__init__(n_dims, ltype)
+    def __init__(self, n_dims, min_range, max_range, **kwargs):
+        super(RasterInputLayer, self).__init__(n_dims, **kwargs)
         assert min_range < max_range
         self.lower_bnd = min_range
         self.upper_bnd = max_range

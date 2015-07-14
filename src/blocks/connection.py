@@ -18,16 +18,27 @@ class Connection(object):
                  lrate_multiplier=1, weight_scheme='uniform'):
         self.presynaptic_layer = input_layer
         self.postsynaptic_layer = output_layer
-        self.postsynaptic_layer.add_input(self)
-        self.presynaptic_layer.add_output(self)
+        self.__set_pointers()
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.lrate_multiplier = lrate_multiplier
         self.__init_weights(weight_scheme)
-        if input_layer is output_layer:
-            self.allow_self_con = input_layer.allow_self_con
+        self.__impose_constraint()
+
+
+    def __set_pointers(self):
+        """ Set pointers from input layer and output layer to self
+        Also sets allow_self_con if input_layer == output_layer
+
+        :returns: None
+        :rtype: None
+        """
+        self.postsynaptic_layer.add_input(self)
+        self.presynaptic_layer.add_output(self)
+        if self.presynaptic_layer is self.postsynaptic_layer:
+            self.allow_self_con = self.presynaptic_layer.allow_self_con
         else:
             self.allow_self_con = True
-        self.__impose_constraint()
+
 
 
     def __init_weights(self, scheme):
@@ -75,6 +86,7 @@ class Connection(object):
         """
         Returns the output into the unit at idx of the output layer
         """
+        # to be deprecated
         return np.sum(self.weight_multiplier * self.weights[:, idx] * self.presynaptic_layer.state)
 
     def energy_shadow(self, input_idx):
@@ -83,6 +95,7 @@ class Connection(object):
           at input_idx
         for use in calculating energy difference for boltzmann machines
         """
+        # to be deprecated
         return np.sum(self.weight_multiplier * self.weights[input_idx, :] * self.postsynaptic_layer.state)
 
     def unpack_network_params(self, network):
@@ -173,8 +186,6 @@ class CMConnection(Connection):
         post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.epoch_size])
         pre_syn_avg_rates = self.presynaptic_layer.lfr_mean * self.params.timestep
         post_syn_avg_rates = self.postsynaptic_layer.lfr_mean * self.params.timestep
-        # pre_syn_avg_rates = self.presynaptic_layer.target_firing_rate
-        # post_syn_avg_rates = self.postsynaptic_layer.target_firing_rate
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates)
                  * (1 + self.weights) * self.epoch_size)

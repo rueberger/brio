@@ -275,7 +275,6 @@ class LIFLayer(Layer):
     @overrides(Layer)
     def reset(self):
         self.state = np.zeros(self.n_dims)
-#        self.potentials = np.random.random(self.n_dims) * self.bias
         self.potentials = np.zeros(self.n_dims)
 
 

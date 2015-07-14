@@ -25,12 +25,14 @@ class Network(object):
         self.params = params
         self.__check_layers()
         self.__find_connections()
-        self.node_idx = np.arange(np.sum([l.n_dims for l in layers[1:]]))
-        self.idx_to_layer = self.__build_layer_dict()
         self.__set_parentage()
         self.t_counter = 0
         if params.display:
             self.param_plot = ParamPlot(self)
+        if params.async:
+            self.node_idx = np.arange(np.sum([l.n_dims for l in layers[1:]]))
+            self.idx_to_layer = self.__build_layer_dict()
+
 
     def compute_sta(self, stimulus_generator, layer_idx, num_stim_to_avg=250):
         """ Computes the spike triggered averages for the layers

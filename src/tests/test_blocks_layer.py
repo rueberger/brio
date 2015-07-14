@@ -1,74 +1,142 @@
-"""
-unit test for blocks.layer
-"""
-import numpy as np
 import unittest
-from blocks.layer import Layer, BoltzmannMachineLayer, PerceptronLayer, InputLayer
-
-N_SEED = 1337
-N_DIMS = 10
-
-# pylint: disable=missing-docstring
 
 class TestLayer(unittest.TestCase):
+    def test___init__(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        assert False # TODO: implement your test here
 
-    def setUp(self):
-        np.random.seed(N_SEED)
-        self.test_layer = Layer(N_DIMS)
+    def test___repr__(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.__repr__())
+        assert False # TODO: implement your test here
+
+    def test_async_activation(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.async_activation(energy))
+        assert False # TODO: implement your test here
+
+    def test_async_update(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.async_update(idx))
+        assert False # TODO: implement your test here
+
+    def test_bias_update(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.bias_update())
+        assert False # TODO: implement your test here
+
+    def test_input_energy(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.input_energy(idx))
+        assert False # TODO: implement your test here
+
+    def test_output_energy(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.output_energy(idx))
+        assert False # TODO: implement your test here
+
+    def test_reset(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.reset())
+        assert False # TODO: implement your test here
+
+    def test_sync_update(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.sync_update())
+        assert False # TODO: implement your test here
+
+    def test_unpack_network_params(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.unpack_network_params(network))
+        assert False # TODO: implement your test here
+
+    def test_update_firing_rates(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.update_firing_rates())
+        assert False # TODO: implement your test here
 
     def test_update_history(self):
-        self.test_layer.max_history_length = 5
-        self.test_layer.state = 5 * np.ones(N_DIMS)
-        self.test_layer.update_history()
-        self.test_layer.state = np.ones(N_DIMS)
-        self.test_layer.update_history()
-        self.assertEqual(self.test_layer.history[-1], np.ones(N_DIMS))
-        self.test_layer.state = 2 * np.ones(N_DIMS)
-        for _ in xrange(5):
-            self.test_layer.update_history()
-        self.test_layer.state = 6 * np.ones(N_DIMS)
-        for _ in xrange(5):
-            self.test_layer.update_history()
-        self.assertEqual(self.test_layer.history[-1], 6 * np.ones(N_DIMS))
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.update_history())
+        assert False # TODO: implement your test here
+
+    def test_update_lifetime_mean(self):
+        # layer = Layer(n_dims, ltype, update_bias, allow_self_con)
+        # self.assertEqual(expected, layer.update_lifetime_mean())
+        assert False # TODO: implement your test here
+
+class TestLIFLayer(unittest.TestCase):
+    def test___init__(self):
+        # l_if_layer = LIFLayer(*args, **kwargs)
+        assert False # TODO: implement your test here
+
+    def test_reset(self):
+        # l_if_layer = LIFLayer(*args, **kwargs)
+        # self.assertEqual(expected, l_if_layer.reset())
+        assert False # TODO: implement your test here
+
+    def test_sync_update(self):
+        # l_if_layer = LIFLayer(*args, **kwargs)
+        # self.assertEqual(expected, l_if_layer.sync_update())
+        assert False # TODO: implement your test here
 
 class TestBoltzmannMachineLayer(unittest.TestCase):
+    def test_async_activation(self):
+        # boltzmann_machine_layer = BoltzmannMachineLayer()
+        # self.assertEqual(expected, boltzmann_machine_layer.async_activation(energy))
+        assert False # TODO: implement your test here
 
-    def setUp(self):
-        np.random.seed(N_SEED)
-        self.test_layer = BoltzmannMachineLayer(N_DIMS)
+    def test_async_update(self):
+        # boltzmann_machine_layer = BoltzmannMachineLayer()
+        # self.assertEqual(expected, boltzmann_machine_layer.async_update(idx))
+        assert False # TODO: implement your test here
 
-    def test_activation(self):
-        # test a particular value
-        self.assertEqual(1, self.test_layer.async_activation(np.inf))
-        # test validity of returned values
-        allowed_updates = {1, -1}
-        for energy in 5 * np.random.randn(250):
-            self.assertTrue(self.test_layer.async_activation(energy) in allowed_updates)
-
-
+    def test_sync_update(self):
+        # boltzmann_machine_layer = BoltzmannMachineLayer()
+        # self.assertEqual(expected, boltzmann_machine_layer.sync_update())
+        assert False # TODO: implement your test here
 
 class TestPerceptronLayer(unittest.TestCase):
+    def test_async_activation(self):
+        # perceptron_layer = PerceptronLayer()
+        # self.assertEqual(expected, perceptron_layer.async_activation(energy))
+        assert False # TODO: implement your test here
 
-    def setUp(self):
-        np.random.seed(N_SEED)
-        self.test_layer = PerceptronLayer(N_DIMS)
+    def test_async_update(self):
+        # perceptron_layer = PerceptronLayer()
+        # self.assertEqual(expected, perceptron_layer.async_update(idx))
+        assert False # TODO: implement your test here
 
-    def test_activation(self):
-        # test a particular value
-        self.assertEqual(1, self.test_layer.activation(np.inf))
-        # test validity of returned values
-        allowed_updates = {1, -1}
-        for energy in 5 * np.random.randn(250):
-            self.assertTrue(self.test_layer.activation(energy) in allowed_updates)
-
-
+    def test_sync_update(self):
+        # perceptron_layer = PerceptronLayer()
+        # self.assertEqual(expected, perceptron_layer.sync_update())
+        assert False # TODO: implement your test here
 
 class TestInputLayer(unittest.TestCase):
+    def test_set_state(self):
+        # input_layer = InputLayer()
+        # self.assertEqual(expected, input_layer.set_state(state))
+        assert False # TODO: implement your test here
 
-    def setUp(self):
-        np.random.seed(N_SEED)
-        self.test_layer = InputLayer(N_DIMS)
+class TestRasterInputLayer(unittest.TestCase):
+    def test___init__(self):
+        # raster_input_layer = RasterInputLayer(n_dims, min_range, max_range, **kwargs)
+        assert False # TODO: implement your test here
+
+    def test_avg_activation(self):
+        # raster_input_layer = RasterInputLayer(n_dims, min_range, max_range, **kwargs)
+        # self.assertEqual(expected, raster_input_layer.avg_activation(scalar_value))
+        assert False # TODO: implement your test here
+
+    def test_rate_at_points(self):
+        # raster_input_layer = RasterInputLayer(n_dims, min_range, max_range, **kwargs)
+        # self.assertEqual(expected, raster_input_layer.rate_at_points(scalar_value))
+        assert False # TODO: implement your test here
 
     def test_set_state(self):
-        test_state = np.ones(N_DIMS)
-        self.assertEqual(self.test_layer.state, self.test_layer.set_state(test_state))
+        # raster_input_layer = RasterInputLayer(n_dims, min_range, max_range, **kwargs)
+        # self.assertEqual(expected, raster_input_layer.set_state(scalar_value))
+        assert False # TODO: implement your test here
+
+if __name__ == '__main__':
+    unittest.main()

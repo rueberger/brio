@@ -52,6 +52,24 @@ class Layer(object):
         self.update_bias = update_bias
         self.allow_self_con = allow_self_con
 
+
+    def unpack_network_params(self, network):
+        """ adds an attribute pointing to the parent network and sets up the
+        weighting used for computing firing rates
+        Also sets the target firing rate and the max history length
+
+        :param network: Network object. The parent network
+        :returns: None
+        :rtype: None
+        """
+        self.params = network.params
+        self.max_history_length = network.params.layer_history_length
+        self.target_firing_rate = (self.ltype.firing_rate_multiplier *
+                                   network.params.baseline_firing_rate)
+        self.learning_rate = network.params.bias_learning_rate * network.params.baseline_lrate
+        self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
+        self.fr_bias = np.ones(self.n_dims) * self.target_firing_rate
+
     def sync_update(self):
         """ Synchronously updates the state of all of the units in this layer
         Must be implemented by inheriting class
@@ -124,28 +142,6 @@ class Layer(object):
         for output_layer in self.outputs:
             energy += output_layer.energy_shadow(idx)
         return energy
-
-    def unpack_network_params(self, network):
-        """ adds an attribute pointing to the parent network and sets up the
-        weighting used for computing firing rates
-        Also sets the target firing rate and the max history length
-
-        :param network: Network object. The parent network
-        :returns: None
-        :rtype: None
-        """
-        time_constant = 1. / (network.params.steps_per_fr_time)
-        self.max_history_length = network.params.layer_history_length
-        self.avg_weighting = np.exp(
-            - time_constant * np.arange(self.max_history_length))[:, np.newaxis]
-        self.avg_weighting *= 1. / (np.sum(self.avg_weighting))
-        self.target_firing_rate = (self.ltype.firing_rate_multiplier *
-                                   network.params.baseline_firing_rate)
-        self.learning_rate = network.params.bias_learning_rate * network.params.baseline_lrate
-        self.params = network.params
-        self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
-        self.fr_bias = np.ones(self.n_dims) * self.target_firing_rate
-
 
     def update_lifetime_mean(self):
         """ Updates the lifetime mean firing rate for this layer

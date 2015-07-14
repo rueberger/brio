@@ -34,11 +34,13 @@ class Connection(object):
         """
         assert self not in self.presynaptic_layer.inputs
         assert self not in self.postsynaptic_layer.outputs
-        self.presynaptic_layer.inputs.append(self)
+        self.postsynaptic_layer.inputs.append(self)
         if self.presynaptic_layer is self.postsynaptic_layer:
             self.allow_self_con = self.presynaptic_layer.allow_self_con
         else:
-            self.postsynaptic_layer.outputs.append(self)
+            # avoids overcounting for recurrent connections
+            # currently necessary for async updates but should be deprecated
+            self.presynaptic_layer.outputs.append(self)xo
             self.allow_self_con = True
 
 

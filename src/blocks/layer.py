@@ -21,7 +21,7 @@ class Layer(object):
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, n_dims, ltype=LayerType.unconstrained,
-                 update_bias=True, allow_self_con=True):
+                 update_bias=True, allow_self_con=False):
         """ Initialize Layer object
 
         :param n_dims: the number of neurons in the layer
@@ -37,7 +37,6 @@ class Layer(object):
         self.state = np.zeros(n_dims)
         self.state[np.random.random(n_dims) < .5] = 0
         self.bias = np.ones(self.n_dims) * 2
-        self.bias_updates = []
         self.inputs = []
         self.outputs = []
         self.ltype = ltype
@@ -45,6 +44,7 @@ class Layer(object):
         # hodge podge of firing rate attributes
         self.history = [self.state.copy()]
         self.firing_rates = np.zeros(self.n_dims)
+        # always 1 with current implementation
         self.fr_max = 1
         self.fr_history = []
         # initialized when target firing rate is imported

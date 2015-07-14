@@ -3,7 +3,7 @@ This module holds the Network class
 """
 import numpy as np
 from blocks.aux import NetworkParams
-from misc.plotting import ParamPlot
+from misc.plotting import ParamPlot, plot_receptive_fields
 
 class Network(object):
     """
@@ -32,6 +32,14 @@ class Network(object):
         if params.async:
             self.node_idx = np.arange(np.sum([l.n_dims for l in layers[1:]]))
             self.idx_to_layer = self.__build_layer_dict()
+
+    def show_rfs(self, layer_idx=1, slideshow=False):
+        """ Convenenience method that wraps plot_receptive_fields
+
+        :returns: None
+        :rtype: None
+        """
+        plot_receptive_fields(self, layer_idx, slideshow)
 
 
     def describe_progress(self):

@@ -105,32 +105,6 @@ class Layer(object):
             # sensible for LIF neurons but will want to change for others....
             self.bias[self.bias < 0] = 0
 
-    def add_input(self, input_connection):
-        """ add input_connection to the list of connections feeding into this layer
-        This method is called when Connections are initialized
-
-        :param input_connection: Connection object
-        :returns: None
-        :rtype: None
-
-        """
-        assert input_connection not in self.inputs
-        self.inputs.append(input_connection)
-
-    def add_output(self, output_connection):
-        """ add output_connection to the list of connections feeding out of this layer
-        This method is called when Connections are initialized
-
-        :param output_connection: Connection object
-        :returns: None
-        :rtype: None
-
-        """
-        assert output_connection not in self.outputs
-        # avoids double counting for recurrent connections
-        if output_connection not in self.inputs:
-            self.outputs.append(output_connection)
-
     def input_energy(self, idx):
         """
         returns the energy fed into the the unit at idx by all input layers

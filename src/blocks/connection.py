@@ -32,12 +32,15 @@ class Connection(object):
         :returns: None
         :rtype: None
         """
-        self.postsynaptic_layer.add_input(self)
-        self.presynaptic_layer.add_output(self)
+        assert self not in self.presynaptic_layer.inputs
+        assert self not in self.postsynaptic_layer.ouputs
+        self.presynaptic_layer.inputs.append(self)
         if self.presynaptic_layer is self.postsynaptic_layer:
             self.allow_self_con = self.presynaptic_layer.allow_self_con
         else:
+            self.postsynaptic_layer.outputs.append(self)
             self.allow_self_con = True
+
 
 
 

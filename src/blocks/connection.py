@@ -33,7 +33,7 @@ class Connection(object):
         :rtype: None
         """
         assert self not in self.presynaptic_layer.inputs
-        assert self not in self.postsynaptic_layer.ouputs
+        assert self not in self.postsynaptic_layer.outputs
         self.presynaptic_layer.inputs.append(self)
         if self.presynaptic_layer is self.postsynaptic_layer:
             self.allow_self_con = self.presynaptic_layer.allow_self_con

@@ -40,10 +40,8 @@ class Connection(object):
         else:
             # avoids overcounting for recurrent connections
             # currently necessary for async updates but should be deprecated
-            self.presynaptic_layer.outputs.append(self)xo
+            self.presynaptic_layer.outputs.append(self)
             self.allow_self_con = True
-
-
 
 
     def __init_weights(self, scheme):

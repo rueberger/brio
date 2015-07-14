@@ -34,36 +34,6 @@ class Network(object):
             self.idx_to_layer = self.__build_layer_dict()
 
 
-    def compute_sta(self, stimulus_generator, layer_idx, num_stim_to_avg=250):
-        """ Computes the spike triggered averages for the layers
-
-        :param stimulus_generator: a generator object. calling next on this generator must return
-          an array that can be flatted to the shape of the input layer
-        :param layer: idx to layer to compute STA's for
-        :param num_stim_to_avg:
-        :returns: a list containing the spike triggered averages for each layer
-          list contains one array for each layer, in the same order self.layers
-          averages are of the format (input_n_dims, layer_n_dims)
-        :rtype: [array]
-
-        """
-        stas = []
-        activations = []
-        stim = []
-        for idx, stimulus in enumerate(stimulus_generator):
-            if idx == num_stim_to_avg:
-                break
-            stim.append(stimulus)
-            self.update_network(stimulus)
-            activations.append(self.layers[layer_idx].state * idx)
-        filt_activations = np.array(activations, dtype=np.int32).T
-        stim = np.array(stim)
-        for idx in xrange(self.layers[layer_idx].n_dims):
-            activation_idx = np.where(filt_activations[idx] != 0)[0]
-            sta_at_idx = np.mean(stim[activation_idx], axis=0)
-            stas.append(sta_at_idx)
-        return stas
-
     def describe_progress(self):
         """ prints some information on how the training is progressing
 

@@ -60,7 +60,7 @@ class Layer(object):
         self.learning_rate = network.params.bias_learning_rate * network.params.baseline_lrate
 
         # initialize attributes
-        self.state = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.history = [self.state.copy()]
         self.firing_rates = self.state.copy()
         self.fr_history = []
@@ -163,9 +163,9 @@ class Layer(object):
             np.mean(self.fr_history[:self.params.layer_history_length], axis=(0, 2)) /
             self.params.timestep
         )
-        self.lfr_mean += self.params.ema_lfr *
-        ((np.mean(self.firing_rates, axis=(0, 2)) /
-                self.params.timestep) - self.lfr_meany)
+        self.lfr_mean += (self.params.ema_lfr *
+                          ((np.mean(self.firing_rates, axis=(0, 2)) /
+                            self.params.timestep) - self.lfr_meany))
 
 
     def update_history(self):
@@ -201,7 +201,7 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        self.state = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
 
     def __repr__(self):
         """
@@ -242,7 +242,7 @@ class LIFLayer(Layer):
             self.potentials += multiplier * np.dot(weights, state)
         # set state for neurons that cross threshold
         fire_idxs = np.where(self.potentials >= self.bias)
-        self.state = np.zeros(self.n_dims)
+        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.state[fire_idxs] = 1
         # reset membrane potential
         self.potentials[fire_idxs] = 0
@@ -251,14 +251,14 @@ class LIFLayer(Layer):
                 self.pot_history = []
             self.pot_history.append(self.potentials.copy())
 
-    @overides(Layer)
+    @overrides(Layer)
     def aux_set_up(self):
-        self.potentials = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        self.potentials = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
 
     @overrides(Layer)
     def reset_state_vars(self):
-        self.state = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
-        self.potentials = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        self.potentials = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.pot_history = []
 
 class BoltzmannMachineLayer(Layer):
@@ -288,7 +288,7 @@ class BoltzmannMachineLayer(Layer):
 
         p_on = 1. / (1 + np.exp(-delta_e))
         update_idxs = np.where(np.random.random(self.n_dims) < p_on)[0]
-        self.state = np.zeros(self.n_dims)
+        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.state[update_idxs] = 1
 
 
@@ -346,7 +346,7 @@ class PerceptronLayer(Layer):
             state = input_connection.presynaptic_layer.history[0]
             energy += multiplier * np.dot(weights, state)
         update_idxs = np.where(energy > 0)[0]
-        self.state = np.zeros(self.n_dims)
+        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.state[update_idxs] = 1
 
 
@@ -384,11 +384,7 @@ class InputLayer(Layer):
     """
 
     def set_state(self, state):
-        """
-        set flat_state as the current flat_state of the layer
-        flat_state must be an array of shape (ndims, )
-        """
-        # will want to record input data shape for plotting purposesx
+
         flat_state = np.ravel(state)
         assert flat_state.shape == self.state.shape
         # current injection per unit time
@@ -432,6 +428,8 @@ class RasterInputLayer(Layer):
         rates = self.rate_at_points(scalar_value)
         p_fire_in_bin = 1 - np.exp(-rates)
         firing_idx = (np.random.random(self.n_dims) < p_fire_in_bin)
+        # fix me!
+        raise NotImplementedError
         self.state = np.zeros(self.n_dims)
         self.state[firing_idx] = np.ones(self.n_dims)[firing_idx]
 

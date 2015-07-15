@@ -34,21 +34,11 @@ class Layer(object):
         """
 
         self.n_dims = n_dims
-        self.state = np.zeros(n_dims)
-        self.state[np.random.random(n_dims) < .5] = 0
         self.bias = np.ones(self.n_dims) * 2
         self.inputs = []
         self.outputs = []
         self.ltype = ltype
         self.update_sign = 1
-        # hodge podge of firing rate attributes
-        self.history = [self.state.copy()]
-        self.firing_rates = np.zeros(self.n_dims)
-        # always 1 with current implementation
-        self.fr_max = 1
-        self.fr_history = []
-        # initialized when target firing rate is imported
-        self.lfr_mean = None
         self.update_bias = update_bias
         self.allow_self_con = allow_self_con
 
@@ -63,12 +53,20 @@ class Layer(object):
         :rtype: None
         """
         self.params = network.params
+        # import params
         self.max_history_length = network.params.layer_history_length
         self.target_firing_rate = (self.ltype.firing_rate_multiplier *
                                    network.params.baseline_firing_rate)
         self.learning_rate = network.params.bias_learning_rate * network.params.baseline_lrate
+
+        # initialize attributes
+        self.state = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        self.history = [self.state.copy()]
+        self.firing_rates = self.state.copy()
+        self.fr_history = []
         self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
-        self.fr_bias = np.ones(self.n_dims) * self.target_firing_rate
+
+
 
     def sync_update(self):
         """ Synchronously updates the state of all of the units in this layer
@@ -155,42 +153,40 @@ class Layer(object):
                                                 - self.lfr_mean)
 
 
-
     def update_history(self):
         """ appends the current state to the history
-        additionally truncates the history if it grows too long
+        additionally updates the firing rates
 
         :returns: None
         :rtype: None
         """
+        # note: problem with normalization for non binary units?
+        self.firing_rates += self.params.ema_curr * (self.state - self.firing_rates)
         self.history.insert(0, self.state.copy())
         self.fr_history.append(self.firing_rates)
-        if len(self.history) > 2 * self.max_history_length:
-            self.history = self.history[:self.max_history_length]
-            self.fr_history = self.fr_history[self.max_history_length:]
-
-    def update_firing_rates(self):
-        """ Compute the current firing rates
-          weighted by a decaying exponential.
-        The time constant is set as the inverse of the number of presentations
-          for each stimulus for the parent network.
-        Should only be called once per simulation step
-
-        :returns: None
-        :rtype: None
-        """
-        self.fr_bias += self.params.ema_curr * (self.state - self.fr_bias)
-        self.fr_max += self.params.ema_curr * (1 - self.fr_max)
-        # normalize
-        self.firing_rates = self.fr_bias / self.fr_max
 
     def reset(self):
-        """ reset the state for this layer
+        """ Reset the layer in anticipation of running
+          the next batch of stimuli
+        Clears the history and calls a method which resets the Layer type specific
+          state variables
 
         :returns: None
         :rtype: None
         """
-        self.state = np.zeros(self.n_dims)
+        self.fr_history = []
+        self.history = []
+        self.reset_state_vars()
+
+    def reset_state_vars(self):
+        """ Reset the state variables for this layer such as state
+           or membrane potential
+        override this method when inheriting - NOT reset
+
+        :returns: None
+        :rtype: None
+        """
+        self.state = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
 
     def __repr__(self):
         """
@@ -243,7 +239,7 @@ class LIFLayer(Layer):
 
 
     @overrides(Layer)
-    def reset(self):
+    def reset_state_vars(self):
         self.state = np.zeros(self.n_dims)
         self.potentials = np.zeros(self.n_dims)
 

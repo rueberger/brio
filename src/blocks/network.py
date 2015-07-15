@@ -80,6 +80,7 @@ class Network(object):
         self.layers[0].set_state(stimulus)
         for layer in self.layers[1:]:
             layer.reset()
+            # have reset also clear history
         if self.params.async:
             np.random.shuffle(self.node_idx)
             for _ in xrange(self.params.presentations):
@@ -87,14 +88,12 @@ class Network(object):
                     layer, unit_idx = self.idx_to_layer[idx]
                     layer.async_update(unit_idx)
                 for layer in self.layers:
-                    layer.update_firing_rate()
                     layer.update_history()
         else:
             for _ in xrange(self.params.presentations):
                 for layer in self.layers[1:]:
                     layer.sync_update()
                 for layer in self.layers:
-                    layer.update_firing_rates()
                     layer.update_history()
 
 

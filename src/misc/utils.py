@@ -36,3 +36,19 @@ def normalize_by_row(matrix):
     np.place(row_sums, row_sums == 0, 1)
     norm_matrix = matrix / row_sums[:, np.newaxis]
     return norm_matrix
+
+def roll_itr(itr, n_elems):
+    """ returns a generator that concatenates the next
+      n_elems of itr into an array of shape (itr_len, n_elems)
+      where itr.next() returns 1d arrays of fixed length itr_len
+
+    :param itr: iterator over 1d arrays of fixed length
+    :param n_elems: number of elements to concatenate
+    :returns: a generator over arrays of shape (itr_len, n_elems)
+    :rtype: generator
+    """
+    concat_arr = []
+    for arr in itr:
+        concat_arr.append(arr)
+        if len(concat_arr) == n_elems:
+            yield np.array(concat_arr)

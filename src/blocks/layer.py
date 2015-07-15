@@ -128,7 +128,7 @@ class Layer(object):
         # EI net implementation
         if self.update_bias:
             epoch_time_units = self.params.update_batch_size * self.params.timestep
-            delta = self.target_firing_rate - self.epoch_fr
+            delta = (self.target_firing_rate - self.epoch_fr).reshape(-1, 1)
             self.bias += (self.update_sign * self.learning_rate * delta * epoch_time_units)
             # sensible for LIF neurons but will want to change for others....
             self.bias[self.bias < 0] = 0
@@ -161,7 +161,7 @@ class Layer(object):
         """
         self.epoch_fr = (
             np.mean(self.fr_history[:self.params.layer_history_length], axis=(0, 1)) / self.params.timestep)
-        self.lfr_mean += ((self.params.ema_lfr * self.epoch_fr) / self.params.timestep) - self.lfr_mean
+        self.lfr_mean += (self.params.ema_lfr * ((self.epoch_fr / self.params.timestep) - self.lfr_mean))
 
 
     def update_history(self):

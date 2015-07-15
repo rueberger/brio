@@ -152,7 +152,7 @@ def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5, stimulu
 
 
 
-def plot_concat_imgs(imgs, border_thickness=2):
+def plot_concat_imgs(imgs, border_thickness=2, ax=None):
     """ concatenate the imgs together into one big image separated by borders
 
     :param imgs: list or array of images. total number of images must be a perfect square and
@@ -177,4 +177,7 @@ def plot_concat_imgs(imgs, border_thickness=2):
         # not sure how to do a continuation line cleanly here
         concat_rf[x_idx * img_length + x_offset: (x_idx + 1) * img_length + x_offset,
                   y_idx * img_length + y_offset: (y_idx + 1) * img_length + y_offset] = imgs[flat_idx]
-    plt.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')
+    if ax is not None:
+        ax.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')
+    else:
+        plt.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')

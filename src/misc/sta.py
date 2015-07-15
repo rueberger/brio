@@ -17,7 +17,7 @@ def record_responses(net, stimuli):
     active_layers = range(1, len(net.layers))
     responses = [[] for _ in active_layers]
     response_dict = {}
-    epoch_size = net.params.stimui_per_epoch
+    epoch_size = net.params.stimuli_per_epoch
 
     for epoch_idx, rolled_stimuli in enumerate(roll_itr(stimuli, epoch_size)):
         net.update_network(rolled_stimuli)

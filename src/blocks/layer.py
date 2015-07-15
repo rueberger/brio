@@ -34,7 +34,7 @@ class Layer(object):
         """
 
         self.n_dims = n_dims
-        self.bias = np.ones((self.n_dims, 1)
+        self.bias = np.ones((self.n_dims, 1))
         self.inputs = []
         self.outputs = []
         self.ltype = ltype

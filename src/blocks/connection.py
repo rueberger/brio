@@ -185,8 +185,8 @@ class CMConnection(Connection):
 
     @overrides(Connection)
     def bulk_weight_update(self):
-        pre_syn_rates = np.array(self.presynaptic_layer.fr_history[:self.epoch_size])
-        post_syn_rates = np.array(self.postsynaptic_layer.fr_history[:self.epoch_size])
+        pre_syn_rates = self.presynaptic_layer.get_epoch_fr()
+        post_syn_rates = self.postsynaptic_layer.get_epoch_fr()
         pre_syn_avg_rates = self.presynaptic_layer.lfr_mean * self.params.timestep
         post_syn_avg_rates = self.postsynaptic_layer.lfr_mean * self.params.timestep
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -

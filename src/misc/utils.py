@@ -41,6 +41,7 @@ def roll_itr(itr, n_elems):
     """ returns a generator that concatenates the next
       n_elems of itr into an array of shape (itr_len, n_elems)
       where itr.next() returns 1d arrays of fixed length itr_len
+    2d arrays that might be returned by itr.next() will be flattened
 
     :param itr: iterator over 1d arrays of fixed length
     :param n_elems: number of elements to concatenate
@@ -49,6 +50,6 @@ def roll_itr(itr, n_elems):
     """
     concat_arr = []
     for arr in itr:
-        concat_arr.append(arr)
+        concat_arr.append(np.ravel(arr))
         if len(concat_arr) == n_elems:
-            yield np.array(concat_arr)
+            yield np.array(concat_arr).T

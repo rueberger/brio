@@ -8,6 +8,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from misc.sta import auto_sta
+from blocks.layer import LIFLayer
 plt.ion()
 
 SEAMAP = mpl.colors.ListedColormap(sns.cubehelix_palette(256, start=.5, rot=-.75))
@@ -81,15 +82,12 @@ class ParamPlot(object):
         for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 1]):
             axis.hist(np.ravel(layer.fr_history), bins=250, normed=True)
             axis.set_title("Firing rate distribution for {}".format(str(layer)))
-        for layer, axis in zip(self.net.layers[1:], self.ax_arr[:, 2]):
-            spikes = np.array(layer.history[:self.net.params.presentations]).T
-            axis.hist(np.sum(spikes, axis=0), bins=50)
-            axis.set_title("Spike times for {}".format(str(layer)))
         for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 2]):
-            potentials = np.array(layer.pot_history).T
-            for u_t in potentials:
-                axis.plot(self.t, u_t)
-            axis.set_title("Potential history for one stimulus {}".format(str(layer)))
+            if isinstance(layer, LIFLayer):
+                potentials = np.array(layer.pot_history)[:, :, -1].T
+                for u_t in potentials:
+                    axis.plot(self.t, u_t)
+                axis.set_title("Potential history for one stimulus {}".format(str(layer)))
         self.fig.subplots_adjust(hspace=0.4)
         plt.draw()
 

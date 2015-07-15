@@ -34,7 +34,7 @@ class Layer(object):
         """
 
         self.n_dims = n_dims
-        self.bias = np.ones((self.n_dims, 1))
+        self.bias = np.ones((self.n_dims, 1)) * 2
         self.inputs = []
         self.outputs = []
         self.ltype = ltype
@@ -160,8 +160,9 @@ class Layer(object):
         :rtype: None
         """
         self.epoch_fr = (
-            np.mean(self.fr_history[:self.params.layer_history_length], axis=(0, 1)) / self.params.timestep)
-        self.lfr_mean += (self.params.ema_lfr * ((self.epoch_fr / self.params.timestep) - self.lfr_mean))
+            np.mean(self.history[:self.params.layer_history_length], axis=(0, 2)) / self.params.timestep)
+        fr_mean = np.mean(self.fr_history[:self.params.layer_history_length], axis=(0,1))
+        self.lfr_mean += (self.params.ema_lfr * ((fr_mean / self.params.timestep) - self.lfr_mean))
 
 
     def update_history(self):

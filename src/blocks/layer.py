@@ -66,6 +66,18 @@ class Layer(object):
         self.fr_history = []
         self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
 
+        # additional set up for inheriting layers (if necessary)
+        self.aux_set_up()
+
+    def aux_set_up(self):
+        """ This method is called after the main set up has finished executing
+        Intended to be overrided by inheriting classes and used to set up
+           Layer type specific state variables (such as potential)
+
+        :returns: None
+        :rtype: None
+        """
+        pass
 
 
     def sync_update(self):
@@ -201,12 +213,13 @@ class Layer(object):
 class LIFLayer(Layer):
     """
     Implements a layer of leaky integrate and fire neurons
+
+    Manages to remain compatible with everything else by using state to reinterpret spikes
+      and defining auxiliary potential variables
     """
 
     def __init__(self, *args, **kwargs):
         super(LIFLayer, self).__init__(*args, **kwargs)
-        # now state represents spikes and still works with everything else
-        self.potentials = np.zeros(self.n_dims)
         self.update_sign = -1
         self.pot_history = []
         # messy trick: inhibitory neurons have a faster firing rate and this gives them
@@ -214,7 +227,6 @@ class LIFLayer(Layer):
         self.decay_scale = self.ltype.firing_rate_multiplier
 
     @overrides(Layer)
-
     def sync_update(self):
         """ Implements synchronous state update for leaky integrate and fire neurons
 
@@ -239,13 +251,15 @@ class LIFLayer(Layer):
                 self.pot_history = []
             self.pot_history.append(self.potentials.copy())
 
-
+    @overides(Layer)
+    def aux_set_up(self):
+        self.potentials = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
 
     @overrides(Layer)
     def reset_state_vars(self):
-        self.state = np.zeros(self.n_dims)
-        self.potentials = np.zeros(self.n_dims)
-
+        self.state = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        self.potentials = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        self.pot_history = []
 
 class BoltzmannMachineLayer(Layer):
     """

@@ -53,3 +53,4 @@ def roll_itr(itr, n_elems):
         concat_arr.append(np.ravel(arr))
         if len(concat_arr) == n_elems:
             yield np.array(concat_arr).T
+            concat_arr = []

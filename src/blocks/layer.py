@@ -147,10 +147,13 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        self.epoch_fr = (np.mean(self.fr_history[:self.params.layer_history_length], axis=0) /
-                         self.params.timestep)
-        self.lfr_mean += self.params.ema_lfr * (np.mean(self.firing_rates, axis=0) / self.params.timestep
-                                                - self.lfr_mean)
+        self.epoch_fr = (
+            np.mean(self.fr_history[:self.params.layer_history_length], axis=(0, 2)) /
+            self.params.timestep
+        )
+        self.lfr_mean += self.params.ema_lfr *
+        ((np.mean(self.firing_rates, axis=(0, 2)) /
+                self.params.timestep) - self.lfr_meany)
 
 
     def update_history(self):
@@ -163,7 +166,7 @@ class Layer(object):
         # note: problem with normalization for non binary units?
         self.firing_rates += self.params.ema_curr * (self.state - self.firing_rates)
         self.history.insert(0, self.state.copy())
-        self.fr_history.append(self.firing_rates)
+        self.fr_history.append(self.firing_rates.copy())
 
     def reset(self):
         """ Reset the layer in anticipation of running

@@ -3,6 +3,7 @@ This module contains utilities for computing the receptive fields of trained net
 """
 import numpy as np
 import itertools
+from misc.utils import roll_itr
 
 def record_responses(net, stimuli):
     """ present stimuli to net and record which units in which layers respond to what
@@ -16,11 +17,14 @@ def record_responses(net, stimuli):
     active_layers = range(1, len(net.layers))
     responses = [[] for _ in active_layers]
     response_dict = {}
+    epoch_size = net.params.stimui_per_epoch
 
-    for sample_idx, stimulus in enumerate(stimuli):
-        net.update_network(stimulus)
+    for epoch_idx, rolled_stimuli in enumerate(roll_itr(stimuli, epoch_size)):
+        net.update_network(rolled_stimuli)
+        sample_idx = np.arange(epoch_idx, epoch_idx + epoch_size).reshape(1, -1)
         for l_idx in active_layers:
-            responses[l_idx - 1].append(net.layers[l_idx].state * sample_idx)
+            for response in (net.layers[l_idx].state * sample_idx).T:
+                responses[l_idx - 1].append(response)
     for l_idx in active_layers:
         layer_responses = np.array(responses[l_idx - 1]).T
         for idx in xrange(net.layers[l_idx].n_dims):

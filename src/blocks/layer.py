@@ -384,12 +384,16 @@ class InputLayer(Layer):
     """
 
     def set_state(self, state):
+        """ set state as the state of the input layer
 
-        flat_state = np.ravel(state)
-        assert flat_state.shape == self.state.shape
+        :param state: array of shape (self.n_dims, self.stimuli_per_epoch)
+        :returns: None
+        :rtype: None
+        """
+        assert state.shape == (self.n_dims, self.params.stimuli_per_epoch)
         # current injection per unit time
         # unit of current is in membrane rc time
-        self.state = flat_state.copy() / float(self.params.steps_per_rc_time)
+        self.state = state.copy() / float(self.params.steps_per_rc_time)
 
 
 class RasterInputLayer(Layer):

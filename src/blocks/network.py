@@ -53,7 +53,7 @@ class Network(object):
         print "Firing rates:"
         for layer in self.layers[1:]:
             print "{}: {}".format(str(layer), np.mean(layer.epoch_fr))
-        if self.params.display:
+        if self.params.display and self.t_counter % 2500 == 0:
             self.param_plot.update_plot()
 
     def train(self, stimulus_generator):
@@ -78,9 +78,9 @@ class Network(object):
         :param rolled_stimuli: params.stimuli_per_epoch (default 100) stimuls rolled into an array of
            shape (input_layer.n_dims, params.stimuli_per_epoch)
         """
-        self.layers[0].set_state(rolled_stimuli)
-        for layer in self.layers[1:]:
+        for layer in self.layers:
             layer.reset()
+        self.layers[0].set_state(rolled_stimuli)
         if self.params.async:
             np.random.shuffle(self.node_idx)
             for _ in xrange(self.params.presentations):

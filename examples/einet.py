@@ -10,7 +10,7 @@ from blocks.factories import einet_factory, sailnet_factory, perceptron_factory
 from misc.patches import patch_generator, mean_zero_patch
 from scipy.io import loadmat
 from blocks.aux import NetworkParams
-from misc.plotting import plot_receptive_fields, plot_param_distr
+from misc.plotting import plot_receptive_fields, plot_param_distr, plot_concat_imgs
 import matplotlib.pyplot as plt
 plt.ion()
 
@@ -26,24 +26,14 @@ def run_example():
     trains it on whitened image patches from the van hateren database
     demonstrates the learned receptive fields
     """
-    # input layer with 256 ndoes (same as image patches)
-    # excitatory layer with 256 nodes
-    # inhibitory layer with 49 nodes
-    einet = einet_factory([PATCH_SIZE ** 2, 121, 36], NetworkParams(async=False, display=True))
-
-    # this method iterates through the stimuli
-    # presents each stimulus to the network a number of times (5 by default)
-    #  and updates the state asynchronously
-    # next, weights and biases are updated according to the learning rules defined in
-    #  their class
-    einet.train(patch_generator(images, PATCH_SIZE, 5000))
-    # that's it
-    plt.clf()
-
-    plot_receptive_fields(einet, 1, slideshow=False, n_samples=1000,
-
-
-                          stimulus_generator=patch_generator(images, PATCH_SIZE, int(1E5)))
+    einet = einet_factory([PATCH_SIZE ** 2, 256, 36], NetworkParams(async=False, display=False))
+    fig, ax = plt.subplots(figsize=(10,10))
+    for _ in xrange(40):
+        einet.train(patch_generator(images, PATCH_SIZE, 250))
+        oja_w = einet.layers[0].outputs[0].weights.T
+        imgs = [w.reshape(PATCH_SIZE, PATCH_SIZE) for w in oja_w]
+        plot_concat_imgs(imgs, ax=ax)
+        plt.draw()
     return einet
 
 def sailnet():

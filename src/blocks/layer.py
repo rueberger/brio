@@ -160,8 +160,8 @@ class Layer(object):
         :rtype: None
         """
         self.epoch_fr = (
-            np.mean(self.fr_history[:self.params.layer_history_length], axis=(0, 2)) / self.params.timestep)
-        self.lfr_mean += (self.params.ema_lfr * self.epoch_fr / self.params.timestep) - self.lfr_mean))
+            np.mean(self.fr_history[:self.params.layer_history_length], axis=(0, 1)) / self.params.timestep)
+        self.lfr_mean += ((self.params.ema_lfr * self.epoch_fr) / self.params.timestep) - self.lfr_mean
 
 
     def update_history(self):
@@ -174,7 +174,7 @@ class Layer(object):
         # note: problem with normalization for non binary units?
         self.firing_rates += self.params.ema_curr * (self.state - self.firing_rates)
         self.history.insert(0, self.state.copy())
-        self.fr_history.append(self.firing_rates.copy())
+        self.fr_history.append(self.firing_rates.copy().T)
 
     def reset(self):
         """ Reset the layer in anticipation of running
@@ -199,6 +199,17 @@ class Layer(object):
         :rtype: None
         """
         self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+
+    def get_epoch_fr(self):
+        """ Convenience method to reshape fr_history properly and return it
+
+        :returns: fr_history flatted across presentations and images
+        :rtype: array
+        """
+        total_update_itrs = self.params.presentations * self.params.stimuli_per_epoch
+        fr_arr = np.array(self.fr_history[:self.params.update_batch_size])
+        return fr_arr.reshape(total_update_itrs, -1)
+
 
     def __repr__(self):
         """

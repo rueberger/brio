@@ -4,6 +4,7 @@ This module holds the Network class
 import numpy as np
 from blocks.aux import NetworkParams
 from misc.plotting import ParamPlot, plot_receptive_fields
+from misc.utils import roll_itr
 
 class Network(object):
     """
@@ -56,7 +57,7 @@ class Network(object):
             self.param_plot.update_plot()
 
     def train(self, stimulus_generator):
-        """ Trains the network on the generated stimulus
+        """ Trains the network on the generated stimuli
         Reports progress
 
         :param stimulus_generator: a generator object. calling next on this generator must return
@@ -64,23 +65,22 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        for idx, stimulus in enumerate(stimulus_generator):
-            self.update_network(stimulus)
-            self.t_counter += 1
-            if idx % self.params.stimuli_per_epoch == 0 and idx != 0:
-                self.training_iteration()
-                self.describe_progress()
+        for rolled_stimuli in roll_itr(stimulus_generator, self.params.stimuli_per_epoch):
+            self.update_network(rolled_stimuli)
+            self.t_counter += self.params.stimuli_per_epoch
+            self.training_iteration()
+            self.describe_progress()
 
 
-    def update_network(self, stimulus):
-        """ Present stimulus to the network and update the state
+    def update_network(self, rolled_stimuli):
+        """ Present rolled_stimuli to the network and update the state
 
-        :param stimulus: array of shape (input_layer.ndims, )
+        :param rolled_stimuli: params.stimuli_per_epoch (default 100) stimuls rolled into an array of
+           shape (input_layer.n_dims, params.stimuli_per_epoch)
         """
-        self.layers[0].set_state(stimulus)
+        self.layers[0].set_state(rolled_stimuli)
         for layer in self.layers[1:]:
             layer.reset()
-            # have reset also clear history
         if self.params.async:
             np.random.shuffle(self.node_idx)
             for _ in xrange(self.params.presentations):

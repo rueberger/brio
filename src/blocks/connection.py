@@ -85,23 +85,7 @@ class Connection(object):
         """
         raise NotImplementedError
 
-    def feedforward_energy(self, idx):
-        """
-        Returns the output into the unit at idx of the output layer
-        """
-        # to be deprecated
-        return np.sum(self.weight_multiplier * self.weights[:, idx] * self.presynaptic_layer.state)
-
-    def energy_shadow(self, input_idx):
-        """
-        return the energy of the output states 'shadowed' by the input unit
-          at input_idx
-        for use in calculating energy difference for boltzmann machines
-        """
-        # to be deprecated
-        return np.sum(self.weight_multiplier * self.weights[input_idx, :] * self.postsynaptic_layer.state)
-
-    def unpack_network_params(self, network):
+    def set_up(self, network):
         """ unpacks parameters from parent network
         For now only unpacks the learning rate
 

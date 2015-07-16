@@ -43,7 +43,7 @@ class Layer(object):
         self.allow_self_con = allow_self_con
 
 
-    def unpack_network_params(self, network):
+    def set_up(self, network):
         """ adds an attribute pointing to the parent network and sets up the
         weighting used for computing firing rates
         Also sets the target firing rate and the max history length
@@ -89,31 +89,6 @@ class Layer(object):
         """
         raise NotImplementedError
 
-
-    def async_activation(self, energy):
-        """ The activation function determines the nonlinearity of units in this layer
-        Must be implemented by inheriting classes
-        Sets the state of a unit for a given input energy
-
-        :param energy: the input energy to a unit.
-           Generally the weighted outputs of units in the previous layer
-        :returns: the updated state of the unit in {0, 1}
-        :rtype: int
-        """
-        raise NotImplementedError
-
-    def async_update(self, idx):
-        """ Update the unit at idx by summing the weighted contributions of its input units
-        and running the activation function
-        Must be implemented by inheriting class
-
-        :param idx: idx of the unit to update. in range(self.n_dims)
-        :returns: None
-        :rtype: None
-
-        """
-        raise NotImplementedError
-
     def bias_update(self):
         """ Update the unit biases for this layer
         By default uses the homeostatic threshold rule from
@@ -132,26 +107,6 @@ class Layer(object):
             self.bias += (self.update_sign * self.learning_rate * delta * epoch_time_units)
             # sensible for LIF neurons but will want to change for others....
             self.bias[self.bias < 0] = 0
-
-    def input_energy(self, idx):
-        """
-        returns the energy fed into the the unit at idx by all input layers
-        for feedforward networks this is the only relevant energy method
-        """
-        energy = 0
-        for input_layer in self.inputs:
-            energy += input_layer.feedforward_energy(idx)
-        return energy
-
-    def output_energy(self, idx):
-        """
-        returns the energy this unit feeds into its output layers
-        for use in calculating the energy difference of a bitflip for boltzmann machines
-        """
-        energy = 0
-        for output_layer in self.outputs:
-            energy += output_layer.energy_shadow(idx)
-        return energy
 
     def update_lifetime_mean(self):
         """ Updates the lifetime mean firing rate for this layer
@@ -301,40 +256,6 @@ class BoltzmannMachineLayer(Layer):
         self.state[update_idxs] = 1
 
 
-    @overrides(Layer)
-    def async_activation(self, energy):
-        """ The Boltzmann Machine activation function
-        Returns the state of the unit selected stochastically from a sigmoid
-
-        :param energy: actually energy difference in this case between unit up and down
-        :returns: the updated state of the unit in {-1, 1}
-        :rtype: int
-        """
-        if energy > 200:
-            return 1
-        elif energy < -200:
-            return 0
-        else:
-            p_on = 1. / (1 + np.exp(-energy))
-            if np.random.random() < p_on:
-                return 1
-            else:
-                return 0
-
-    @overrides(Layer)
-    def async_update(self, idx):
-        """ Updates the state of the unit at idx according to the Boltzmann Machine scheme
-        Calculates the global energy difference between the unit at idx being up and down
-        Sets the unit stochastically according the Boltzmann Machine activation function
-
-        :param idx: idx of the unit to update. in range(self.n_dims)
-        :returns: None
-        :rtype: None
-        """
-        delta_e = self.bias[idx]
-        delta_e += self.input_energy(idx)
-        delta_e += self.output_energy(idx)
-        self.state[idx] = self.async_activation(delta_e)
 
 class PerceptronLayer(Layer):
     """
@@ -357,35 +278,6 @@ class PerceptronLayer(Layer):
         update_idxs = np.where(energy > 0)[0]
         self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.state[update_idxs] = 1
-
-
-    @overrides(Layer)
-    def async_activation(self, energy):
-        """ Perceptron activation rule
-        A simple hard threshold
-
-        :param energy: feedforward contributions
-        :returns: the updated state of the unit in {-1, 1}
-        :rtype: int
-        """
-
-        if energy > 0:
-            return 1
-        else:
-            return 0
-
-    @overrides(Layer)
-    def async_update(self, idx):
-        """ Updates the state of the unit at idx according to the Perceptron scheme
-        Computes the feedforward contributions to the unit at idx and uses the hard threshold
-          in the activation function to compute the update
-
-        :param idx: idx of the unit to update. in range(self.n_dims)
-        :returns: None
-        :rtype: None
-        """
-        energy = self.bias[idx] + self.input_energy(idx)
-        self.state[idx] = self.activation(energy)
 
 class InputLayer(Layer):
     """

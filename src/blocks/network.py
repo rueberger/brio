@@ -26,7 +26,7 @@ class Network(object):
         self.params = params
         self.__check_layers()
         self.__find_connections()
-        self.__set_parentage()
+        self.__set_up_children()
         self.t_counter = 0
         if params.display:
             self.param_plot = ParamPlot(self)
@@ -82,6 +82,7 @@ class Network(object):
             layer.reset()
         self.layers[0].set_state(rolled_stimuli)
         if self.params.async:
+            raise NotImplementedError
             np.random.shuffle(self.node_idx)
             for _ in xrange(self.params.presentations):
                 for idx in self.node_idx:
@@ -152,13 +153,14 @@ class Network(object):
             for connection in layer.inputs + layer.outputs:
                 self.connections.add(connection)
 
-    def __set_parentage(self):
-        """ sets self as the parent network of all layers
+    def __set_up_children(self):
+        """ Passes global parameters and calls set up methods on
+           all network and connection objects in the networky
 
         :returns: None
         :rtype: None
         """
         for layer in self.layers:
-            layer.unpack_network_params(self)
-        for connection in self.connections:
+            layer.set_up(self)
+        for connection in self.connections:p
             connection.unpack_network_params(self)

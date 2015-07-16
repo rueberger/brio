@@ -419,9 +419,6 @@ class RasterInputLayer(Layer):
         assert min_range < max_range
         self.lower_bnd = min_range
         self.upper_bnd = max_range
-        self.sample_points = np.tile(np.linspace(min_range, max_range, n_dims),
-                                     self.params.stimuli_per_epoch).reshape(
-                                         n_dims, self.params.stimuli_per_epoch)
         # dviding by 1E4 produces a pretty wide distribution of rates
         # probably a good starting point for
         # current variance of gaussian
@@ -431,6 +428,12 @@ class RasterInputLayer(Layer):
         # how long in each time bin
         # also need to represent cooling schedule somehow
 
+
+    @overrides(Layer)
+    def aux_set_up(self):
+        self.sample_points = np.tile(np.linspace(self.lower_bnd, self.upper_bnd, self.n_dims),
+                                     self.params.stimuli_per_epoch).reshape(
+                                         self.n_dims, self.params.stimuli_per_epoch)
     def set_state(self, scalar_value):
         """ sets the state of this layer probabilistically according to the scheme
           described in the class header doc
@@ -439,11 +442,12 @@ class RasterInputLayer(Layer):
         :returns:  None
         :rtype: None
         """
-        assert (self.lower_bnd < scalar_value < self.upper_bnd).all()
+        assert (self.lower_bnd < scalar_value).all()
+        assert (scalar_value < self.upper_bnd).all()
         rates = self.rate_at_points(scalar_value)
         p_fire_in_bin = 1 - np.exp(-rates)
-        firing_idx = np.where(np.random.random(self.n_dims) < p_fire_in_bin)
-        self.state = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        firing_idx = np.where(np.random.random((self.n_dims, self.params.stimuli_per_epoch)) < p_fire_in_bin)
+        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.state[firing_idx] = 1
 
 

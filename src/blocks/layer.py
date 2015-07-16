@@ -419,7 +419,9 @@ class RasterInputLayer(Layer):
         assert min_range < max_range
         self.lower_bnd = min_range
         self.upper_bnd = max_range
-        self.sample_points = np.linspace(min_range, max_range, n_dims)
+        self.sample_points =
+        np.tile(np.linspace(min_range, max_range, n_dims),
+                self.params.stimuli_per_epoch).reshape(n_dims, self.params.stimuli_per_epoch)
         # dviding by 1E4 produces a pretty wide distribution of rates
         # probably a good starting point for
         # current variance of gaussian
@@ -437,14 +439,12 @@ class RasterInputLayer(Layer):
         :returns:  None
         :rtype: None
         """
-        assert self.lower_bnd < scalar_value < self.upper_bnd
+        assert (self.lower_bnd < scalar_value < self.upper_bnd).all()
         rates = self.rate_at_points(scalar_value)
         p_fire_in_bin = 1 - np.exp(-rates)
-        firing_idx = (np.random.random(self.n_dims) < p_fire_in_bin)
-        # fix me!
-        raise NotImplementedError
-        self.state = np.zeros(self.n_dims)
-        self.state[firing_idx] = np.ones(self.n_dims)[firing_idx]
+        firing_idx = np.where(np.random.random(self.n_dims) < p_fire_in_bin)
+        self.state = np.zeros(self.n_dims, self.params.stimuli_per_epoch)
+        self.state[firing_idx] = 1
 
 
     def rate_at_points(self, scalar_value):

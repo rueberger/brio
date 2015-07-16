@@ -162,5 +162,5 @@ class Network(object):
         """
         for layer in self.layers:
             layer.set_up(self)
-        for connection in self.connections:p
+        for connection in self.connections:
             connection.unpack_network_params(self)

@@ -250,7 +250,7 @@ class BoltzmannMachineLayer(Layer):
             delta_e += multiplier * np.dot(weights, state)
 
         p_on = 1. / (1 + np.exp(-delta_e))
-        update_idxs = np.where(np.random.random(self.n_dims) < p_on)[0]
+        update_idxs = np.where(np.random.random(self.n_dims, self.params.stimuli_per_epoch) < p_on)
         self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.state[update_idxs] = 1
 
@@ -337,7 +337,8 @@ class RasterInputLayer(Layer):
         assert (scalar_value < self.upper_bnd).all()
         rates = self.rate_at_points(scalar_value)
         p_fire_in_bin = 1 - np.exp(-rates)
-        firing_idx = np.where(np.random.random((self.n_dims, self.params.stimuli_per_epoch)) < p_fire_in_bin)
+        rand_p = np.random.random((self.n_dims, self.params.stimuli_per_epoch))
+        firing_idx = np.where(rand_p < p_fire_in_bin)
         self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
         self.state[firing_idx] = 1
 

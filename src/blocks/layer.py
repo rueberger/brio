@@ -270,13 +270,13 @@ class PerceptronLayer(Layer):
         :returns: None
         :rtype: None
         """
-        energy = self.bias.copy()
+        energy = np.tile(self.bias, self.stim_per_epoch).reshape(-1, self.stim_per_epoch)
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
             state = input_connection.presynaptic_layer.history[0]
             energy += multiplier * np.dot(weights, state)
-        update_idxs = np.where(energy > 0)[0]
+        update_idxs = np.where(energy > 0)
         self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.state[update_idxs] = 1
 

@@ -419,9 +419,9 @@ class RasterInputLayer(Layer):
         assert min_range < max_range
         self.lower_bnd = min_range
         self.upper_bnd = max_range
-        self.sample_points =
-        np.tile(np.linspace(min_range, max_range, n_dims),
-                self.params.stimuli_per_epoch).reshape(n_dims, self.params.stimuli_per_epoch)
+        self.sample_points = np.tile(np.linspace(min_range, max_range, n_dims),
+                                     self.params.stimuli_per_epoch).reshape(
+                                         n_dims, self.params.stimuli_per_epoch)
         # dviding by 1E4 produces a pretty wide distribution of rates
         # probably a good starting point for
         # current variance of gaussian

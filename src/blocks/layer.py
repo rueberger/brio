@@ -58,9 +58,10 @@ class Layer(object):
         self.target_firing_rate = (self.ltype.firing_rate_multiplier *
                                    network.params.baseline_firing_rate)
         self.learning_rate = network.params.bias_learning_rate * network.params.baseline_lrate
+        self.stim_per_epoch = self.params.stimuli_per_epoch
 
         # initialize attributes
-        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.history = [self.state.copy()]
         self.firing_rates = self.state.copy()
         self.fr_history = []
@@ -154,7 +155,7 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        self.state = np.zeros((self.n_dims, self.stim_per_epoch))
 
     def get_epoch_fr(self):
         """ Convenience method to reshape fr_history properly and return it
@@ -162,7 +163,7 @@ class Layer(object):
         :returns: fr_history flatted across presentations and images
         :rtype: array
         """
-        total_update_itrs = self.params.presentations * self.params.stimuli_per_epoch
+        total_update_itrs = self.params.presentations * self.stim_per_epoch
         fr_arr = np.array(self.fr_history[:self.params.update_batch_size])
         return fr_arr.reshape(total_update_itrs, -1)
 
@@ -206,7 +207,7 @@ class LIFLayer(Layer):
             self.potentials += multiplier * np.dot(weights, state)
         # set state for neurons that cross threshold
         fire_idxs = np.where(self.potentials >= self.bias)
-        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.state[fire_idxs] = 1
         # reset membrane potential
         self.potentials[fire_idxs] = 0
@@ -217,12 +218,12 @@ class LIFLayer(Layer):
 
     @overrides(Layer)
     def aux_set_up(self):
-        self.potentials = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        self.potentials = np.zeros((self.n_dims, self.stim_per_epoch))
 
     @overrides(Layer)
     def reset_state_vars(self):
-        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
-        self.potentials = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        self.state = np.zeros((self.n_dims, self.stim_per_epoch))
+        self.potentials = np.zeros((self.n_dims, self.stim_per_epoch))
         self.pot_history = []
 
 class BoltzmannMachineLayer(Layer):
@@ -237,7 +238,7 @@ class BoltzmannMachineLayer(Layer):
         :returns: None
         :rtype: None
         """
-        delta_e = self.bias.copy()
+        delta_e = np.tile(self.bias, self.stim_per_epoch).reshape(-1, self.stim_per_epoch)
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
@@ -250,8 +251,9 @@ class BoltzmannMachineLayer(Layer):
             delta_e += multiplier * np.dot(weights, state)
 
         p_on = 1. / (1 + np.exp(-delta_e))
-        update_idxs = np.where(np.random.random(self.n_dims, self.params.stimuli_per_epoch) < p_on)
-        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        rand_p = np.random.random((self.n_dims, self.stim_per_epoch))
+        update_idxs = np.where(rand_p < p_on)
+        self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.state[update_idxs] = 1
 
 
@@ -275,7 +277,7 @@ class PerceptronLayer(Layer):
             state = input_connection.presynaptic_layer.history[0]
             energy += multiplier * np.dot(weights, state)
         update_idxs = np.where(energy > 0)[0]
-        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.state[update_idxs] = 1
 
 class InputLayer(Layer):
@@ -290,7 +292,7 @@ class InputLayer(Layer):
         :returns: None
         :rtype: None
         """
-        assert state.shape == (self.n_dims, self.params.stimuli_per_epoch)
+        assert state.shape == (self.n_dims, self.stim_per_epoch)
         # current injection per unit time
         # unit of current is in membrane rc time
         self.state = state.copy() / float(self.params.steps_per_rc_time)
@@ -323,8 +325,8 @@ class RasterInputLayer(Layer):
     @overrides(Layer)
     def aux_set_up(self):
         self.sample_points = np.tile(np.linspace(self.lower_bnd, self.upper_bnd, self.n_dims),
-                                     self.params.stimuli_per_epoch).reshape(
-                                         self.n_dims, self.params.stimuli_per_epoch)
+                                     self.stim_per_epoch).reshape(
+                                         self.n_dims, self.stim_per_epoch)
     def set_state(self, scalar_value):
         """ sets the state of this layer probabilistically according to the scheme
           described in the class header doc
@@ -337,9 +339,9 @@ class RasterInputLayer(Layer):
         assert (scalar_value < self.upper_bnd).all()
         rates = self.rate_at_points(scalar_value)
         p_fire_in_bin = 1 - np.exp(-rates)
-        rand_p = np.random.random((self.n_dims, self.params.stimuli_per_epoch))
+        rand_p = np.random.random((self.n_dims, self.stim_per_epoch))
         firing_idx = np.where(rand_p < p_fire_in_bin)
-        self.state = np.zeros((self.n_dims, self.params.stimuli_per_epoch))
+        self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.state[firing_idx] = 1
 
 

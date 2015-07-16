@@ -114,10 +114,10 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        self.epoch_fr = (
-            np.mean(self.history[:self.params.layer_history_length], axis=(0, 2)) / self.params.timestep)
-        fr_mean = np.mean(self.fr_history[:self.params.layer_history_length], axis=(0,1))
-        self.lfr_mean += (self.params.ema_lfr * ((fr_mean / self.params.timestep) - self.lfr_mean))
+        act_mean = np.mean(self.history[:self.params.layer_history_length], axis=(0, 2))
+        fr_mean = np.mean(self.fr_history[:self.params.layer_history_length], axis=(0, 1))
+        self.epoch_fr = (act_mean / self.params.timestep)
+        self.lfr_mean += self.params.ema_lfr * ((fr_mean / self.params.timestep) - self.lfr_mean)
 
 
     def update_history(self):
@@ -237,7 +237,6 @@ class BoltzmannMachineLayer(Layer):
         :returns: None
         :rtype: None
         """
-        # need to check and write tests for this
         delta_e = self.bias.copy()
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier

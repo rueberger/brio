@@ -36,10 +36,11 @@ def hist_slideshow(arr):
     """
     fig = plt.figure()
     for distr in arr:
-        plt.clf()
-        plt.hist(distr, bins=250, normed=True)
-        fig.canvas.draw()
-        time.sleep(.1)
+        if len(distr) != 0:
+            plt.clf()
+            plt.hist(distr, bins=250, normed=True)
+            fig.canvas.draw()
+            time.sleep(.1)
 
 
 class ParamPlot(object):

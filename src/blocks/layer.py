@@ -283,6 +283,10 @@ class InputLayer(Layer):
     Input layer. Lacks async_update methods
     """
 
+    def __init__(self, *args, **kwargs, n_children=2):
+        super(InputLayer, self).__init__(*args, **kwargs)
+        self.update_bias = False
+
     def set_state(self, state):
         """ set state as the state of the input layer
 
@@ -295,6 +299,10 @@ class InputLayer(Layer):
         # unit of current is in membrane rc time
         self.state = state.copy() / float(self.params.steps_per_rc_time)
 
+
+    @overrides(Layer)
+    def sync_update(self):
+        pass
 
 class RasterInputLayer(Layer):
     """
@@ -370,3 +378,100 @@ class RasterInputLayer(Layer):
             self.set_state(scalar_value)
             hist.append(self.state)
         return np.mean(hist, axis=0)
+
+
+class GatedLayer(Layer):
+    """
+    A layer that gates its inputs multiplicatively
+    Intended to be used in conjunction with SplitInput as an input layer for multiple stimuli
+      such as stereo images.
+    Output must be a ConstantConnection
+    Sets firing rate and history as those of the postsynaptic neuron to
+      preserve weight rule functionality
+    """
+
+
+    def __init__(self, *args, **kwargs):
+        super(GatedLayer, self).__init__(*args, **kwargs)
+        self.update_bias = False
+
+    @overrides(Layer)
+    def sync_update(self):
+        update_state = np.ones(self.n_dims)
+        for input_connection in self.inputs:
+            multiplier = input_connection.weight_multiplier
+            weights = input_connection.weights.T
+            state = input_connection.presynaptic_layer.history[0]
+            update_state *= multiplier * np.dot(weights, state)
+        self.state = update_state
+
+    @overrides(Layer)
+    def aux_set_up(self):
+        """
+        Set the firing rate and history as those of the postsynaptic neuron
+        """
+        # sadly this requires that the this layer must come after the postsynaptic layer
+        #  in network.layers so that things are initialized in the right order
+        # I can't see an easy way to get around this
+        from blocks.connections import ConstantConnection
+
+        assert len(self.outputs) == 1
+        assert isinstance(self.outputs[0], ConstantConnection)
+        postsynaptic_layer = self.outputs[0].postsynaptic_layer
+        self.firing_rates = postsynaptic_layer.firing_rates
+        self.history = postsynaptic_layer.history
+        self.fr_history = postsynaptic_layer.history
+        self.lfr_mean = postsynaptic_layer.lfr_mean
+
+
+    @override(Layer)
+    def update_lifetime_mean(self):
+        pass
+
+    @override(Layer)
+    def update_history(self):
+        pass
+
+    @override(Layer)
+    def reset(self):
+        pass
+
+    #override update history methods
+
+
+class SplitInput(Layer):
+    """
+    An input layer that can represent several stimuli as different layers
+    """
+
+    # to do: further separate input layers from active layers
+    # inheriting a lot of useless methods
+    # an atomic layer should do one thing: have inputs and outputs
+    def __init__(self, *args, **kwargs, n_children=2):
+        """
+        Arguments are passed to children
+       """
+        super(SplitInput, self).__init__(*args, **kwargs)
+        self.update_bias = False
+        self.children = [InputLayer(*args, **kwargs) for _ in xrange(n_children)]
+
+    def set_state(self, rolled_stimuli_set):
+        """ Set the state of all the child layers
+
+        :param stimuli_set: a list of stimuli of len n_children,
+         each element of the list is an array of rolled stimuli of shape (n_dims, stimuli_per_epoch)
+        :returns: None
+        :rtype: None
+        """
+        assert len(stimuli_set) == len(self.children)
+        for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
+            child_layer.set_state(stimulus)
+
+    @overrides(Layer)
+    def sync_update(self):
+        pass
+
+    @overrides(Layer)
+    def aux_set_up(self):
+        assert len(self.outputs) == 0
+        assert len(self.inputs) == 0

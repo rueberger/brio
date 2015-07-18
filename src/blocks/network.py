@@ -24,7 +24,6 @@ class Network(object):
         """
         self.layers = layers
         self.params = params
-        self.__check_layers()
         self.__find_connections()
         self.__set_up_children()
         self.t_counter = 0
@@ -113,19 +112,6 @@ class Network(object):
             connection.weight_update()
         for layer in self.layers[1:]:
             layer.bias_update()
-
-
-    def __check_layers(self):
-        """ Checks that the input layer is the first element of layers
-          and that all other layers have inputs and outputs (except for possibly the output layer)
-        """
-        # also check type of input layer
-        assert len(self.layers[0].inputs) == 0
-        assert len(self.layers[0].outputs) != 0
-        for layer in self.layers[1:-1]:
-            assert len(layer.inputs) != 0
-            assert len(layer.outputs) != 0
-        assert len(self.layers[-1].inputs) != 0
 
     def __build_layer_dict(self):
         """ Builds a dictionary from unit idx to layer for use in update method

@@ -447,13 +447,13 @@ class SplitInput(Layer):
     # to do: further separate input layers from active layers
     # inheriting a lot of useless methods
     # an atomic layer should do one thing: have inputs and outputs
-    def __init__(self, n_children=2, *args, **kwargs):
+    def __init__(self, n_dims, n_children , **kwargs):
         """
         Arguments are passed to children
        """
-        super(SplitInput, self).__init__(*args, **kwargs)
+        super(SplitInput, self).__init__(n_dims, **kwargs)
         self.update_bias = False
-        self.children = [InputLayer(*args, **kwargs) for _ in xrange(n_children)]
+        self.children = [InputLayer(n_dims, **kwargs) for _ in xrange(n_children)]
 
     def set_state(self, rolled_stimuli_set):
         """ Set the state of all the child layers

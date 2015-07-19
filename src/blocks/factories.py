@@ -90,9 +90,9 @@ def perceptron_factory(layer_sizes, params=NetworkParams()):
 def gated_einet_factory(layer_sizes, n_input_stimuli, params=NetworkParams()):
     """ Constructs an EInet with multiplicatively gated input
     That is, the excitatory current receives current:
-      I_in = W_1 x_1 \cdot W_2 x_2 \dots W_{n-1} x_{n-1} \cdot W_n x_n
+      I_in = W_1 x_1 cdot W_2 x_2 ... W_{n-1} x_{n-1} cdot W_n x_n
     where x_i is the ith input stimuli, W_i is the ith set of weights,
-      n = n_input_stimuli and \cdot indicates a dot product
+      n = n_input_stimuli and cdot indicates a dot product
 
     :param layer_sizes: list of the layer sizes. Must be of length 3.
       format is [input_size, excitatory_size, inhibitory_size]
@@ -110,7 +110,7 @@ def gated_einet_factory(layer_sizes, n_input_stimuli, params=NetworkParams()):
         layer.LIFLayer(layer_sizes[1], LayerType.excitatory),
         layer.LIFLayer(layer_sizes[2], LayerType.inhibitory, allow_self_con=False)
     ]
-	for child_layer in layers[0].children:
+    for child_layer in layers[0].children:
         layers.append(child_layer)
         input_con = connection.OjaConnection(child_layer, layers[1], lrate_multiplier=0.1)
         input_con.weight_multiplier = 5

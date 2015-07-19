@@ -162,9 +162,8 @@ class Layer(object):
         :returns: fr_history flatted across presentations and images
         :rtype: array
         """
-        total_update_itrs = self.params.presentations * self.stim_per_epoch
-        fr_arr = np.array(self.fr_history[:self.params.update_batch_size])
-        return fr_arr.reshape(total_update_itrs, -1)
+        fr_arr = np.array(self.fr_history[:self.params.presentations])
+        return fr_arr.reshape(self.params.update_batch_size, -1)
 
 
     def __repr__(self):
@@ -299,6 +298,7 @@ class InputLayer(Layer):
         # current injection per unit time
         # unit of current is in membrane rc time
         self.state = state.copy() / float(self.params.steps_per_rc_time)
+        self.history.insert(0, self.state.copy())
 
 
     @overrides(Layer)
@@ -350,6 +350,7 @@ class RasterInputLayer(Layer):
         firing_idx = np.where(rand_p < p_fire_in_bin)
         self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.state[firing_idx] = 1
+        self.history.insert(0, self.state.copy())
 
 
     def rate_at_points(self, scalar_value):
@@ -425,7 +426,6 @@ class GatedLayer(Layer):
         self.fr_history = self.parent_layer.history
         self.lfr_mean = self.parent_layer.lfr_mean
 
-
     @overrides(Layer)
     def update_lifetime_mean(self):
         # never used since bias isn't updated, but just to be sure
@@ -437,10 +437,6 @@ class GatedLayer(Layer):
         self.firing_rates = self.parent_layer.firing_rates
         self.history = self.parent_layer.history
         self.fr_history = self.parent_layer.history
-
-    @overrides(Layer)
-    def reset(self):
-        pass
 
     #override update history methods
 
@@ -481,3 +477,15 @@ class SplitInput(Layer):
     def aux_set_up(self):
         assert len(self.outputs) == 0
         assert len(self.inputs) == 0
+
+    @overrides(Layer)
+    def update_history(self):
+        pass
+
+    @overrides(Layer)
+    def update_lifetime_mean(self):
+        pass
+
+    @overrides(Layer)
+    def reset(self):
+        pass

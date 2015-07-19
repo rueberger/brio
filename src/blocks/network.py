@@ -55,16 +55,21 @@ class Network(object):
         if self.params.display and self.t_counter % 2500 == 0:
             self.param_plot.update_plot()
 
-    def train(self, stimulus_generator):
+    def train(self, stimulus_generator, rolled=False):
         """ Trains the network on the generated stimuli
-        Reports progress
 
         :param stimulus_generator: a generator object. calling next on this generator must return
           an array that can be flatted to the shape of the input layer
+        :param rolled: whether the stimulus is already rolled into epoch sized arrays. False by default
         :returns: None
         :rtype: None
+
         """
-        for rolled_stimuli in roll_itr(stimulus_generator, self.params.stimuli_per_epoch):
+        if rolled:
+            stim_gen = stimulus_generator
+        else:
+            stim_gen =  roll_itr(stimulus_generator, self.params.stimuli_per_epoch)
+        for rolled_stimuli in stim_gen:
             self.update_network(rolled_stimuli)
             self.t_counter += self.params.stimuli_per_epoch
             self.training_iteration()

@@ -108,8 +108,8 @@ def gated_einet_factory(layer_sizes, n_input_stimuli, params=NetworkParams()):
     layers = [
         layer.SplitInput(layer_sizes[0], n_children=n_input_stimuli),
         layer.LIFLayer(layer_sizes[1], LayerType.excitatory),
-        layer.LIFLayer(layer_sizes[2], LayerType.inhibitory, allow_self_con=False)
-        layer.GatedLayer(layer_sizes[1]),
+        layer.LIFLayer(layer_sizes[2], LayerType.inhibitory, allow_self_con=False),
+        layer.GatedLayer(layer_sizes[1])
     ]
     for child_layer in layers[0].children:
         layers.append(child_layer)

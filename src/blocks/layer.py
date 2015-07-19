@@ -391,6 +391,7 @@ class GatedLayer(Layer):
       preserve weight rule functionality
     """
 
+    # pylint:disable=too-many-instance-attributes
 
     def __init__(self, *args, **kwargs):
         super(GatedLayer, self).__init__(*args, **kwargs)
@@ -427,7 +428,9 @@ class GatedLayer(Layer):
 
     @overrides(Layer)
     def update_lifetime_mean(self):
-        pass
+        # never used since bias isn't updated, but just to be sure
+        self.epoch_fr = self.parent_layer.epoch_fr
+        self.lfr_mean = self.parent_layer.lfr_mean
 
     @overrides(Layer)
     def update_history(self):
@@ -450,7 +453,7 @@ class SplitInput(Layer):
     # to do: further separate input layers from active layers
     # inheriting a lot of useless methods
     # an atomic layer should do one thing: have inputs and outputs
-    def __init__(self, n_dims, n_children , **kwargs):
+    def __init__(self, n_dims, n_children, **kwargs):
         """
         Arguments are passed to children
        """

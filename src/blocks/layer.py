@@ -283,7 +283,7 @@ class InputLayer(Layer):
     Input layer. Lacks async_update methods
     """
 
-    def __init__(self, *args, **kwargs, n_children=2):
+    def __init__(self, *args, **kwargs):
         super(InputLayer, self).__init__(*args, **kwargs)
         self.update_bias = False
 
@@ -424,15 +424,15 @@ class GatedLayer(Layer):
         self.lfr_mean = postsynaptic_layer.lfr_mean
 
 
-    @override(Layer)
+    @overrides(Layer)
     def update_lifetime_mean(self):
         pass
 
-    @override(Layer)
+    @overrides(Layer)
     def update_history(self):
         pass
 
-    @override(Layer)
+    @overrides(Layer)
     def reset(self):
         pass
 
@@ -447,7 +447,7 @@ class SplitInput(Layer):
     # to do: further separate input layers from active layers
     # inheriting a lot of useless methods
     # an atomic layer should do one thing: have inputs and outputs
-    def __init__(self, *args, **kwargs, n_children=2):
+    def __init__(self, n_children=2, *args, **kwargs):
         """
         Arguments are passed to children
        """
@@ -463,7 +463,7 @@ class SplitInput(Layer):
         :returns: None
         :rtype: None
         """
-        assert len(stimuli_set) == len(self.children)
+        assert len(rolled_stimuli_set) == len(self.children)
         for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
             child_layer.set_state(stimulus)
 

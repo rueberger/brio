@@ -422,7 +422,7 @@ class GatedLayer(Layer):
         assert isinstance(self.outputs[0], ConstantConnection)
         self.parent_layer = self.outputs[0].postsynaptic_layer
         self.firing_rates = self.parent_layer.firing_rates
-        self.history = self.parent_layer.history
+
         self.fr_history = self.parent_layer.history
         self.lfr_mean = self.parent_layer.lfr_mean
 
@@ -435,8 +435,10 @@ class GatedLayer(Layer):
     @overrides(Layer)
     def update_history(self):
         self.firing_rates = self.parent_layer.firing_rates
-        self.history = self.parent_layer.history
         self.fr_history = self.parent_layer.history
+        # history is used by the parent_layer in state updates
+        # total mess...
+        self.history.insert(0, self.state.copy())
 
     #override update history methods
 

@@ -141,6 +141,7 @@ class Layer(object):
         :rtype: None
         """
         self.reset_state_vars()
+        self.firing_rates = np.zeros((self.n_dims, self.stim_per_epoch))
         self.fr_history = []
         self.history = [self.state.copy()]
 
@@ -397,7 +398,7 @@ class GatedLayer(Layer):
 
     @overrides(Layer)
     def sync_update(self):
-        update_state = np.ones(self.n_dims)
+        update_state = np.ones((self.n_dims, self.stim_per_epoch))
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
@@ -413,15 +414,15 @@ class GatedLayer(Layer):
         # sadly this requires that the this layer must come after the postsynaptic layer
         #  in network.layers so that things are initialized in the right order
         # I can't see an easy way to get around this
-        from blocks.connections import ConstantConnection
+        from blocks.connection import ConstantConnection
 
         assert len(self.outputs) == 1
         assert isinstance(self.outputs[0], ConstantConnection)
-        postsynaptic_layer = self.outputs[0].postsynaptic_layer
-        self.firing_rates = postsynaptic_layer.firing_rates
-        self.history = postsynaptic_layer.history
-        self.fr_history = postsynaptic_layer.history
-        self.lfr_mean = postsynaptic_layer.lfr_mean
+        self.parent_layer = self.outputs[0].postsynaptic_layer
+        self.firing_rates = self.parent_layer.firing_rates
+        self.history = self.parent_layer.history
+        self.fr_history = self.parent_layer.history
+        self.lfr_mean = self.parent_layer.lfr_mean
 
 
     @overrides(Layer)
@@ -430,7 +431,9 @@ class GatedLayer(Layer):
 
     @overrides(Layer)
     def update_history(self):
-        pass
+        self.firing_rates = self.parent_layer.firing_rates
+        self.history = self.parent_layer.history
+        self.fr_history = self.parent_layer.history
 
     @overrides(Layer)
     def reset(self):

@@ -382,24 +382,33 @@ class RasterInputLayer(Layer):
         return np.mean(hist, axis=0)
 
 
-class GatedLayer(Layer):
+class GatedInput(Layer):
     """
-    A layer that gates its inputs multiplicatively
-    Intended to be used in conjunction with SplitInput as an input layer for multiple stimuli
-      such as stereo images.
+    An input layer that accepts multiple stimuli simultaneously
+    State of this layer is set by gating inptu stimuli multiplicatively
     Output must be a ConstantConnection
-    Sets firing rate and history as those of the postsynaptic neuron to
+    Sets firing rates to those of the postsynaptic  to
       preserve weight rule functionality
     """
 
     # pylint:disable=too-many-instance-attributes
 
-    def __init__(self, *args, **kwargs):
-        super(GatedLayer, self).__init__(*args, **kwargs)
+    def __init__(self, n_dims, n_children, **kwargs):
+        super(GatedInput, self).__init__(n_dims, **kwargs)
         self.update_bias = False
+        self.children = [InputLayer(n_dims, **kwargs) for _ in xrange(n_children)]
 
-    @overrides(Layer)
-    def sync_update(self):
+    def set_state(self, rolled_stimuli_set):
+        """ Set the state of all the child layers
+
+        :param rolled_stimuli_set: a list of stimuli of len n_children,
+         each element of the list is an array of rolled stimuli of shape (n_dims, stimuli_per_epoch)
+        :returns: None
+        :rtype: None
+        """
+        assert len(rolled_stimuli_set) == len(self.children)
+        for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
+            child_layer.set_state(stimulus)
         update_state = np.ones((self.n_dims, self.stim_per_epoch))
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
@@ -419,12 +428,9 @@ class GatedLayer(Layer):
         from blocks.connection import ConstantConnection
 
         assert len(self.outputs) == 1
+        assert len(self.inputs) = len(self.children)
         assert isinstance(self.outputs[0], ConstantConnection)
         self.parent_layer = self.outputs[0].postsynaptic_layer
-        self.firing_rates = self.parent_layer.firing_rates
-
-        self.fr_history = self.parent_layer.history
-        self.lfr_mean = self.parent_layer.lfr_mean
 
     @overrides(Layer)
     def update_lifetime_mean(self):
@@ -439,55 +445,3 @@ class GatedLayer(Layer):
         # history is used by the parent_layer in state updates
         # total mess...
         self.history.insert(0, self.state.copy())
-
-    #override update history methods
-
-
-class SplitInput(Layer):
-    """
-    An input layer that can represent several stimuli as different layers
-    """
-
-    # to do: further separate input layers from active layers
-    # inheriting a lot of useless methods
-    # an atomic layer should do one thing: have inputs and outputs
-    def __init__(self, n_dims, n_children, **kwargs):
-        """
-        Arguments are passed to children
-       """
-        super(SplitInput, self).__init__(n_dims, **kwargs)
-        self.update_bias = False
-        self.children = [InputLayer(n_dims, **kwargs) for _ in xrange(n_children)]
-
-    def set_state(self, rolled_stimuli_set):
-        """ Set the state of all the child layers
-
-        :param stimuli_set: a list of stimuli of len n_children,
-         each element of the list is an array of rolled stimuli of shape (n_dims, stimuli_per_epoch)
-        :returns: None
-        :rtype: None
-        """
-        assert len(rolled_stimuli_set) == len(self.children)
-        for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
-            child_layer.set_state(stimulus)
-
-    @overrides(Layer)
-    def sync_update(self):
-        pass
-
-    @overrides(Layer)
-    def aux_set_up(self):
-        assert len(self.outputs) == 0
-        assert len(self.inputs) == 0
-
-    @overrides(Layer)
-    def update_history(self):
-        pass
-
-    @overrides(Layer)
-    def update_lifetime_mean(self):
-        pass
-
-    @overrides(Layer)
-    def reset(self):
-        pass

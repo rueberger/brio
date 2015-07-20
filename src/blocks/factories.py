@@ -106,16 +106,15 @@ def gated_einet_factory(layer_sizes, n_input_stimuli, params=NetworkParams()):
     # might as well use standard EINet
     assert n_input_stimuli > 1
     layers = [
-        layer.SplitInput(layer_sizes[0], n_children=n_input_stimuli),
+        layer.GatedInput(layer_sizes[1]),
         layer.LIFLayer(layer_sizes[1], LayerType.excitatory),
         layer.LIFLayer(layer_sizes[2], LayerType.inhibitory, allow_self_con=False),
-        layer.GatedLayer(layer_sizes[1])
     ]
     for child_layer in layers[0].children:
         layers.append(child_layer)
-        input_con = connection.OjaConnection(child_layer, layers[3], lrate_multiplier=0.1)
+        input_con = connection.OjaConnection(child_layer, layers[0], lrate_multiplier=0.1)
         input_con.weight_multiplier = 5
-    connection.ConstantConnection(layers[3], layers[1])
+    connection.ConstantConnection(layers[0], layers[1])
     connection.CMConnection(layers[1], layers[2], weight_scheme='uniform', lrate_multiplier=.7)
     connection.CMConnection(layers[2], layers[2],weight_scheme='zero', lrate_multiplier=1.5)
     connection.CMConnection(layers[2], layers[1], weight_scheme='uniform', lrate_multiplier=0.7)

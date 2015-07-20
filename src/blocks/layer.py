@@ -34,7 +34,7 @@ class Layer(object):
         """
 
         self.n_dims = n_dims
-        self.bias = np.ones((self.n_dims, 1)) * 2
+        self.bias = np.ones((self.n_dims, 1))
         self.inputs = []
         self.outputs = []
         self.ltype = ltype
@@ -146,7 +146,7 @@ class Layer(object):
         """
         if self.update_bias:
             epoch_time_units = self.params.update_batch_size * self.params.timestep
-            delta = (self.target_firing_rate - self._epoch_fr).reshape(-1, 1)
+            delta = (self.target_firing_rate - self.epoch_fr).reshape(-1, 1)
             self.bias += (self.update_sign * self.learning_rate * delta * epoch_time_units)
 
     def update_lifetime_mean(self):
@@ -159,7 +159,6 @@ class Layer(object):
         fr_mean = np.mean(self._fr_history[:self.params.layer_history_length], axis=(0, 1))
         self._epoch_fr = (act_mean / self.params.timestep)
         self._lfr_mean += self.params.ema_lfr * ((fr_mean / self.params.timestep) - self._lfr_mean)
-
 
     def update_history(self):
         """ appends the current state to the history
@@ -196,15 +195,6 @@ class Layer(object):
         :rtype: None
         """
         self.state = np.zeros((self.n_dims, self.stim_per_epoch))
-
-    def get_epoch_fr(self):
-        """ Convenience method to reshape fr_history properly and return it
-
-        :returns: fr_history flatted across presentations and images
-        :rtype: array
-        """
-        # to be deprecated
-        return self.fr_history.reshape(self.params.update_batch_size, -1)
 
 
     def __repr__(self):

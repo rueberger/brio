@@ -133,8 +133,8 @@ class OjaConnection(Connection):
 
     @overrides(Connection)
     def bulk_weight_update(self):
-        pre_syn_rates = self.presynaptic_layer.get_epoch_fr()
-        post_syn_rates = self.postsynaptic_layer.get_epoch_fr()
+        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
+        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.sum(post_syn_rates ** 2, axis=0) * self.weights)
         self.weights += self.learning_rate * delta
@@ -148,8 +148,8 @@ class FoldiakConnection(Connection):
 
     @overrides(Connection)
     def bulk_weight_update(self):
-        pre_syn_rates = self.presynaptic_layer.get_epoch_fr()
-        post_syn_rates = self.postsynaptic_layer.get_epoch_fr()
+        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
+        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
         pre_syn_avg_rates = self.presynaptic_layer.lfr_mean
         post_syn_avg_rates = self.postsynaptic_layer.lfr_mean
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
@@ -168,8 +168,8 @@ class CMConnection(Connection):
 
     @overrides(Connection)
     def bulk_weight_update(self):
-        pre_syn_rates = self.presynaptic_layer.get_epoch_fr()
-        post_syn_rates = self.postsynaptic_layer.get_epoch_fr()
+        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
+        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
         pre_syn_avg_rates = self.presynaptic_layer.lfr_mean * self.params.timestep
         post_syn_avg_rates = self.postsynaptic_layer.lfr_mean * self.params.timestep
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -

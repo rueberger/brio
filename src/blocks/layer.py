@@ -66,7 +66,7 @@ class Layer(object):
         self.firing_rates = self.state.copy()
         self.fr_history = []
         self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
-
+        self.epoch_fr = np.zeros((self.n_dims, self.stim_per_epoch))
         # additional set up for inheriting layers (if necessary)
         self.aux_set_up()
 
@@ -432,6 +432,7 @@ class GatedInput(Layer):
         assert len(self.inputs) == len(self.children)
         assert isinstance(self.outputs[0], ConstantConnection)
         self.parent_layer = self.outputs[0].postsynaptic_layer
+
 
     @overrides(Layer)
     def update_lifetime_mean(self):

@@ -22,6 +22,7 @@ class Connection(object):
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.lrate_multiplier = lrate_multiplier
         self.__init_weights(weight_scheme)
+        self.update_cap = 1
 
 
     def __set_pointers(self):
@@ -69,7 +70,12 @@ class Connection(object):
         :returns: None
         :rtype: None
         """
-        self.bulk_weight_update()
+        delta_w = self.bulk_weight_update()
+        if delta_w is not None:
+            if self.update_cap is not None:
+                delta_w[np.where(delta_w > self.update_cap)] = self.update_cap
+                delta_w[np.where(delta_w < -self.update_cap)] = -self.update_cap
+            self.weights += delta_w
         if self.presynaptic_layer.ltype.constrain_weights:
             self.__impose_constraint()
 
@@ -80,7 +86,8 @@ class Connection(object):
           number of state updates
         Must be implemented by inheriting class
 
-        :returns: None
+        :returns: delta w
+        :rtype: array
         """
         raise NotImplementedError
 
@@ -137,7 +144,7 @@ class OjaConnection(Connection):
         post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.sum(post_syn_rates ** 2, axis=0) * self.weights)
-        self.weights += self.learning_rate * delta
+        return self.learning_rate * delta
 
 class FoldiakConnection(Connection):
     """
@@ -154,7 +161,7 @@ class FoldiakConnection(Connection):
         post_syn_avg_rates = self.postsynaptic_layer.lfr_mean
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates) * self.epoch_size)
-        self.weights += self.learning_rate * delta / self.epoch_size
+        return self.learning_rate * delta / self.epoch_size
 
 
 
@@ -175,7 +182,7 @@ class CMConnection(Connection):
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates)
                  * (1 + self.weights) * self.epoch_size)
-        self.weights += self.learning_rate * delta
+        return self.learning_rate * delta
 
 class ConstantConnection(Connection):
     """

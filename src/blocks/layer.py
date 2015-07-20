@@ -41,6 +41,7 @@ class Layer(object):
         self.update_sign = 1
         self.update_bias = update_bias
         self.allow_self_con = allow_self_con
+        self.update_cap = 0.5
 
 
     def set_up(self, network):
@@ -147,7 +148,11 @@ class Layer(object):
         if self.update_bias:
             epoch_time_units = self.params.update_batch_size * self.params.timestep
             delta = (self.target_firing_rate - self.epoch_fr).reshape(-1, 1)
-            self.bias += (self.update_sign * self.learning_rate * delta * epoch_time_units)
+            delta_b = (self.update_sign * self.learning_rate * delta * epoch_time_units)
+            if self.update_cap is not None:
+                delta_b[np.where(delta_b > self.update_cap)] = self.update_cap
+                delta_b[np.where(delta_b < -self.update_cap)] = -self.update_cap
+            self.bias += delta_b
 
     def update_lifetime_mean(self):
         """ Updates the lifetime mean firing rate for this layer

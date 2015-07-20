@@ -50,16 +50,19 @@ class ParamPlot(object):
 
     #pylint: disable=too-few-public-methods
 
-    def __init__(self, net):
+    def __init__(self, net, layers=None):
         """ Initialize this class
 
-        :param net: network is a currently in training network
+        :param net: network is a ycurrently in training network
+        :param layers: layers to display. list of indices. by default all
         :returns: the initialized ParamPlot object
         :rtype: ParamPlot
+
         """
+        self.layers = [net.layers[idx] for idx in layers] or net.layers[1:]
         self.net = net
         self.cons = list(net.connections)
-        self.nrows = max(len(self.cons), len(net.layers[1:]) * 2)
+        self.nrows = max(len(self.cons), len(self.layers) * 2)
         self.fig, self.ax_arr = plt.subplots(nrows=self.nrows,
                                              ncols=3, figsize=(16, 10))
         self.t = np.arange(self.net.params.presentations)
@@ -74,16 +77,20 @@ class ParamPlot(object):
         self.fig.suptitle("Parameter distributions at timestep {}".format(self.net.t_counter))
         for axis in np.ravel(self.ax_arr):
             axis.clear()
+
         for con, axis in zip(self.cons, self.ax_arr[:, 0]):
             axis.hist(np.ravel(con.weights), bins=250, normed=True)
             axis.set_title("Weight distribution for {}".format(str(con)))
-        for layer, axis in zip(self.net.layers[1:], self.ax_arr[:, 1]):
+
+        for layer, axis in zip(self.layers, self.ax_arr[:, 1]):
             axis.hist(np.ravel(layer.bias), bins=250, normed=True)
             axis.set_title("Bias distribution for {}".format(str(layer)))
-        for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 1]):
+
+        for layer, axis in zip(self.layers, self.ax_arr[len(self.layers):, 1]):
             axis.hist(np.ravel(layer.fr_history), bins=250, normed=True)
             axis.set_title("Firing rate distribution for {}".format(str(layer)))
-        for layer, axis in zip(self.net.layers[1:], self.ax_arr[len(self.net.layers[1:]):, 2]):
+
+        for layer, axis in zip(self.layers, self.ax_arr[len(self.layers):, 2]):
             if isinstance(layer, LIFLayer):
                 potentials = np.array(layer.pot_history)[:, :, -1].T
                 for u_t in potentials:

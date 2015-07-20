@@ -22,7 +22,6 @@ class Connection(object):
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.lrate_multiplier = lrate_multiplier
         self.__init_weights(weight_scheme)
-        self.__impose_constraint()
 
 
     def __set_pointers(self):

@@ -51,15 +51,15 @@ class Connection(object):
             if not self.presynaptic_layer.ltype.constrain_weights:
                 self.weights = 2 * self.weights - 1
         elif scheme == 'gaussian':
-            self.weights = np.random.randn((self.presynaptic_layer.n_dims,
-                                            self.postsynaptic_layer.n_dims))
-            if not self.presynaptic_layer.ltype.constrain_weights:
+            self.weights = np.random.randn(self.presynaptic_layer.n_dims,
+                                           self.postsynaptic_layer.n_dims)
+            if self.presynaptic_layer.ltype.constrain_weights:
                 self.weights = np.abs(self.weights)
         elif scheme == 'zero':
             self.weights = np.zeros((self.presynaptic_layer.n_dims,
                                      self.postsynaptic_layer.n_dims))
         else:
-            raise NotImplementedError("please choose on of the implemented weight schemes")
+            raise NotImplementedError("please choose one of the implemented weight schemes")
 
 
     def weight_update(self):
@@ -123,7 +123,7 @@ class OjaConnection(Connection):
     """
 
     def __init__(self, input_layer, output_layer,
-                 lrate_multiplier=1, weight_scheme='uniform'):
+                 lrate_multiplier=1, weight_scheme='gaussian'):
         super(OjaConnection, self).__init__(input_layer, output_layer,
                                             lrate_multiplier, weight_scheme)
         # stupid trick to normalize columns

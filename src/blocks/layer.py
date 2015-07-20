@@ -62,13 +62,59 @@ class Layer(object):
 
         # initialize attributes
         self.state = np.zeros((self.n_dims, self.stim_per_epoch))
-        self.history = [self.state.copy()]
-        self.firing_rates = self.state.copy()
-        self.fr_history = []
-        self.lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
-        self.epoch_fr = np.zeros((self.n_dims, self.stim_per_epoch))
+        self._history = [self.state.copy()]
+        self._firing_rates = self.state.copy()
+        self._fr_history = []
+        self._lfr_mean = np.ones(self.n_dims) * self.target_firing_rate
+        self._epoch_fr = np.zeros((self.n_dims, self.stim_per_epoch))
         # additional set up for inheriting layers (if necessary)
         self.aux_set_up()
+
+    @property
+    def firing_rates(self):
+        """ Property for firing rates
+
+        :returns _firing_rates
+        :rtype: array
+        """
+        return self._firing_rates
+
+    @property
+    def fr_history(self):
+        """ Property for firing rate history
+
+        :returns: _fr_history trimmed to proper length
+        :rtype: array
+        """
+        return np.array(self._fr_history[:self.params.presentations])
+
+    @property
+    def lfr_mean(self):
+        """ Property for lfr_mean
+
+        :returns: _lfr_mean
+        :rtype: array
+        """
+        return self._lfr_mean
+
+    @property
+    def epoch_fr(self):
+        """ Property for epoch_fr
+
+        :returns: _epoch_fr
+        :rtype: array
+        """
+        return self._epoch_fr
+
+    @property
+    def prev_state(self):
+        """ Property that returns the previous state
+
+        :returns: history[0]
+        :rtype: array
+        """
+        return self._history[0]
+
 
     def aux_set_up(self):
         """ This method is called after the main set up has finished executing
@@ -98,13 +144,9 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        # incredibly confusing, but the bias update does NOT use the exponential
-        # moving average used for the firing rate everywhere else....
-        # inelegant and I hope not necessary but this comes directly out of the
-        # EI net implementation
         if self.update_bias:
             epoch_time_units = self.params.update_batch_size * self.params.timestep
-            delta = (self.target_firing_rate - self.epoch_fr).reshape(-1, 1)
+            delta = (self.target_firing_rate - self._epoch_fr).reshape(-1, 1)
             self.bias += (self.update_sign * self.learning_rate * delta * epoch_time_units)
 
     def update_lifetime_mean(self):
@@ -113,10 +155,10 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        act_mean = np.mean(self.history[:self.params.layer_history_length], axis=(0, 2))
-        fr_mean = np.mean(self.fr_history[:self.params.layer_history_length], axis=(0, 1))
-        self.epoch_fr = (act_mean / self.params.timestep)
-        self.lfr_mean += self.params.ema_lfr * ((fr_mean / self.params.timestep) - self.lfr_mean)
+        act_mean = np.mean(self._history[:self.params.layer_history_length], axis=(0, 2))
+        fr_mean = np.mean(self._fr_history[:self.params.layer_history_length], axis=(0, 1))
+        self._epoch_fr = (act_mean / self.params.timestep)
+        self._lfr_mean += self.params.ema_lfr * ((fr_mean / self.params.timestep) - self._lfr_mean)
 
 
     def update_history(self):
@@ -126,10 +168,9 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
-        # note: problem with normalization for non binary units?
-        self.firing_rates += self.params.ema_curr * (self.state - self.firing_rates)
-        self.history.insert(0, self.state.copy())
-        self.fr_history.append(self.firing_rates.copy().T)
+        self._firing_rates += self.params.ema_curr * (self.state - self._firing_rates)
+        self._history.insert(0, self.state.copy())
+        self._fr_history.append(self._firing_rates.copy().T)
 
     def reset(self):
         """ Reset the layer in anticipation of running
@@ -141,9 +182,9 @@ class Layer(object):
         :rtype: None
         """
         self.reset_state_vars()
-        self.firing_rates = np.zeros((self.n_dims, self.stim_per_epoch))
-        self.fr_history = []
-        self.history = [self.state.copy()]
+        self._firing_rates = np.zeros((self.n_dims, self.stim_per_epoch))
+        self._fr_history = []
+        self._history = [self.state.copy()]
 
 
     def reset_state_vars(self):
@@ -162,8 +203,8 @@ class Layer(object):
         :returns: fr_history flatted across presentations and images
         :rtype: array
         """
-        fr_arr = np.array(self.fr_history[:self.params.presentations])
-        return fr_arr.reshape(self.params.update_batch_size, -1)
+        # to be deprecated
+        return self.fr_history.reshape(self.params.update_batch_size, -1)
 
 
     def __repr__(self):
@@ -201,7 +242,7 @@ class LIFLayer(Layer):
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
-            state = input_connection.presynaptic_layer.history[0]
+            state = input_connection.presynaptic_layer.prev_state
             self.potentials += multiplier * np.dot(weights, state)
         # set state for neurons that cross threshold
         fire_idxs = np.where(self.potentials >= self.bias)
@@ -240,12 +281,12 @@ class BoltzmannMachineLayer(Layer):
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
-            state = input_connection.presynaptic_layer.history[0]
+            state = input_connection.presynaptic_layer.prev_state
             delta_e += multiplier * np.dot(weights, state)
         for output_connection in self.outputs:
             multiplier = output_connection.weight_multiplier
             weights = output_connection.weights
-            state = output_connection.postsynaptic_layer.history[0]
+            state = output_connection.postsynaptic_layer.prev_state
             delta_e += multiplier * np.dot(weights, state)
 
         p_on = 1. / (1 + np.exp(-delta_e))
@@ -272,7 +313,7 @@ class PerceptronLayer(Layer):
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
-            state = input_connection.presynaptic_layer.history[0]
+            state = input_connection.presynaptic_layer.prev_state
             energy += multiplier * np.dot(weights, state)
         update_idxs = np.where(energy > 0)
         self.state = np.zeros((self.n_dims, self.stim_per_epoch))
@@ -298,7 +339,7 @@ class InputLayer(Layer):
         # current injection per unit time
         # unit of current is in membrane rc time
         self.state = state.copy() / float(self.params.steps_per_rc_time)
-        self.history.insert(0, self.state.copy())
+        self._history.insert(0, self.state.copy())
 
 
     @overrides(Layer)
@@ -350,7 +391,7 @@ class RasterInputLayer(Layer):
         firing_idx = np.where(rand_p < p_fire_in_bin)
         self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.state[firing_idx] = 1
-        self.history.insert(0, self.state.copy())
+        self._history.insert(0, self.state.copy())
 
 
     def rate_at_points(self, scalar_value):
@@ -413,10 +454,10 @@ class GatedInput(Layer):
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
-            state = input_connection.presynaptic_layer.history[0]
+            state = input_connection.presynaptic_layer.prev_state
             update_state *= multiplier * np.dot(weights, state)
         self.state = update_state
-        self.history.insert(0, self.state.copy())
+        self._history.insert(0, self.state.copy())
 
     @overrides(Layer)
     def aux_set_up(self):
@@ -436,14 +477,48 @@ class GatedInput(Layer):
 
     @overrides(Layer)
     def update_lifetime_mean(self):
-        # never used since bias isn't updated, but just to be sure
-        self.epoch_fr = self.parent_layer.epoch_fr
-        self.lfr_mean = self.parent_layer.lfr_mean
+        pass
 
     @overrides(Layer)
     def update_history(self):
-        self.firing_rates = self.parent_layer.firing_rates
-        self.fr_history = self.parent_layer.history
-        # history is used by the parent_layer in state updates
-        # total mess...
-        self.history.insert(0, self.state.copy())
+        self._history.insert(0, self.state.copy())
+
+    @property
+    @overrides(Layer)
+    def firing_rates(self):
+        """ Property for firing rates
+
+        :returns _firing_rates
+        :rtype: array
+        """
+        return self.parent_layer.firing_rates
+
+    @property
+    @overrides(Layer)
+    def fr_history(self):
+        """ Property for firing rate history
+
+        :returns: _fr_history trimmed to proper length
+        :rtype: array
+        """
+        return self.parent_layer.fr_history
+
+    @property
+    @overrides(Layer)
+    def lfr_mean(self):
+        """ Property for lfr_mean
+
+        :returns: _lfr_mean
+        :rtype: array
+        """
+        return self.parent_layer.lfr_mean
+
+    @property
+    @overrides(Layer)
+    def epoch_fr(self):
+        """ Property for epoch_fr
+
+        :returns: _epoch_fr
+        :rtype: array
+        """
+        return self.parent_layer.epoch_fr

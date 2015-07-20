@@ -13,7 +13,7 @@ class Network(object):
       that make up a network in addition to methods for running the network
     """
 
-    def __init__(self, layers, params=NetworkParams()):
+    def __init__(self, layers, params=NetworkParams(), display_layers=None):
         """ Initalize Network object. Only layers are specified upon initalization
         Connections should already be instantiated
 
@@ -28,7 +28,7 @@ class Network(object):
         self.__set_up_children()
         self.t_counter = 0
         if params.display:
-            self.param_plot = ParamPlot(self)
+            self.param_plot = ParamPlot(self, display_layers)
         if params.async:
             self.node_idx = np.arange(np.sum([l.n_dims for l in layers[1:]]))
             self.idx_to_layer = self.__build_layer_dict()

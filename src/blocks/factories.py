@@ -106,7 +106,7 @@ def gated_einet_factory(layer_sizes, n_input_stimuli, params=NetworkParams()):
     # might as well use standard EINet
     assert n_input_stimuli > 1
     layers = [
-        layer.GatedInput(layer_sizes[1]),
+        layer.GatedInput(layer_sizes[1],layer_sizes[0], n_input_stimuli),
         layer.LIFLayer(layer_sizes[1], LayerType.excitatory),
         layer.LIFLayer(layer_sizes[2], LayerType.inhibitory, allow_self_con=False),
     ]

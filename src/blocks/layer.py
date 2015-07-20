@@ -393,10 +393,10 @@ class GatedInput(Layer):
 
     # pylint:disable=too-many-instance-attributes
 
-    def __init__(self, n_dims, n_children, **kwargs):
+    def __init__(self, n_dims, input_n_dims, n_children, **kwargs):
         super(GatedInput, self).__init__(n_dims, **kwargs)
         self.update_bias = False
-        self.children = [InputLayer(n_dims, **kwargs) for _ in xrange(n_children)]
+        self.children = [InputLayer(input_n_dims, **kwargs) for _ in xrange(n_children)]
 
     def set_state(self, rolled_stimuli_set):
         """ Set the state of all the child layers
@@ -429,7 +429,7 @@ class GatedInput(Layer):
         from blocks.connection import ConstantConnection
 
         assert len(self.outputs) == 1
-        assert len(self.inputs) = len(self.children)
+        assert len(self.inputs) == len(self.children)
         assert isinstance(self.outputs[0], ConstantConnection)
         self.parent_layer = self.outputs[0].postsynaptic_layer
 

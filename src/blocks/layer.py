@@ -416,6 +416,7 @@ class GatedInput(Layer):
             state = input_connection.presynaptic_layer.history[0]
             update_state *= multiplier * np.dot(weights, state)
         self.state = update_state
+        self.history.insert(0, self.state.copy())
 
     @overrides(Layer)
     def aux_set_up(self):

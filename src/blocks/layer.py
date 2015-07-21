@@ -459,9 +459,6 @@ class GatedInput(Layer):
         """
         Set the firing rate and history as those of the postsynaptic neuron
         """
-        # sadly this requires that the this layer must come after the postsynaptic layer
-        #  in network.layers so that things are initialized in the right order
-        # I can't see an easy way to get around this
         from blocks.connection import ConstantConnection
 
         assert len(self.outputs) == 1
@@ -469,6 +466,10 @@ class GatedInput(Layer):
         assert isinstance(self.outputs[0], ConstantConnection)
         self.parent_layer = self.outputs[0].postsynaptic_layer
 
+
+    @overrides(Layer)
+    def sync_update(self):
+        pass
 
     @overrides(Layer)
     def update_lifetime_mean(self):
@@ -517,3 +518,43 @@ class GatedInput(Layer):
         :rtype: array
         """
         return self.parent_layer.epoch_fr
+
+
+class SplitInput(Layer):
+    """
+    An input layer that accepts multiple stimuli simultaneously
+    Must not have any outputs
+    """
+
+    # pylint:disable=too-many-instance-attributes
+
+    def __init__(self, n_dims, input_n_dims, n_children, **kwargs):
+        super(SplitInput, self).__init__(n_dims, **kwargs)
+        self.update_bias = False
+        self.children = [InputLayer(input_n_dims, **kwargs) for _ in xrange(n_children)]
+
+    def set_state(self, rolled_stimuli_set):
+        """ Set the state of all the child layers
+
+        :param rolled_stimuli_set: a list of stimuli of len n_children,
+         each element of the list is an array of rolled stimuli of shape (n_dims, stimuli_per_epoch)
+        :returns: None
+        :rtype: None
+        """
+        assert len(rolled_stimuli_set) == len(self.children)
+        for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
+            child_layer.set_state(stimulus)
+
+
+    @overrides(Layer)
+    def sync_update(self):
+        pass
+
+
+    @overrides(Layer)
+    def aux_set_up(self):
+        """
+        Check that this layer is disconnected
+        """
+        assert len(self.outputs) == 0
+        assert len(self.inputs) == 0

@@ -314,6 +314,12 @@ class PerceptronLayer(Layer):
         self.state = np.zeros((self.n_dims, self.stim_per_epoch))
         self.state[update_idxs] = 1
 
+
+#######################
+#   Input layers      #
+#######################
+
+
 class InputLayer(Layer):
     """
     Input layer. Lacks async_update methods
@@ -341,7 +347,7 @@ class InputLayer(Layer):
     def sync_update(self):
         pass
 
-class RasterInputLayer(Layer):
+class RasterInputLayer(InputLayer):
     """
     An input layer that contains methods to rasterize scalar variables into spike trains
     The range of the scalar variable is partitioned into equal bins from specified bounds and n_dims
@@ -365,11 +371,12 @@ class RasterInputLayer(Layer):
         # also need to represent cooling schedule somehow
 
 
-    @overrides(Layer)
+    @overrides(InputLayer)
     def aux_set_up(self):
         self.sample_points = np.tile(np.linspace(self.lower_bnd, self.upper_bnd, self.n_dims),
                                      self.stim_per_epoch).reshape(
                                          self.n_dims, self.stim_per_epoch)
+    @overrides(InputLayer)
     def set_state(self, scalar_value):
         """ sets the state of this layer probabilistically according to the scheme
           described in the class header doc
@@ -403,22 +410,58 @@ class RasterInputLayer(Layer):
         # need to normalize wrt the poisson cdf
         return self.scale * np.exp(- ((self.sample_points - scalar_value) ** 2) / (2 * self.var))
 
-    def avg_activation(self, scalar_value):
-        """ returns an array with the average activation of each neuron
-        for testing purposes
 
-        :param scalar_value: the value to test for activation for
-        :returns: array of average activation
-        :rtype: array
+class SplitInput(InputLayer):
+    """
+    An input layer that accepts multiple stimuli simultaneously
+    Must not have any outputs
+    """
+
+    # pylint:disable=too-many-instance-attributes
+
+    def __init__(self, n_dims, n_children, **kwargs):
+        super(SplitInput, self).__init__(n_dims, **kwargs)
+        self.update_bias = False
+        self.children = [InputLayer(n_dims, **kwargs) for _ in xrange(n_children)]
+
+    @overrides(InputLayer)
+    def set_state(self, rolled_stimuli_set):
+        """ Set the state of all the child layers
+
+        :param rolled_stimuli_set: a list of stimuli of len n_children,
+         each element of the list is an array of rolled stimuli of shape (n_dims, stimuli_per_epoch)
+        :returns: None
+        :rtype: None
         """
-        hist = []
-        for _ in xrange(1000):
-            self.set_state(scalar_value)
-            hist.append(self.state)
-        return np.mean(hist, axis=0)
+        assert len(rolled_stimuli_set) == len(self.children)
+        for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
+            child_layer.set_state(stimulus)
+        self.aux_update()
+
+    def aux_update(self):
+        """ auxiliary updates to perform after setting child state
+        to be implemented by inheriting classes
+
+        :returns: None
+        :rtype: None
+        """
+        pass
+
+    @overrides(InputLayer)
+    def sync_update(self):
+        pass
 
 
-class GatedInput(Layer):
+    @overrides(InputLayer)
+    def aux_set_up(self):
+        """
+        Check that this layer is disconnected
+        """
+        assert len(self.outputs) == 0
+        assert len(self.inputs) == 0
+
+
+class GatedInput(SplitInput):
     """
     An input layer that accepts multiple stimuli simultaneously
     State of this layer is set by gating inptu stimuli multiplicatively
@@ -434,17 +477,8 @@ class GatedInput(Layer):
         self.update_bias = False
         self.children = [InputLayer(input_n_dims, **kwargs) for _ in xrange(n_children)]
 
-    def set_state(self, rolled_stimuli_set):
-        """ Set the state of all the child layers
-
-        :param rolled_stimuli_set: a list of stimuli of len n_children,
-         each element of the list is an array of rolled stimuli of shape (n_dims, stimuli_per_epoch)
-        :returns: None
-        :rtype: None
-        """
-        assert len(rolled_stimuli_set) == len(self.children)
-        for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
-            child_layer.set_state(stimulus)
+    @overrides(SplitInput)
+    def aux_update(self)
         update_state = np.ones((self.n_dims, self.stim_per_epoch))
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
@@ -454,7 +488,7 @@ class GatedInput(Layer):
         self.state = update_state
         self._history.insert(0, self.state.copy())
 
-    @overrides(Layer)
+    @overrides(InputLayer)
     def aux_set_up(self):
         """
         Set the firing rate and history as those of the postsynaptic neuron
@@ -466,21 +500,16 @@ class GatedInput(Layer):
         assert isinstance(self.outputs[0], ConstantConnection)
         self.parent_layer = self.outputs[0].postsynaptic_layer
 
-
-    @overrides(Layer)
-    def sync_update(self):
-        pass
-
-    @overrides(Layer)
+    @overrides(InputLayer)
     def update_lifetime_mean(self):
         pass
 
-    @overrides(Layer)
+    @overrides(InputLayer)
     def update_history(self):
         self._history.insert(0, self.state.copy())
 
     @property
-    @overrides(Layer)
+    @overrides(InputLayer)
     def firing_rates(self):
         """ Property for firing rates
 
@@ -490,7 +519,7 @@ class GatedInput(Layer):
         return self.parent_layer.firing_rates
 
     @property
-    @overrides(Layer)
+    @overrides(InputLayer)
     def fr_history(self):
         """ Property for firing rate history
 
@@ -500,7 +529,7 @@ class GatedInput(Layer):
         return self.parent_layer.fr_history
 
     @property
-    @overrides(Layer)
+    @overrides(InputLayer)
     def lfr_mean(self):
         """ Property for lfr_mean
 
@@ -510,7 +539,7 @@ class GatedInput(Layer):
         return self.parent_layer.lfr_mean
 
     @property
-    @overrides(Layer)
+    @overrides(InputLayer)
     def epoch_fr(self):
         """ Property for epoch_fr
 
@@ -518,43 +547,3 @@ class GatedInput(Layer):
         :rtype: array
         """
         return self.parent_layer.epoch_fr
-
-
-class SplitInput(Layer):
-    """
-    An input layer that accepts multiple stimuli simultaneously
-    Must not have any outputs
-    """
-
-    # pylint:disable=too-many-instance-attributes
-
-    def __init__(self, n_dims, input_n_dims, n_children, **kwargs):
-        super(SplitInput, self).__init__(n_dims, **kwargs)
-        self.update_bias = False
-        self.children = [InputLayer(input_n_dims, **kwargs) for _ in xrange(n_children)]
-
-    def set_state(self, rolled_stimuli_set):
-        """ Set the state of all the child layers
-
-        :param rolled_stimuli_set: a list of stimuli of len n_children,
-         each element of the list is an array of rolled stimuli of shape (n_dims, stimuli_per_epoch)
-        :returns: None
-        :rtype: None
-        """
-        assert len(rolled_stimuli_set) == len(self.children)
-        for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
-            child_layer.set_state(stimulus)
-
-
-    @overrides(Layer)
-    def sync_update(self):
-        pass
-
-
-    @overrides(Layer)
-    def aux_set_up(self):
-        """
-        Check that this layer is disconnected
-        """
-        assert len(self.outputs) == 0
-        assert len(self.inputs) == 0

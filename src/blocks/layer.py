@@ -433,14 +433,14 @@ class SplitInput(InputLayer):
         :returns: None
         :rtype: None
         """
+        n_stim_dims = self.children[0].n_dims
         if len(rolled_stimuli_set) == len(self.children):
             for stimulus, child_layer in zip(rolled_stimuli_set, self.children):
                 child_layer.set_state(stimulus)
         elif rolled_stimuli_set.shape[0] % n_stim_dims == 0:
             # all children must have the same dimension if stimulus must be implicitly decoded
-            n_stim_dims = self.children[0].n_dims
             assert (np.array([c.n_dims for c in self.children]) == n_stim_dims).all()
-            for idx, child_layer in enumerate(rolled_stimuli_set):
+            for idx, child_layer in enumerate(self.children):
                 child_layer.set_state(rolled_stimuli_set[n_stim_dims * idx: n_stim_dims * (idx + 1)])
         else:
             raise ValueError("Stimuli provided could not be implicitly decoded")

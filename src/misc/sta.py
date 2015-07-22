@@ -65,15 +65,10 @@ def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None):
     :rtype: dict((layer_idx, unit_idx): array(sta))
     """
     var_range = (.5, 1.5)
-    if img_dim is None:
-        side_length = np.sqrt(net.layers[0].n_dims)
-        img_dim = (side_length, side_length)
-        assert int(side_length) == side_length
-    else:
-        assert len(img_dim) == 2
-        assert img_dim[0] * img_dim[1] == net.layers[0].n_dims
+    img_dims = factor(net.layers[0].n_dims)
 
     if stim_gen is None:
+        # i think this should be white noise
         stimuli = np.zeros((n_samples, img_dim[0], img_dim[1]))
         x_idx = np.arange(img_dim[0])
         y_idx = np.arange(img_dim[1])
@@ -110,7 +105,7 @@ def split_img_sta(net, n_samples=1E4, stim_gen=None):
     if stim_gen is None:
         # white noise is the most general but wont' work well for disparity
         # i don't think it matters what axis the child images are tiled across
-        stimuli = np.random.random(n_samples, img_dim[0] * n_children, img_dim[1]
+        stimuli = np.random.random(n_samples, img_dim[0] * n_children, img_dim[1])
     else:
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
         stimuli = np.array(list(itertools.islice(stim_gen, n_samples)))

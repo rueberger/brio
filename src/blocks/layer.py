@@ -486,7 +486,7 @@ class GatedInput(SplitInput):
         self.children = [InputLayer(input_n_dims, **kwargs) for _ in xrange(n_children)]
 
     @overrides(SplitInput)
-    def aux_update(self)
+    def aux_update(self):
         update_state = np.ones((self.n_dims, self.stim_per_epoch))
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier

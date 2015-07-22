@@ -59,7 +59,10 @@ class ParamPlot(object):
         :rtype: ParamPlot
 
         """
-        self.layers = [net.layers[idx] for idx in layers] or net.layers[1:]
+        if layers is not None:
+            self.layers = [net.layers[idx] for idx in layers]
+        else:
+            self.layers = net.layers[1:]
         self.net = net
         self.cons = list(net.connections)
         self.nrows = max(len(self.cons), len(self.layers) * 2)
@@ -141,7 +144,7 @@ def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5, stimulu
     :returns: None
     :rtype: None
     """
-    response_dict = auto_sta(net, n_samples, stimulus_generator)
+    response_dict = auto_sta(net, n_samples, stimulus_generator, layer_idx=layer_idx)
     are_imgs = (response_dict.values()[0].ndim == 3)
     if are_imgs:
         imgs = [np.mean(response_dict[layer_idx, unit_idx], axis=0) for

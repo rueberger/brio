@@ -63,10 +63,8 @@ def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None):
        for the relevant domain
     :returns: a dictionary of spike triggered averages
     :rtype: dict((layer_idx, unit_idx): array(sta))
-
     """
     var_range = (.5, 1.5)
-    scale = 1
     if img_dim is None:
         side_length = np.sqrt(net.layers[0].n_dims)
         img_dim = (side_length, side_length)
@@ -76,24 +74,52 @@ def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None):
         assert img_dim[0] * img_dim[1] == net.layers[0].n_dims
 
     if stim_gen is None:
-        def gauss(x_arr, mean):
-            var = np.random.uniform(*var_range)
-            return scale * np.exp(- ((x_arr - mean) ** 2) / (2 * var))
-
         stimuli = np.zeros((n_samples, img_dim[0], img_dim[1]))
         x_idx = np.arange(img_dim[0])
         y_idx = np.arange(img_dim[1])
         for idx, (x_mean, y_mean) in enumerate(zip(np.random.uniform(-1, img_dim[0], n_samples),
                                                    np.random.uniform(-1, img_dim[1], n_samples))):
-            stimuli[idx] = np.outer(gauss(x_idx, x_mean), gauss(y_idx, y_mean))
+            stimuli[idx] = np.outer(gaussian_blob(x_idx, x_mean, var_range),
+                                    gaussian_blob(y_idx, y_mean, var_range))
     else:
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
         stimuli = np.array(list(itertools.islice(stim_gen, n_samples)))
         assert stimuli.shape[1] == img_dim[0] and stimuli.shape[2] == img_dim[1]
     return record_responses(net, stimuli)
 
+def split_img_sta(net, n_samples=1E4, stim_gen=None):
+    """ computes spike triggered averages for visualizing the receptive field of layers
+    differs from img_sta in that this supports multiple image input for
+      split or input layers
+
+    :param net: a trained network.
+    :param n_samples: the number of samples to draw
+    :param stim_gen: generator of stimuli. by default stimuli are generated at random
+       for the relevant domain
+    :returns: a dictionary of spike triggered averages
+    :rtype: dict((layer_idx, unit_idx): array(sta))
+    """
+    # can also just take the product with the first layer weight
+    input_layer = net.layers[0]
+    n_stim_dims = input_layer.children[0].n_dims
+    n_children = len(input_layer.children)
+    # all child layers must have the same dimension
+    assert (np.array([c.n_dims for c in input_layer.children]) == n_stim_dims).all()
+    img_dim = factor(n_stim_dims)
+
+    if stim_gen is None:
+        # white noise is the most general but wont' work well for disparity
+        # i don't think it matters what axis the child images are tiled across
+        stimuli = np.random.random(n_samples, img_dim[0] * n_children, img_dim[1]
+    else:
+        # this sets stimuli to an array containing the first n_samples elements of stim_gen
+        stimuli = np.array(list(itertools.islice(stim_gen, n_samples)))
+        assert stimuli.shape[1] == img_dim[0] * n_children and stimuli.shape[2] == img_dim[1]
+    return record_responses(net, stimuli)
+
+
 def auto_sta(net, n_samples=1E4, stim_gen=None):
-    """ calls either img_sta or scalar_sta depending on input layer type
+    """ calls either img_sta, split_img_sta or scalar_sta depending on input layer type
 
     :param net: a trained network
     :param n_samples: the number of samples to base the sta off of
@@ -103,11 +129,46 @@ def auto_sta(net, n_samples=1E4, stim_gen=None):
     :rtype: dict((layer_idx, unit_idx): array(sta))
 
     """
-    if type(net.layers[0]).__name__ == 'InputLayer':
+    from blocks.layer import InputLayer, RasterInputLayer, GatedInput, SplitInput
+    input_layer = net.layers[0]
+    if isinstance(input_layer, InputLayer):
         return img_sta(net, n_samples, stim_gen=stim_gen)
-    elif type(net.layers[0]).__name__ == 'RasterInputLayer':
+    elif isinstance(input_layer, RasterInputLayer):
         return scalar_sta(net, n_samples, stim_gen=stim_gen)
+    elif isinstance(input_layer, (SplitInput, GatedInput)):
+        split_img_sta(net, n_samples, stim_gen=stim_gen)
     else:
         raise NotImplementedError(
             "STA method has not been specified for input layer type: {}".format(
                 type(net.layers[0]).__name__))
+
+
+def gaussian_blob(x_arr, mean, var_range):
+    """ Utility method. returns a gaussian blob centered on mean
+    Variance is drawn from var_range
+
+    :param x_arr: 2 dimensional array to fill
+    :param mean: 1d array of shape (2, ), probably
+    :param var_range: tuple (min_var, max_var)
+    :returns: array filled with the blob
+    :rtype: array of shape x_arr.shape
+
+    """
+    var = np.random.uniform(*var_range)
+    return np.exp(- ((x_arr - mean) ** 2) / (2 * var))
+
+def factor(r):
+    """ factor r as evenly as possible
+
+    :param r: positive integer
+    :returns: the two largest factors
+    :rtype: tuple (p, q)
+    """
+    # prevent pylint from complaining about p,q being bad
+    # pylint:disable=c0103
+    assert int(r) == r
+    # upper bound since int rounds down
+    q_max = int(np.sqrt(r) + 1)
+    for q in xrange(q_max, 0, -1):
+        if r % q == 0:
+            return (q, r / q)

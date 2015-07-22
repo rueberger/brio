@@ -5,34 +5,48 @@ import numpy as np
 import itertools
 from misc.utils import roll_itr
 
-def record_responses(net, stimuli):
+def record_responses(net, stimuli, layer_idx=None):
     """ present stimuli to net and record which units in which layers respond to what
 
     :param net: a trained network
     :param stimuli: iterable of stimuli
-    :returns: a dictionary recording the responses of each unit
-    :rtype: dict((layer_idx, unit_idx) : array(responses))
+    :param layer_idx: optional tuple specifying which layers to collect responses from
+      for large networks memory use will be egregious of not specified
+    :returns: a dictionary recording stimuli idx each unit responded to and a list of stimuli
+    :rtype: (dict((layer_idx, unit_idx) : array(stimuli_idx)), stimuli)
     """
-    # can run in parallel
-    active_layers = range(1, len(net.layers))
-    responses = [[] for _ in active_layers]
-    response_dict = {}
+    # disable too many local variables complaint
+    # pylint:disable=R0914
+    active_layers = layer_idx or range(1, len(net.layers))
     epoch_size = net.params.stimuli_per_epoch
+    stimuli = []
+
+    # initialize response dict with empty list for each (layer_idx, unit_idx) pair
+    response_dict = {}
+    for l_idx in active_layers:
+        for unit_idx in xrange(net.layers[l_idx].n_dims):
+            response_dict[(l_idx, unit_idx)] = []
 
     for epoch_idx, rolled_stimuli in enumerate(roll_itr(stimuli, epoch_size)):
+        # present the rolled stimuli to the network
         net.update_network(rolled_stimuli)
+        # indices to each individual stimuli in the rolled batch
         sample_idx = np.arange(epoch_idx, epoch_idx + epoch_size).reshape(1, -1)
+        # record the stimuli
+        stimuli.append(rolled_stimuli)
         for l_idx in active_layers:
-            for response in (net.layers[l_idx].state * sample_idx).T:
-                responses[l_idx - 1].append(response)
-    for l_idx in active_layers:
-        layer_responses = np.array(responses[l_idx - 1]).T
-        for idx in xrange(net.layers[l_idx].n_dims):
-            active_at_sample_idx = np.where(layer_responses[idx] != 0)[0]
-            response_dict[(l_idx, idx)] = np.array(stimuli[active_at_sample_idx])
-    return response_dict
+            # since state responses are binary {0, 1} by multiplying the batch response through
+            #  with the individual sample indexes we can record which stimulus each neuron
+            #  responded to
+            response = net.layers[l_idx].state * sample_idx
+            for unit_idx in xrange(net.layers[l_idx].n_dims):
+                # collect stimuli_idx that this neuron responded to
+                active_at_sample_idx = list(np.where(response[unit_idx] != 0)[0])
+                response_dict[(l_idx, unit_idx)].append(active_at_sample_idx)
 
-def scalar_sta(net, n_samples=1E4, stim_gen=None):
+    return response_dict, np.concatenate(stimuli, axis=1)
+
+def scalar_sta(net, n_samples=1E4, stim_gen=None, layer_idx=None):
     """ computes responses for visualizing the receptive field of layers
     computes a list of response for each neuron in each layer
 
@@ -50,9 +64,9 @@ def scalar_sta(net, n_samples=1E4, stim_gen=None):
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
         stimuli = np.array(list(itertools.islice(stim_gen, n_samples)))
         assert stimuli.ndim == 1
-    return record_responses(net, stimuli)
+    return record_responses(net, stimuli, layer_idx=layer_idx)
 
-def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None):
+def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None, layer_idx=None):
     """ computes spike triggered averages for visualizing the receptive field of layers
 
     :param net: a trained network.
@@ -80,9 +94,9 @@ def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None):
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
         stimuli = np.array(list(itertools.islice(stim_gen, n_samples)))
         assert stimuli.shape[1] == img_dim[0] and stimuli.shape[2] == img_dim[1]
-    return record_responses(net, stimuli)
+    return record_responses(net, stimuli, layer_idx=layer_idx)
 
-def split_img_sta(net, n_samples=1E4, stim_gen=None):
+def split_img_sta(net, n_samples=1E4, stim_gen=None, layer_idx=None):
     """ computes spike triggered averages for visualizing the receptive field of layers
     differs from img_sta in that this supports multiple image input for
       split or input layers
@@ -110,10 +124,10 @@ def split_img_sta(net, n_samples=1E4, stim_gen=None):
         # this sets stimuli to an array containing the first n_samples elements of stim_gen
         stimuli = np.array(list(itertools.islice(stim_gen, n_samples)))
         assert stimuli.shape[1] == img_dim[0] * n_children and stimuli.shape[2] == img_dim[1]
-    return record_responses(net, stimuli)
+    return record_responses(net, stimuli, layer_idx=layer_idx)
 
 
-def auto_sta(net, n_samples=1E4, stim_gen=None):
+def auto_sta(net, n_samples=1E4, stim_gen=None, layer_idx=None):
     """ calls either img_sta, split_img_sta or scalar_sta depending on input layer type
 
     :param net: a trained network
@@ -127,11 +141,11 @@ def auto_sta(net, n_samples=1E4, stim_gen=None):
     from blocks.layer import InputLayer, RasterInputLayer, GatedInput, SplitInput
     input_layer = net.layers[0]
     if isinstance(input_layer, (SplitInput, GatedInput)):
-        split_img_sta(net, n_samples, stim_gen=stim_gen)
+        return split_img_sta(net, n_samples, stim_gen=stim_gen, layer_idx=layer_idx)
     elif isinstance(input_layer, RasterInputLayer):
-        return scalar_sta(net, n_samples, stim_gen=stim_gen)
+        return scalar_sta(net, n_samples, stim_gen=stim_gen, layer_idx=layer_idx)
     elif isinstance(input_layer, InputLayer):
-        return img_sta(net, n_samples, stim_gen=stim_gen)
+        return img_sta(net, n_samples, stim_gen=stim_gen, layer_idx=layer_idx)
     else:
         raise NotImplementedError(
             "STA method has not been specified for input layer type: {}".format(

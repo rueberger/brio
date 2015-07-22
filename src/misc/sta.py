@@ -126,12 +126,12 @@ def auto_sta(net, n_samples=1E4, stim_gen=None):
     """
     from blocks.layer import InputLayer, RasterInputLayer, GatedInput, SplitInput
     input_layer = net.layers[0]
-    if isinstance(input_layer, InputLayer):
-        return img_sta(net, n_samples, stim_gen=stim_gen)
+    if isinstance(input_layer, (SplitInput, GatedInput)):
+        split_img_sta(net, n_samples, stim_gen=stim_gen)
     elif isinstance(input_layer, RasterInputLayer):
         return scalar_sta(net, n_samples, stim_gen=stim_gen)
-    elif isinstance(input_layer, (SplitInput, GatedInput)):
-        split_img_sta(net, n_samples, stim_gen=stim_gen)
+    elif isinstance(input_layer, InputLayer):
+        return img_sta(net, n_samples, stim_gen=stim_gen)
     else:
         raise NotImplementedError(
             "STA method has not been specified for input layer type: {}".format(

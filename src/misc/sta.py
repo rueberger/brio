@@ -65,7 +65,7 @@ def img_sta(net, n_samples=1E4, img_dim=None, stim_gen=None):
     :rtype: dict((layer_idx, unit_idx): array(sta))
     """
     var_range = (.5, 1.5)
-    img_dims = factor(net.layers[0].n_dims)
+    img_dim = factor(net.layers[0].n_dims)
 
     if stim_gen is None:
         # i think this should be white noise

@@ -23,7 +23,6 @@ def record_responses(net, stimuli, layer_idx=None):
     assert isinstance(active_layers, list)
 
     epoch_size = net.params.stimuli_per_epoch
-    stimuli_col = []
 
     # initialize response dict with empty list for each (layer_idx, unit_idx) pair
     response_dict = {}
@@ -37,18 +36,17 @@ def record_responses(net, stimuli, layer_idx=None):
         # indices to each individual stimuli in the rolled batch
         sample_idx = np.arange(epoch_idx * epoch_size, (epoch_idx + 1) * epoch_size).reshape(1, -1)
         # record the stimuli
-        stimuli_col.append(rolled_stimuli)
         for l_idx in active_layers:
             # since state responses are binary {0, 1} by multiplying the batch response through
             #  with the individual sample indexes we can record which stimulus each neuron
             #  responded to
             # bug here: only collecting response for the end of the time window
             # how to deal with spiking within the window?
-            response = net.layers[l_idx].state * sample_idx
+            response = net.layers[l_idx].history * sample_idx
             for unit_idx in xrange(net.layers[l_idx].n_dims):
                 # collect stimuli_idx that this neuron responded to
-                active_at_sample_idx = list(np.where(response[unit_idx] != 0)[0])
-                response_dict[(l_idx, unit_idx)].extend(active_at_sample_idx)
+                active_at_sample_idx = np.where(response[:, unit_idx] != 0)
+                response_dict[(l_idx, unit_idx)].extend(response[:, unit_idx][active_at_sample_idx])
 
     return response_dict, stimuli
 

@@ -87,7 +87,17 @@ class Layer(object):
         :returns: _fr_history trimmed to proper length
         :rtype: array
         """
-        return np.array(self._fr_history[:self.params.presentations])
+        return np.array(self._fr_history[-self.params.presentations:])
+
+    @property
+    def history(self):
+        """ Property for history
+
+        :returns: _history trimmed to proper length
+        :rtype: array
+        """
+        return np.array(self._history[:self.params.presentations])
+
 
     @property
     def lfr_mean(self):
@@ -161,7 +171,7 @@ class Layer(object):
         :rtype: None
         """
         act_mean = np.mean(self._history[:self.params.layer_history_length], axis=(0, 2))
-        fr_mean = np.mean(self._fr_history[:self.params.layer_history_length], axis=(0, 1))
+        fr_mean = np.mean(self._fr_history[-self.params.layer_history_length:], axis=(0, 1))
         self._epoch_fr = (act_mean / self.params.timestep)
         self._lfr_mean += self.params.ema_lfr * ((fr_mean / self.params.timestep) - self._lfr_mean)
 
@@ -481,7 +491,7 @@ class GatedInput(SplitInput):
     # pylint:disable=too-many-instance-attributes
 
     def __init__(self, n_dims, input_n_dims, n_children, **kwargs):
-        super(GatedInput, self).__init__(n_dims, **kwargs)
+        super(GatedInput, self).__init__(n_dims, n_children, **kwargs)
         self.update_bias = False
         self.children = [InputLayer(input_n_dims, **kwargs) for _ in xrange(n_children)]
 

@@ -132,27 +132,44 @@ def plot_param_distr(net):
 
 
 
-def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5, stimulus_generator=None):
+def plot_receptive_fields(net, layer_idx, slideshow=True,
+                          n_samples=1E5, stimulus_generator=None, stereo=False):
     """ Make a plot of the receptive field of network
 
     :param net: trained network to plot the receptive fields of
     :param layer_idx: idx of the layer you would like to plot. keys into network.layers
-    :param unit_idx: idx of the receptive field you'd like to look at
+    :param slideshow: if True show receptive fields one at at time.
+       Otherwise show them all at the same time
+    :param n_samples: number of samples to compute STAs wtih
     :param stimulus_generator: a generator object. calling next on this generator must return
           an array that can be flatted to the shape of the input layer.
           By default uniform random stimuli are generated for the relevant domain
+    :param stereo: if True split stereo images into two parts
     :returns: None
     :rtype: None
+
     """
-    response_dict = auto_sta(net, n_samples, stimulus_generator, layer_idx=layer_idx)
-    are_imgs = (response_dict.values()[0].ndim == 3)
+    assert isinstance(layer_idx, int)
+    response_dict, stimuli = auto_sta(net, n_samples, stimulus_generator, layer_idx=[layer_idx])
+    are_imgs = (stimuli.ndim == 3)
     if are_imgs:
-        imgs = [np.mean(response_dict[layer_idx, unit_idx], axis=0) for
-                unit_idx in xrange(net.layers[layer_idx].n_dims)]
+        imgs = np.zeros((net.layers[layer_idx].n_dims, stimuli.shape[1], stimuli.shape[2]))
+        for unit_idx in xrange(net.layers[layer_idx].n_dims):
+            response_idx = response_dict[(layer_idx, unit_idx)]
+            imgs[unit_idx] = np.mean(stimuli[response_idx], axis=0)
         if slideshow:
             img_slideshow(imgs)
         else:
-            plot_concat_imgs(imgs)
+            if stereo:
+                assert imgs.shape[1] == 2 * imgs.shape[2]
+                side_len = imgs.shape[2]
+                l_imgs = imgs[:, :side_len, :]
+                r_imgs = imgs[:, side_len:, :]
+                fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(18, 14))
+                plot_concat_imgs(l_imgs, axis=axes[0])
+                plot_concat_imgs(r_imgs, axis=axes[1])
+            else:
+                plot_concat_imgs(imgs)
     else:
         distrs = [response_dict[layer_idx, unit_idx] for unit_idx in xrange(net.layers[layer_idx].n_dims)]
         if slideshow:
@@ -163,15 +180,17 @@ def plot_receptive_fields(net, layer_idx, slideshow=True, n_samples=1E5, stimulu
 
 
 
-def plot_concat_imgs(imgs, border_thickness=2, ax=None):
+def plot_concat_imgs(imgs, border_thickness=2, axis=None):
     """ concatenate the imgs together into one big image separated by borders
 
     :param imgs: list or array of images. total number of images must be a perfect square and
        images must be square
+    :param border_thickness: how many pixels of border between
+    :param axis: optional matplotlib axis object to plot on
     :returns: array containing all receptive fields
     :rtype: array
-
     """
+    assert isinstance(border_thickness, int)
     assert int(np.sqrt(len(imgs))) == np.sqrt(len(imgs))
     assert imgs[0].shape[0] == imgs[0].shape[1]
     img_length = imgs[0].shape[0]
@@ -188,7 +207,7 @@ def plot_concat_imgs(imgs, border_thickness=2, ax=None):
         # not sure how to do a continuation line cleanly here
         concat_rf[x_idx * img_length + x_offset: (x_idx + 1) * img_length + x_offset,
                   y_idx * img_length + y_offset: (y_idx + 1) * img_length + y_offset] = imgs[flat_idx]
-    if ax is not None:
-        ax.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')
+    if axis is not None:
+        axis.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')
     else:
         plt.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')

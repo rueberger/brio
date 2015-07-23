@@ -9,7 +9,7 @@ def record_responses(net, stimuli, layer_idx=None):
     """ present stimuli to net and record which units in which layers respond to what
 
     :param net: a trained network
-    :param stimuli: iterable of stimuli
+    :param stimuli: array of stimuli
     :param layer_idx: optional tuple specifying which layers to collect responses from
       for large networks memory use will be egregious of not specified
     :returns: a dictionary recording stimuli idx each unit responded to and a list of stimuli
@@ -17,9 +17,13 @@ def record_responses(net, stimuli, layer_idx=None):
     """
     # disable too many local variables complaint
     # pylint:disable=R0914
+    assert isinstance(stimuli, np.ndarray)
+
     active_layers = layer_idx or range(1, len(net.layers))
+    assert isinstance(active_layers, list)
+
     epoch_size = net.params.stimuli_per_epoch
-    stimuli = []
+    stimuli_col = []
 
     # initialize response dict with empty list for each (layer_idx, unit_idx) pair
     response_dict = {}
@@ -31,20 +35,22 @@ def record_responses(net, stimuli, layer_idx=None):
         # present the rolled stimuli to the network
         net.update_network(rolled_stimuli)
         # indices to each individual stimuli in the rolled batch
-        sample_idx = np.arange(epoch_idx, epoch_idx + epoch_size).reshape(1, -1)
+        sample_idx = np.arange(epoch_idx * epoch_size, (epoch_idx + 1) * epoch_size).reshape(1, -1)
         # record the stimuli
-        stimuli.append(rolled_stimuli)
+        stimuli_col.append(rolled_stimuli)
         for l_idx in active_layers:
             # since state responses are binary {0, 1} by multiplying the batch response through
             #  with the individual sample indexes we can record which stimulus each neuron
             #  responded to
+            # bug here: only collecting response for the end of the time window
+            # how to deal with spiking within the window?
             response = net.layers[l_idx].state * sample_idx
             for unit_idx in xrange(net.layers[l_idx].n_dims):
                 # collect stimuli_idx that this neuron responded to
                 active_at_sample_idx = list(np.where(response[unit_idx] != 0)[0])
-                response_dict[(l_idx, unit_idx)].append(active_at_sample_idx)
+                response_dict[(l_idx, unit_idx)].extend(active_at_sample_idx)
 
-    return response_dict, np.concatenate(stimuli, axis=1)
+    return response_dict, stimuli
 
 def scalar_sta(net, n_samples=1E4, stim_gen=None, layer_idx=None):
     """ computes responses for visualizing the receptive field of layers

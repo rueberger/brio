@@ -154,7 +154,7 @@ class FoldiakConnection(Connection):
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
-    def bulk_weight_update(self):3
+    def bulk_weight_update(self):
         pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.epoch_size, -1)
         post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.epoch_size, -1)
         pre_syn_avg_rates = self.presynaptic_layer.lfr_mean * self.params.timestep

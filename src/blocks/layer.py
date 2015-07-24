@@ -156,8 +156,11 @@ class Layer(object):
         :rtype: None
         """
         if self.update_bias:
+            # unit: timeunit / epoch
             epoch_time_units = self.params.update_batch_size * self.params.timestep
+            # unit: spikes / timeunit
             delta = (self.target_firing_rate - self.epoch_fr).reshape(-1, 1)
+            # unit: spikes / epoch
             delta_b = (self.update_sign * self.learning_rate * delta * epoch_time_units)
             if self.update_cap is not None:
                 delta_b[np.where(delta_b > self.update_cap)] = self.update_cap
@@ -170,9 +173,13 @@ class Layer(object):
         :returns: None
         :rtype: None
         """
+        # unit: spikes / timestep
         act_mean = np.mean(self._history[:self.params.layer_history_length], axis=(0, 2))
+        # unit: spikes / timestep
         fr_mean = np.mean(self._fr_history[-self.params.layer_history_length:], axis=(0, 1))
+        # unit: spikes / timestep * timestep / timeunit = spikes / timeunit
         self._epoch_fr = (act_mean / self.params.timestep)
+        # unit: spikes / timeunit
         self._lfr_mean += self.params.ema_lfr * ((fr_mean / self.params.timestep) - self._lfr_mean)
 
     def update_history(self):

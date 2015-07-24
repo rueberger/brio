@@ -41,11 +41,12 @@ class NetworkParams(object):
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.1,
+    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.3,
                  baseline_lrate=0.1, presentations=50, async=False,
                  display=False):
         self.presentations = presentations
         self.stimuli_per_epoch = 100
+        # unit: timesteps / epoch
         self.update_batch_size = presentations * self.stimuli_per_epoch
         # sets number of iterations for characeteristic scale of exponential moving
         #   average
@@ -61,12 +62,15 @@ class NetworkParams(object):
         #  rc constant
         # this is is less meaningful for non-LIF neurons
 
-        # simulation time steps per time units in rc time
+        # unit: timeunit / timestep
         self.timestep = 0.1
+        # unit: timestep
         self.steps_per_rc_time = 1. / self.timestep
+        # unit: timestep
         self.steps_per_fr_time = 10
-        # in number of epochs
+        # unit: epoch
         self.lfr_char_time = 1
-        # for now the characteristic time for the ema history is the update batch size
+        # unit:  1 / epoch = 1 / (update_batch_size * timestep)
         self.ema_lfr = 1 - np.exp(- 1. / self.lfr_char_time)
+        # unit: 1 / timestep
         self.ema_curr = 1 - np.exp(-1. / self.steps_per_fr_time)

@@ -140,8 +140,8 @@ class OjaConnection(Connection):
 
     @overrides(Connection)
     def bulk_weight_update(self):
-        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
-        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
+        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.epoch_size, -1)
+        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.epoch_size, -1)
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.sum(post_syn_rates ** 2, axis=0) * self.weights)
         return self.learning_rate * delta
@@ -154,14 +154,14 @@ class FoldiakConnection(Connection):
     # pylint: disable=too-few-public-methods
 
     @overrides(Connection)
-    def bulk_weight_update(self):
-        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
-        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
-        pre_syn_avg_rates = self.presynaptic_layer.lfr_mean
-        post_syn_avg_rates = self.postsynaptic_layer.lfr_mean
+    def bulk_weight_update(self):3
+        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.epoch_size, -1)
+        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.epoch_size, -1)
+        pre_syn_avg_rates = self.presynaptic_layer.lfr_mean * self.params.timestep
+        post_syn_avg_rates = self.postsynaptic_layer.lfr_mean * self.params.timestep
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -
                  np.outer(pre_syn_avg_rates, post_syn_avg_rates) * self.epoch_size)
-        return self.learning_rate * delta / self.epoch_size
+        return self.learning_rate * delta
 
 
 
@@ -175,8 +175,10 @@ class CMConnection(Connection):
 
     @overrides(Connection)
     def bulk_weight_update(self):
-        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
-        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.params.update_batch_size, -1)
+        # unit: spikes / timestep
+        pre_syn_rates = self.presynaptic_layer.fr_history.reshape(self.epoch_size, -1)
+        post_syn_rates = self.postsynaptic_layer.fr_history.reshape(self.epoch_size, -1)
+        # unit: spikes / timeunit * timeunit / timestep = spikes / timestep
         pre_syn_avg_rates = self.presynaptic_layer.lfr_mean * self.params.timestep
         post_syn_avg_rates = self.postsynaptic_layer.lfr_mean * self.params.timestep
         delta = (np.dot(pre_syn_rates.T, post_syn_rates) -

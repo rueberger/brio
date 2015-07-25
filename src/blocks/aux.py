@@ -72,7 +72,11 @@ class NetworkParams(object):
         self.steps_per_fr_time = 10
         # unit: epoch
         self.lfr_char_time = 1
-        # unit:  1 / epoch = 1 / (update_batch_size * timestep)
-        self.ema_lfr = 1 - np.exp(- 1. / self.lfr_char_time)
-        # unit: 1 / timestep
-        self.ema_curr = 1 - np.exp(-1. / self.steps_per_fr_time)
+
+    @property
+    def ema_lfr(self):
+        return 1 - np.exp(- 1. / self.lfr_char_time)
+
+    @property
+    def ema_curr(self):
+        return 1 - np.exp(-1. / self.steps_per_fr_time)

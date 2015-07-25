@@ -32,7 +32,6 @@ class Layer(object):
         :returns: a Layer object
         :rtype: Layer
         """
-
         self.n_dims = n_dims
         self.bias = np.ones((self.n_dims, 1))
         self.inputs = []
@@ -41,7 +40,6 @@ class Layer(object):
         self.update_sign = 1
         self.update_bias = update_bias
         self.allow_self_con = allow_self_con
-        self.update_cap = 0.5
 
 
     def set_up(self, network):
@@ -60,6 +58,7 @@ class Layer(object):
                                    network.params.baseline_firing_rate)
         self.learning_rate = network.params.bias_learning_rate * network.params.baseline_lrate
         self.stim_per_epoch = self.params.stimuli_per_epoch
+        self.update_cap = self.params.update_cap
 
         # initialize attributes
         self.state = np.zeros((self.n_dims, self.stim_per_epoch))

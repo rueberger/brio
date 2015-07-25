@@ -22,7 +22,6 @@ class Connection(object):
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.lrate_multiplier = lrate_multiplier
         self.__init_weights(weight_scheme)
-        self.update_cap = 1
 
 
     def __set_pointers(self):
@@ -102,6 +101,7 @@ class Connection(object):
         self.params = network.params
         self.learning_rate = self.lrate_multiplier *  network.params.baseline_lrate / self.params.timestep
         self.epoch_size = self.params.update_batch_size
+        self.update_cap = self.params.update_cap
 
     def __impose_constraint(self):
         """

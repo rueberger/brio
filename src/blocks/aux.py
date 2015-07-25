@@ -41,9 +41,10 @@ class NetworkParams(object):
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.3,
+    def __init__(self, baseline_firing_rate=0.02, bias_learning_rate=0.1,
                  baseline_lrate=0.1, presentations=50, async=False,
-                 display=False):
+                 display=False, update_cap=1):
+
         self.presentations = presentations
         self.stimuli_per_epoch = 100
         # unit: timesteps / epoch
@@ -58,6 +59,7 @@ class NetworkParams(object):
         self.keep_extra_history = True
         self.async = async
         self.display = display
+        self.update_cap = update_cap
         # the number of simulation steps corresponding to the characteristic time of the membrane
         #  rc constant
         # this is is less meaningful for non-LIF neurons

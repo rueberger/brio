@@ -3,7 +3,7 @@ Utils for generating and processing patches from images
 """
 import numpy as np
 
-def patch_generator(images, patch_size, n_patches=1000, crop=4, normalize=True):
+def patch_generator(images, patch_size, n_patches=1000, crop=12, normalize=True):
     """ A generator that produces patches of the desired size from images
 
     :param images: an array of images. expected shape (img_height, img_width,  n_imgs)
@@ -27,9 +27,10 @@ def patch_generator(images, patch_size, n_patches=1000, crop=4, normalize=True):
             img -= np.mean(img)
             img *= 1. / np.std(img)
             # divide by five as prescribed in the EINet paper
-            yield img / 5.
+            # yield img / 5.
+            yield img
         else:
-            yield img / 5.
+            yield img
 
 def mean_zero_patch(images, patch_size, n_patches, crop=4):
     patches = np.array(list(patch_generator(images, patch_size, n_patches, crop, True)))

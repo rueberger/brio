@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 
 DATA_PATH = "../data/whitened_van_hateren.mat"
-PATCH_SIZE = 8
+PATCH_SIZE = 10
 
 images = loadmat(DATA_PATH)['IMAGES']
 
@@ -26,19 +26,40 @@ def run_example():
     trains it on whitened image patches from the van hateren database
     demonstrates the learned receptive fields
     """
-    einet = einet_factory([PATCH_SIZE ** 2, 256, 36], NetworkParams(async=False, display=False))
+    params = NetworkParams(async=False, display=False)
+    params.update_cap = 0.25
+    params.steps_per_rc_time = 10
+    params.steps_per_fr_time = 10
+    params.bias_learning_rate = 0.2
+    params.baseline_lrate = 0.05
+    params.baseline_firing_rate = 0.02
+    params.lfr_char_time = 5
+    einet = einet_factory([PATCH_SIZE ** 2, 400, 49], params)
     fig, ax = plt.subplots(figsize=(10,10))
-    for _ in xrange(40):
-        einet.train(patch_generator(images, PATCH_SIZE, 250))
+    for _ in xrange(20):
+        einet.train(patch_generator(images, PATCH_SIZE, 1000))
         oja_w = einet.layers[0].outputs[0].weights.T
         imgs = [w.reshape(PATCH_SIZE, PATCH_SIZE) for w in oja_w]
-        plot_concat_imgs(imgs, ax=ax)
+        plot_concat_imgs(imgs, axis=ax)
         plt.draw()
     return einet
 
 def sailnet():
-    snet = sailnet_factory([PATCH_SIZE **2, 256], NetworkParams(async=False, display=True))
-    snet.train(patch_generator(images, PATCH_SIZE, 10000))
+    params = NetworkParams(async=False, display=False)
+    params.update_cap = 0.25
+    params.steps_per_rc_time = 10
+    params.steps_per_fr_time = 1
+    params.bias_learning_rate = 0.1
+    params.baseline_lrate = 0.1
+    params.lfr_char_time = 5
+    snet = sailnet_factory([PATCH_SIZE **2, 400], params)
+    fig, ax = plt.subplots(figsize=(10,10))
+    for _ in xrange(20):
+        snet.train(patch_generator(images, PATCH_SIZE, 1000))
+        oja_w = snet.layers[0].outputs[0].weights.T
+        imgs = [w.reshape(PATCH_SIZE, PATCH_SIZE) for w in oja_w]
+        plot_concat_imgs(imgs, axis=ax)
+        plt.draw()
     return snet
 
 def oja():

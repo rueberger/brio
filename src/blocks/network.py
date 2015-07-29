@@ -49,10 +49,10 @@ class Network(object):
         :rtype: None
         """
         print "Training iteration: {}".format(self.t_counter)
-        print "Firing rates:"
+        print "Average firing rates:"
         for layer in self.layers[1:]:
             print "{}: {}".format(str(layer), np.mean(layer.epoch_fr))
-        if self.params.display and self.t_counter % 2500 == 0:
+        if self.params.display and self.t_counter % 500 == 0:
             self.param_plot.update_plot()
 
     def train(self, stimulus_generator, rolled=False):

@@ -7,7 +7,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from misc.sta import auto_sta
+from misc.sta import auto_sta, factor
 from blocks.layer import LIFLayer
 plt.ion()
 
@@ -50,11 +50,12 @@ class ParamPlot(object):
 
     #pylint: disable=too-few-public-methods
 
-    def __init__(self, net, layers=None):
+    def __init__(self, net, layers=None, show_all=False):
         """ Initialize this class
 
         :param net: network is a ycurrently in training network
         :param layers: layers to display. list of indices. by default all
+        :param show_all: Show all parameters. Default of False only shows weight distributions
         :returns: the initialized ParamPlot object
         :rtype: ParamPlot
 
@@ -65,9 +66,14 @@ class ParamPlot(object):
             self.layers = net.layers[1:]
         self.net = net
         self.cons = list(net.connections)
-        self.nrows = max(len(self.cons), len(self.layers) * 2)
-        self.fig, self.ax_arr = plt.subplots(nrows=self.nrows,
-                                             ncols=3, figsize=(16, 10))
+        self.show_all = show_all
+        if show_all:
+            nrows = max(len(self.cons), len(self.layers) * 2)
+            ncols=3
+        else:
+            nrows, ncols = factor(len(self.cons))
+        self.fig, self.ax_arr = plt.subplots(nrows=nrows,
+                                             ncols=ncols, figsize=(16, 10))
         self.t = np.arange(self.net.params.presentations)
 
     def update_plot(self):
@@ -76,29 +82,34 @@ class ParamPlot(object):
         :returns: None
         :rtype: None
         """
-
+        sns.set_style("whitegrid")
         self.fig.suptitle("Parameter distributions at timestep {}".format(self.net.t_counter))
         for axis in np.ravel(self.ax_arr):
             axis.clear()
 
-        for con, axis in zip(self.cons, self.ax_arr[:, 0]):
-            axis.hist(np.ravel(con.weights), bins=250, normed=True)
-            axis.set_title("Weight distribution for {}".format(str(con)))
+        if self.show_all:
+            for con, axis in zip(self.cons, self.ax_arr[:, 0]):
+                axis.hist(np.ravel(con.weights), bins=250, normed=True)
+                axis.set_title("Weight distribution for {}".format(str(con)))
 
-        for layer, axis in zip(self.layers, self.ax_arr[:, 1]):
-            axis.hist(np.ravel(layer.bias), bins=250, normed=True)
-            axis.set_title("Bias distribution for {}".format(str(layer)))
+            for layer, axis in zip(self.layers, self.ax_arr[:, 1]):
+                axis.hist(np.ravel(layer.bias), bins=20, normed=True)
+                axis.set_title("Bias distribution for {}".format(str(layer)))
 
-        for layer, axis in zip(self.layers, self.ax_arr[len(self.layers):, 1]):
-            axis.hist(np.ravel(layer.fr_history), bins=250, normed=True)
-            axis.set_title("Firing rate distribution for {}".format(str(layer)))
+            for layer, axis in zip(self.layers, self.ax_arr[len(self.layers):, 1]):
+                axis.hist(np.ravel(layer.lfr_mean), bins=20, normed=True)
+                axis.set_title("Firing rate distribution for {}".format(str(layer)))
 
-        for layer, axis in zip(self.layers, self.ax_arr[len(self.layers):, 2]):
-            if isinstance(layer, LIFLayer):
-                potentials = np.array(layer.pot_history)[:, :, -1].T
-                for u_t in potentials:
-                    axis.plot(self.t, u_t)
-                axis.set_title("Potential history for one stimulus {}".format(str(layer)))
+            for layer, axis in zip(self.layers, self.ax_arr[len(self.layers):, 2]):
+                if isinstance(layer, LIFLayer):
+                    potentials = np.array(layer.pot_history)[:, :, -1].T
+                    for u_t in potentials:
+                        axis.plot(self.t, u_t)
+                    axis.set_title("Potential history for one stimulus {}".format(str(layer)))
+        else:
+            for con, axis in zip(self.cons, self.ax_arr.ravel()):
+                axis.hist(np.ravel(con.weights), bins=250, normed=True)
+                axis.set_title("Weight distribution for {}".format(str(con)))
         self.fig.subplots_adjust(hspace=0.4)
         plt.draw()
 
@@ -180,7 +191,7 @@ def plot_receptive_fields(net, layer_idx, slideshow=True,
 
 
 
-def plot_concat_imgs(imgs, border_thickness=2, axis=None):
+def plot_concat_imgs(imgs, border_thickness=2, axis=None, normalize=False):
     """ concatenate the imgs together into one big image separated by borders
 
     :param imgs: list or array of images. total number of images must be a perfect square and
@@ -190,9 +201,13 @@ def plot_concat_imgs(imgs, border_thickness=2, axis=None):
     :returns: array containing all receptive fields
     :rtype: array
     """
+    sns.set_style('dark')
     assert isinstance(border_thickness, int)
     assert int(np.sqrt(len(imgs))) == np.sqrt(len(imgs))
     assert imgs[0].shape[0] == imgs[0].shape[1]
+    if normalize:
+        imgs = np.array(imgs)
+        imgs /= np.sum(imgs ** 2, axis=(1,2)).reshape(-1, 1, 1)
     img_length = imgs[0].shape[0]
     layer_length = int(np.sqrt(len(imgs)))
     concat_length = layer_length * img_length + (layer_length - 1) * border_thickness
@@ -208,6 +223,26 @@ def plot_concat_imgs(imgs, border_thickness=2, axis=None):
         concat_rf[x_idx * img_length + x_offset: (x_idx + 1) * img_length + x_offset,
                   y_idx * img_length + y_offset: (y_idx + 1) * img_length + y_offset] = imgs[flat_idx]
     if axis is not None:
-        axis.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')
+        axis.imshow(concat_rf, interpolation='none', aspect='auto')
     else:
-        plt.imshow(concat_rf, cmap=SEAMAP,  interpolation='none')
+        plt.imshow(concat_rf, interpolation='none', aspect='auto')
+
+
+def visualize_inhibition(einet, unit_idx=0,  n_show=9):
+    """Shows the receptive field of the excitatory cells that the inhibitory cell
+    at unit_idx inhibits the most
+
+    :param einet: must be an einet
+    :param unit_idx: unit_idx of inhibitory layer
+    :returns: None
+    :rtype: None
+    """
+    from misc.sta import factor
+    inhib_weights = einet.layers[1].outputs[0].weights.T
+    oja_weights = einet.layers[0].outputs[0].weights.T
+    e_idx = np.argsort(inhib_weights[unit_idx])[::-1][:n_show]
+
+    img_dims = factor(einet.layers[0].n_dims)
+    imgs = [w.reshape(*img_dims) for w in oja_weights[e_idx]]
+    print inhib_weights[unit_idx][e_idx]
+    plot_concat_imgs(imgs)

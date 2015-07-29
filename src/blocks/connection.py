@@ -13,16 +13,31 @@ class Connection(object):
     """
 
     #pylint: disable=too-many-instance-attributes
+    #pylint: disable=too-many-arguments
 
     def __init__(self, input_layer, output_layer,
-                 lrate_multiplier=1, weight_scheme='uniform'):
+                 lrate_multiplier=1, weight_scheme='uniform',
+                 label=None):
+        """ Initialize a connection object
+
+        :param input_layer: The layer this connection receives input from
+        :param output_layer: The layer this connections sends output to
+        :param lrate_multiplier: learning rate multiplier for this connection.
+        :param weight_scheme: string in {'uniform', 'zero', 'gaussian'} specifying how
+           weights are initialized
+        :param label: string used as repr for this Connection. By default a
+          label is generated from this Connection's parameters
+        :returns: the created Connection
+        :rtype: Connection
+
+        """
         self.presynaptic_layer = input_layer
         self.postsynaptic_layer = output_layer
         self.__set_pointers()
         self.weight_multiplier = self.presynaptic_layer.ltype.weight_multiplier
         self.lrate_multiplier = lrate_multiplier
         self.__init_weights(weight_scheme)
-
+        self.label = label
 
     def __set_pointers(self):
         """ Set pointers from input layer and output layer to self
@@ -118,9 +133,12 @@ class Connection(object):
         :returns: descriptive string
         :rtype: string
         """
-        return "{}: In: {}; Out: {}".format(type(self).__name__,
-                                            self.presynaptic_layer.__str__(),
-                                            self.postsynaptic_layer.__str__())
+        if self.label is None:
+            return "{}: In: {}; Out: {}".format(type(self).__name__,
+                                                self.presynaptic_layer.__str__(),
+                                                self.postsynaptic_layer.__str__())
+        else:
+            return self.label
 
 
 class OjaConnection(Connection):

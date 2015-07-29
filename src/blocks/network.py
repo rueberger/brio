@@ -113,7 +113,7 @@ class Network(object):
         """
         for layer in self.layers:
             layer.update_lifetime_mean()
-        for connection in self.connections:
+        for connection in self.connections.itervalues():
             connection.weight_update()
         for layer in self.layers[1:]:
             layer.bias_update()
@@ -139,10 +139,14 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        self.connections = set()
+        self.connections = {}
+        connections = set()
         for layer in self.layers:
             for connection in layer.inputs + layer.outputs:
-                self.connections.add(connection)
+                connections.add(connection)
+        for connection in connections:
+            self.connections[str(connection)] = connection
+
 
     def __set_up_children(self):
         """ Passes global parameters and calls set up methods on
@@ -153,5 +157,5 @@ class Network(object):
         """
         for layer in self.layers:
             layer.set_up(self)
-        for connection in self.connections:
+        for connection in self.connections.itervalues():
             connection.set_up(self)

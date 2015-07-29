@@ -65,7 +65,7 @@ class ParamPlot(object):
         else:
             self.layers = net.layers[1:]
         self.net = net
-        self.cons = list(net.connections)
+        self.cons = net.connections.values()
         self.show_all = show_all
         if show_all:
             nrows = max(len(self.cons), len(self.layers) * 2)
@@ -109,8 +109,8 @@ class ParamPlot(object):
         else:
             for con, axis in zip(self.cons, self.ax_arr.ravel()):
                 axis.hist(np.ravel(con.weights), bins=250, normed=True)
-                axis.set_title("Weight distribution for {}".format(str(con)))
-        self.fig.subplots_adjust(hspace=0.4)
+                axis.set_title("Weight distribution for {}".format(str(con)), fontsize=6)
+        self.fig.subplots_adjust(hspace=0.4, wspace=0.3)
         plt.draw()
 
 

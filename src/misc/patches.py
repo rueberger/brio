@@ -27,8 +27,7 @@ def patch_generator(images, patch_size, n_patches=1000, crop=12, normalize=True)
             img -= np.mean(img)
             img *= 1. / np.std(img)
             # divide by five as prescribed in the EINet paper
-            # yield img / 5.
-            yield img
+            yield img / 5.
         else:
             yield img
 

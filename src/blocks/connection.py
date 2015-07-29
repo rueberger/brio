@@ -146,10 +146,9 @@ class OjaConnection(Connection):
     Connection class that uses Oja's rule to iteratively update the weights
     """
 
-    def __init__(self, input_layer, output_layer,
-                 lrate_multiplier=1, weight_scheme='gaussian'):
-        super(OjaConnection, self).__init__(input_layer, output_layer,
-                                            lrate_multiplier, weight_scheme)
+    def __init__(self, *args, **kwargs):
+        kwargs.update({'weight_scheme':'gaussian'})
+        super(OjaConnection, self).__init__(*args, **kwargs)
         # stupid trick to normalize columns
         self.weights = normalize_by_row(self.weights.T).T
 
@@ -210,8 +209,8 @@ class ConstantConnection(Connection):
     Intended to be use as simple feedforward weights from the input layer to the first layer
     """
 
-    def __init__(self, input_layer, output_layer):
-        super(ConstantConnection, self).__init__(input_layer, output_layer)
+    def __init__(self, *args, **kwargs):
+        super(ConstantConnection, self).__init__(*args, **kwargs)
         assert input_layer.n_dims == output_layer.n_dims
         self.weights = np.diag(np.ones(input_layer.n_dims))
 

@@ -19,9 +19,10 @@ class Layer(object):
     To use, inheriting classes must override the async_activation and async_update methods
     """
     # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments
 
     def __init__(self, n_dims, ltype=LayerType.unconstrained,
-                 update_bias=True, allow_self_con=False):
+                 update_bias=True, allow_self_con=False, label=None):
         """ Initialize Layer object
 
         :param n_dims: the number of neurons in the layer
@@ -29,8 +30,11 @@ class Layer(object):
            unconstrainted, excitatory or inhibitory
         :param update_bias: True if this layer should update its biases following foldiak's rule during traing
         :param allow_self_con: True if neurons in this layer are allowed to connect to themselves
+        :param label: string used as repr for this Layer. By default a label
+           is generated from this Layer's parameters
         :returns: a Layer object
         :rtype: Layer
+
         """
         self.n_dims = n_dims
         self.bias = np.ones((self.n_dims, 1))
@@ -40,6 +44,7 @@ class Layer(object):
         self.update_sign = 1
         self.update_bias = update_bias
         self.allow_self_con = allow_self_con
+        self.label = label
 
 
     def set_up(self, network):
@@ -222,7 +227,10 @@ class Layer(object):
         """
         A nicer string for this class
         """
-        return "{} layer of size {}".format(self.ltype.name, self.n_dims)
+        if self.label is None:
+            return "{} {} of size {}".format(self.ltype.name, type(self).__name__, self.n_dims)
+        else:
+            return self.label
 
 
 class LIFLayer(Layer):
@@ -249,7 +257,8 @@ class LIFLayer(Layer):
         :rtype: None
         """
         # update mebrane potentials
-        self.potentials *= np.exp(-self.decay_scale / float(self.params.steps_per_rc_time))
+        # self.potentials *= np.exp(-self.decay_scale / float(self.params.steps_per_rc_time))
+        self.potentials *= np.exp(- self.params.timestep * self.decay_scale)
         for input_connection in self.inputs:
             multiplier = input_connection.weight_multiplier
             weights = input_connection.weights.T
@@ -353,9 +362,7 @@ class InputLayer(Layer):
         :rtype: None
         """
         assert state.shape == (self.n_dims, self.stim_per_epoch)
-        # current injection per unit time
-        # unit of current is in membrane rc time
-        self.state = state.copy() / float(self.params.steps_per_rc_time)
+        self.state = state.copy() * self.params.timestep
         self._history.insert(0, self.state.copy())
 
 

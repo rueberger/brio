@@ -7,6 +7,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import string
 from misc.sta import auto_sta, factor
 from blocks.layer import LIFLayer
 plt.ion()
@@ -226,6 +227,39 @@ def plot_concat_imgs(imgs, border_thickness=2, axis=None, normalize=False):
         axis.imshow(concat_rf, interpolation='none', aspect='auto')
     else:
         plt.imshow(concat_rf, interpolation='none', aspect='auto')
+
+
+def write_hist_to_stdout(data, n_bins=25, lines=10):
+    """ Write a text based histogram to stdout
+
+    :param data: the data to visualize
+    :param bins: number of bins
+    :param lines: how many vertical lines for the histogram to span
+    :returns: None
+    :rtype: None
+    """
+    pdf, bins = np.histogram(data, bins=n_bins, density=True)
+    scaled_pdf = pdf * lines
+    col_width = 4
+    x_axis_width = col_width * n_bins
+    y_label_width = 5
+    # might want to use a string writer?
+    for height in range(lines)[::-1]:
+        line = string.join(['*** ' if d > height else '    ' for d in scaled_pdf], '')
+        print "{:3.1f} | {}".format(height / float(lines), line)
+    axis = '-' * n_bins * col_width
+    mid_sep = (x_axis_width - 5) / 2
+    x_labels = ['{:5.2f}'.format(bins[0]),
+                ' ' * mid_sep,
+                '{:5.2f}'.format(bins[n_bins / 2]),
+                ' ' * mid_sep,
+                '{:5.2f}'.format(bins[-1])
+            ]
+    print "    {}".format(axis)
+    print string.join(x_labels, '')
+
+
+
 
 
 def visualize_inhibition(einet, unit_idx=0,  n_show=9):

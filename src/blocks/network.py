@@ -3,7 +3,7 @@ This module holds the Network class
 """
 import numpy as np
 from blocks.aux import NetworkParams
-from misc.plotting import ParamPlot, plot_receptive_fields
+from misc.plotting import ParamPlot, plot_receptive_fields, write_hist_to_stdout
 from misc.utils import roll_itr
 
 class Network(object):
@@ -48,12 +48,20 @@ class Network(object):
         :returns: None
         :rtype: None
         """
-        print "Training iteration: {}".format(self.t_counter)
+        print "Training iteration: {} \n".format(self.t_counter)
         print "Average firing rates:"
         for layer in self.layers[1:]:
             print "{}: {}".format(str(layer), np.mean(layer.epoch_fr))
-        if self.params.display and self.t_counter % 500 == 0:
+        print ""
+        if self.t_counter % 1000 == 0:
+            for label, connection in self.connections.iteritems():
+                print "Weight distribution for {}".format(label)
+                write_hist_to_stdout(connection.weights.ravel())
+                print "\n \n"
+        if self.params.display and self.t_counter % 1000 == 0:
             self.param_plot.update_plot()
+        print "=" * 100
+        print "\n\n"
 
     def train(self, stimulus_generator, rolled=False):
         """ Trains the network on the generated stimuli

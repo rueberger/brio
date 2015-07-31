@@ -51,7 +51,7 @@ class ParamPlot(object):
 
     #pylint: disable=too-few-public-methods
 
-    def __init__(self, net, layers=None, show_all=False):
+    def __init__(self, net, layers=None, show_all=False, shape=None):
         """ Initialize this class
 
         :param net: network is a ycurrently in training network
@@ -68,11 +68,15 @@ class ParamPlot(object):
         self.net = net
         self.cons = net.connections.values()
         self.show_all = show_all
-        if show_all:
-            nrows = max(len(self.cons), len(self.layers) * 2)
-            ncols=3
+        if shape is None:
+            if show_all:
+                nrows = max(len(self.cons), len(self.layers) * 2)
+                ncols=3
+            else:
+                # need something else: works terrible for primes
+                nrows, ncols = factor(len(self.cons))
         else:
-            nrows, ncols = factor(len(self.cons))
+            nrows, ncols = shape
         self.fig, self.ax_arr = plt.subplots(nrows=nrows,
                                              ncols=ncols, figsize=(16, 10))
         self.t = np.arange(self.net.params.presentations)

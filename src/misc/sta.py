@@ -10,17 +10,19 @@ def record_responses(net, stimuli, layer_idx=None):
 
     :param net: a trained network
     :param stimuli: array of stimuli
-    :param layer_idx: optional tuple specifying which layers to collect responses from
-      for large networks memory use will be egregious of not specified
+    :param layer_idx: optional tuple or integer specifying which layer(s) to
+      collect responses from for large networks memory use will be egregious of not specified
     :returns: a dictionary recording stimuli idx each unit responded to and a list of stimuli
-    :rtype: (dict((layer_idx, unit_idx) : array(stimuli_idx)), stimuli)
+    :rtype: (dict: (layer_idx, unit_idx) --> array(stimuli_idx), stimuli)
     """
     # disable too many local variables complaint
     # pylint:disable=R0914
     assert isinstance(stimuli, np.ndarray)
 
     active_layers = layer_idx or range(1, len(net.layers))
-    assert isinstance(active_layers, list)
+    if not isinstance(active_layers, list):
+        assert isinstance(active_layers, int)
+        active_layers = [active_layers]
 
     epoch_size = net.params.stimuli_per_epoch
 

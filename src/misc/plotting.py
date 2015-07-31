@@ -263,10 +263,7 @@ def write_hist_to_stdout(data, n_bins=25, lines=10):
     print string.join(x_labels, '')
 
 
-
-
-
-def visualize_inhibition(einet, unit_idx=0,  n_show=9):
+def visualize_inhibition(einet, unit_idx=0, n_show=9):
     """Shows the receptive field of the excitatory cells that the inhibitory cell
     at unit_idx inhibits the most
 

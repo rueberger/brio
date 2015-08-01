@@ -211,6 +211,7 @@ class ConstantConnection(Connection):
 
     def __init__(self, *args, **kwargs):
         super(ConstantConnection, self).__init__(*args, **kwargs)
+        input_layer, output_layer = args
         assert input_layer.n_dims == output_layer.n_dims
         self.weights = np.diag(np.ones(input_layer.n_dims))
 

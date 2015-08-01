@@ -92,7 +92,7 @@ def gated_einet_factory(layer_sizes, n_input_stimuli, params=NetworkParams()):
     connection.CMConnection(layers[1], layers[2], weight_scheme='uniform', lrate_multiplier=.7)
     connection.CMConnection(layers[2], layers[2], weight_scheme='zero', lrate_multiplier=1.5)
     connection.CMConnection(layers[2], layers[1], weight_scheme='uniform', lrate_multiplier=0.7)
-    if len(n_input_stimuli) == 2:
+    if n_input_stimuli == 2:
         layers[0].children[0].label = "L input"
         layers[0].children[1].label = "R input"
     return network.Network(layers, params, display_layers=[1, 2])

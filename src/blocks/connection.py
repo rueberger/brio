@@ -75,6 +75,10 @@ class Connection(object):
         else:
             raise NotImplementedError("please choose one of the implemented weight schemes")
 
+        # symmetrize weights if this is a self connection
+        if self.presynaptic_layer == self.postsynaptic_layer:
+            self.weights = (self.weights + self.weights.T) / 2.
+
 
     def weight_update(self):
         """ accumulate weight updates and apply them as specified

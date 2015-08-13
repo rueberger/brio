@@ -23,8 +23,11 @@ class Connection(object):
         :param input_layer: The layer this connection receives input from
         :param output_layer: The layer this connections sends output to
         :param lrate_multiplier: learning rate multiplier for this connection.
-        :param weight_scheme: string in {'uniform', 'zero', 'gaussian'} specifying how
+        :param weight_scheme: string or array.
+           string must be a member of {'uniform', 'zero', 'gaussian'} specifying how
            weights are initialized
+           array must be a matrix of the correct shape specifying a custom setting
+           of the weights
         :param label: string used as repr for this Connection. By default a
           label is generated from this Connection's parameters
         :returns: the created Connection
@@ -72,6 +75,10 @@ class Connection(object):
         elif scheme == 'zero':
             self.weights = np.zeros((self.presynaptic_layer.n_dims,
                                      self.postsynaptic_layer.n_dims))
+        elif isinstance(scheme, np.ndarray):
+            assert scheme.shape == (self.presynaptic_layer.n_dims,
+                                    self.postsynaptic_layer.n_dims)
+            self.weights = scheme.copy()
         else:
             raise NotImplementedError("please choose one of the implemented weight schemes")
 

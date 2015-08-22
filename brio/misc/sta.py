@@ -3,7 +3,7 @@ This module contains utilities for computing the receptive fields of trained net
 """
 import numpy as np
 import itertools
-from misc.utils import roll_itr
+from .utils import roll_itr
 
 def record_responses(net, stimuli, layer_idx=None):
     """ present stimuli to net and record which units in which layers respond to what

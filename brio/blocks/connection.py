@@ -2,7 +2,7 @@
 This module holds the connection class and its subclasses:
 Connection: Base class for connections. Defines interface and shared methods
 """
-from misc.utils import overrides, normalize_by_row
+from brio.misc.utils import overrides, normalize_by_row
 import numpy as np
 np.seterr('raise')
 

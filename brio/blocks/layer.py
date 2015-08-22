@@ -5,8 +5,8 @@ PerceptronLayer: Layer subclass with a perceptron activation function
 BoltzmannMachineLayer: Layer subclass with a Boltzmann Machine activation function
 """
 
-from misc.utils import overrides
-from blocks.aux import LayerType
+from brio.misc.utils import overrides
+from .aux import LayerType
 import numpy as np
 np.seterr('raise')
 

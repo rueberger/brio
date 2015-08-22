@@ -2,9 +2,9 @@
 This module holds the Network class
 """
 import numpy as np
-from blocks.aux import NetworkParams
-from misc.plotting import ParamPlot, plot_receptive_fields, write_hist_to_stdout
-from misc.utils import roll_itr
+from .aux import NetworkParams
+from brio.misc.plotting import ParamPlot, plot_receptive_fields, write_hist_to_stdout
+from brio.misc.utils import roll_itr
 
 class Network(object):
     """

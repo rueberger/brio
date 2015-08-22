@@ -1,8 +1,8 @@
 """
 Factories for networks
 """
-from blocks import layer, connection, network
-from blocks.aux import LayerType, NetworkParams
+from . import layer, connection, network
+from .aux import LayerType, NetworkParams
 
 def rbm_factory(layer_sizes):
     """ Constructs a Restricted Boltzmann Machine

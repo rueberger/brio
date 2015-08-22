@@ -8,8 +8,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import string
-from misc.sta import auto_sta, factor
-from blocks.layer import LIFLayer
+from .sta import auto_sta, factor
+from brio.blocks.layer import LIFLayer
 plt.ion()
 
 SEAMAP = mpl.colors.ListedColormap(sns.cubehelix_palette(256, start=.5, rot=-.75))

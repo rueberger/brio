@@ -6,11 +6,11 @@ Whitened images used here available from Bruno Olshausen at the
   redwood center here: https://redwood.berkeley.edu/bruno/sparsenet/
 """
 
-from blocks.factories import einet_factory, sailnet_factory
-from misc.patches import patch_generator, mean_zero_patch
+from brio.blocks.factories import einet_factory, sailnet_factory
+from brio.misc.patches import patch_generator, mean_zero_patch
 from scipy.io import loadmat
-from blocks.aux import NetworkParams
-from misc.plotting import plot_receptive_fields, plot_param_distr, plot_concat_imgs
+from brio.blocks.aux import NetworkParams
+from brio.misc.plotting import plot_receptive_fields, plot_param_distr, plot_concat_imgs
 import matplotlib.pyplot as plt
 plt.ion()
 
@@ -33,8 +33,8 @@ def run_example():
     params.bias_learning_rate = 0.2
     params.baseline_lrate = 0.02
     params.baseline_firing_rate = 0.02
-    params.lfr_char_time = 5
-    einet = einet_factory([PATCH_SIZE ** 2, 625, 64], params)
+    params.lfr_char_time = 5p
+    einet = einet_factory([PATCH_SIZE ** 2, 400, 49], params)
     fig, ax = plt.subplots(figsize=(10,10))
     for _ in xrange(40):
         einet.train(patch_generator(images, PATCH_SIZE, 1000))

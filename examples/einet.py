@@ -33,7 +33,7 @@ def run_example():
     params.bias_learning_rate = 0.2
     params.baseline_lrate = 0.02
     params.baseline_firing_rate = 0.02
-    params.lfr_char_time = 5p
+    params.lfr_char_time = 5
     einet = einet_factory([PATCH_SIZE ** 2, 400, 49], params)
     fig, ax = plt.subplots(figsize=(10,10))
     for _ in xrange(40):

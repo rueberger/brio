@@ -524,7 +524,7 @@ class GatedInput(SplitInput):
         """
         Set the firing rate and history as those of the postsynaptic neuron
         """
-        from blocks.connection import ConstantConnection
+        from brio.blocks.connection import ConstantConnection
 
         assert len(self.outputs) == 1
         assert len(self.inputs) == len(self.children)

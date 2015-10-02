@@ -144,7 +144,7 @@ def auto_sta(net, n_samples=1E4, stim_gen=None, layer_idx=None):
     :rtype: dict((layer_idx, unit_idx): array(sta))
 
     """
-    from brio.blocks.layer import InputLayer, RasterInputLayer, GatedInput, SplitInput
+    from blocks.layer import InputLayer, RasterInputLayer, GatedInput, SplitInput
     input_layer = net.layers[0]
     if isinstance(input_layer, (SplitInput, GatedInput)):
         return split_img_sta(net, n_samples, stim_gen=stim_gen, layer_idx=layer_idx)

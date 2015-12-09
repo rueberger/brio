@@ -11,7 +11,9 @@ layers and connections can be composed. Recurrent networks can be constructed wi
 
 ## Interactive tutorial
 
-Learn how to use brio by following an example. iPython notebook [here](https://github.com/rueberger/brio/blob/master/examples/SAILnet.ipynb)
+Learn how to use brio by following an example. iPython notebook [here](https://github.com/rueberger/brio/blob/master/examples/SAILnet.ipynb).
+
+Can be viewed directly on github at the expense of the cool interactive bits. Best viewed in a local notebook session.
 
 ## Disclaimer
 brio is very much a work in progress. Don't hesitate to contact me with any bugs or questions

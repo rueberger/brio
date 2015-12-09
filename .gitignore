@@ -64,3 +64,6 @@ target/
 
 #pythoscope
 *.pickle
+
+#ipython notebook
+*.ipynb_checkpoints

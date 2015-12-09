@@ -9,5 +9,9 @@ divided intuitively between Layer and Connection objects; neuron state is stored
 objects store the weights defining transformations between layers. There are essentially no restrictions on the ways
 layers and connections can be composed. Recurrent networks can be constructed with ease.
 
+## Interactive tutorial
+
+Learn how to use brio by following an example. iPython notebook [here](https://github.com/rueberger/brio/blob/master/examples/SAILnet.ipynb)
+
 ## Disclaimer
 brio is very much a work in progress. Don't hesitate to contact me with any bugs or questions

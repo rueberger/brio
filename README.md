@@ -16,4 +16,8 @@ Learn how to use brio by following an example. iPython notebook [here](https://g
 Can be viewed directly on github at the expense of the cool interactive bits. Best viewed in a local notebook session.
 
 ## Disclaimer
-brio is very much a work in progress. Don't hesitate to contact me with any bugs or questions
+
+brio is, at heart, a research platform. Although I do my best to keep brio true to its original design, it occasionally suffers from the same feature creep and ad-hoc fixes that plague all academic code bases. It remains a work in progress.
+
+If you've encountered a bug or have suggestions for how brio's architecture might be improved please don't hesitate in contacting me or filing an issue. 
+

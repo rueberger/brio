@@ -59,6 +59,7 @@ class NetworkParams(object):
         self.keep_extra_history = True
         self.async = async
         self.display = display
+        self.print_progress = True
         self.update_cap = update_cap
         # the number of simulation steps corresponding to the characteristic time of the membrane
         #  rc constant
